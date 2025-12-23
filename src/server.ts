@@ -378,7 +378,12 @@ async function handleRequest(req: Request): Promise<Response> {
 
     // POST /api/rag/upload - Upload and process document
     if (route === '/api/rag/upload' && req.method === 'POST') {
-      const body = await req.json() as Record<string, unknown>;
+      let body: Record<string, unknown>;
+      try {
+        body = await req.json() as Record<string, unknown>;
+      } catch {
+        return errorResponse('Invalid JSON in request body', 400);
+      }
 
       if (!body.text || typeof body.text !== 'string') {
         return errorResponse('Missing required field: text');
@@ -403,7 +408,12 @@ async function handleRequest(req: Request): Promise<Response> {
 
     // POST /api/rag/query - Query with RAG
     if (route === '/api/rag/query' && req.method === 'POST') {
-      const body = await req.json() as Record<string, unknown>;
+      let body: Record<string, unknown>;
+      try {
+        body = await req.json() as Record<string, unknown>;
+      } catch {
+        return errorResponse('Invalid JSON in request body', 400);
+      }
 
       if (!body.query || typeof body.query !== 'string') {
         return errorResponse('Missing required field: query');
@@ -436,7 +446,12 @@ async function handleRequest(req: Request): Promise<Response> {
 
     // POST /api/rag/search - Search only (no LLM call)
     if (route === '/api/rag/search' && req.method === 'POST') {
-      const body = await req.json() as Record<string, unknown>;
+      let body: Record<string, unknown>;
+      try {
+        body = await req.json() as Record<string, unknown>;
+      } catch {
+        return errorResponse('Invalid JSON in request body', 400);
+      }
 
       if (!body.query || typeof body.query !== 'string') {
         return errorResponse('Missing required field: query');

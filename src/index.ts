@@ -29,6 +29,14 @@ import { promisify } from 'util';
 
 const execAsync = promisify(exec);
 
+/**
+ * Escape a string for use in LanceDB filter expressions.
+ * Prevents SQL injection by escaping quotes and backslashes.
+ */
+function escapeFilterValue(value: string): string {
+  return value.replace(/\\/g, '\\\\').replace(/"/g, '\\"');
+}
+
 // Responder type configuration
 export type ResponderType = 'claude' | 'gemini';
 
@@ -180,7 +188,7 @@ export async function query(
   const startSearch = Date.now();
   const searchResults = await ragDatabase.search(queryVector, {
     limit: compress ? topK * 3 : topK,  // Get more for filtering when compressing
-    filter: documentId ? `metadata.documentId = "${documentId}"` : undefined
+    filter: documentId ? `metadata.documentId = "${escapeFilterValue(documentId)}"` : undefined
   });
   timing.search = Date.now() - startSearch;
   logger.debug(`Found ${searchResults.length} chunks in ${timing.search}ms`);
@@ -411,7 +419,7 @@ export async function search(
   const startSearch = Date.now();
   const searchResults = await ragDatabase.search(queryVector, {
     limit: topK,
-    filter: documentId ? `metadata.documentId = "${documentId}"` : undefined
+    filter: documentId ? `metadata.documentId = "${escapeFilterValue(documentId)}"` : undefined
   });
   timing.search = Date.now() - startSearch;
   timing.total = Date.now() - startTotal;

@@ -93,11 +93,16 @@ export async function generateResponse(
   const fullPrompt = buildPrompt(query, context, systemPrompt);
 
   return new Promise((resolve, reject) => {
-    const args = ['-p', fullPrompt, '--print'];
+    // Use stdin to pass prompt - avoids command injection via shell metacharacters
+    const args = ['--print'];
     const claudeProcess = spawn('claude', args, {
       stdio: ['pipe', 'pipe', 'pipe'],
       env: { ...process.env }
     });
+
+    // Write prompt to stdin and close it
+    claudeProcess.stdin.write(fullPrompt);
+    claudeProcess.stdin.end();
 
     let stdout = '';
     let stderr = '';
@@ -183,11 +188,16 @@ export async function* streamResponse(
 
   // Create a promise-based wrapper for the streaming process
   const processPromise = new Promise<void>((resolve, reject) => {
-    const args = ['-p', fullPrompt, '--print'];
+    // Use stdin to pass prompt - avoids command injection via shell metacharacters
+    const args = ['--print'];
     const claudeProcess = spawn('claude', args, {
       stdio: ['pipe', 'pipe', 'pipe'],
       env: { ...process.env }
     });
+
+    // Write prompt to stdin and close it
+    claudeProcess.stdin.write(fullPrompt);
+    claudeProcess.stdin.end();
 
     let stderr = '';
 
@@ -197,7 +207,10 @@ export async function* streamResponse(
       fullAnswer += chunk;
       // Queue the chunk for yielding
       chunkQueue.push(chunk);
-      resolveWait?.();
+      // Capture and clear resolveWait atomically to prevent race condition
+      const resolve = resolveWait;
+      resolveWait = null;
+      resolve?.();
     });
 
     claudeProcess.stderr.on('data', (data: Buffer) => {
@@ -206,7 +219,9 @@ export async function* streamResponse(
 
     claudeProcess.on('close', (code: number | null) => {
       processComplete = true;
-      resolveWait?.();
+      const resolve = resolveWait;
+      resolveWait = null;
+      resolve?.();
 
       if (code !== 0) {
         if (stderr.includes('not authenticated') || stderr.includes('auth')) {
@@ -228,7 +243,9 @@ export async function* streamResponse(
 
     claudeProcess.on('error', (err: Error) => {
       processComplete = true;
-      resolveWait?.();
+      const resolve = resolveWait;
+      resolveWait = null;
+      resolve?.();
 
       if ((err as NodeJS.ErrnoException).code === 'ENOENT') {
         error = new Error(
@@ -269,7 +286,7 @@ export async function* streamResponse(
       }
     }
 
-    // Wait for process to fully complete
+    // Wait for process to fully complete - must await to catch errors
     await processPromise;
 
     if (error) {
@@ -284,8 +301,9 @@ export async function* streamResponse(
         output: estimateTokens(fullAnswer)
       }
     };
-  } catch (err) {
-    throw err;
+  } finally {
+    // Ensure process promise is always awaited even if generator is abandoned early
+    await processPromise.catch(() => {});
   }
 }
 
