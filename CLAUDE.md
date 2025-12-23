@@ -13,26 +13,25 @@ Query → Gemini Embeddings → LanceDB → Chunks → Claude Code CLI → Respo
 ```
 
 ## Current Focus
-Section: CLI Migration
-Files: src/responder.ts, src/responder-gemini.ts, src/subagents/retriever.ts, src/index.ts, src/server.ts
+Section: Ready for new features
+Files: Core system complete
 
 ## Pipeline State
-Phase: refactoring
+Phase: build
 Feature: CLI Migration
-Tier: low
-Tier-Status: pending
+Status: Complete
 Reports:
   - bugs: reports/bugs-cli-migration.md
   - refactors: reports/refactors-cli-migration.md
 
 ## Last Session (2025-12-23)
-Medium priority refactors complete (commit fef26fa):
-- Split streamResponse() 150→50 lines (responder.ts)
-- Extracted 7 route handlers from handleRequest() 240→45 lines (server.ts)
-- Created utils/validation.ts with validateQuery(), validateContext(), validateSources()
-- Extracted sanitizeContext() helper (responder-gemini.ts)
-- Items #4-5 already existed in chunks.ts
-- Pushed to origin
+Low priority refactors complete (commit 089442a):
+- Removed unused AbortController in responder-gemini.ts
+- Created shared ResponderError class (src/utils/responder-errors.ts)
+- Created withTiming() utility (src/utils/timing.ts)
+- Defined routes as constants with metadata (server.ts ROUTES object)
+- Consolidated type definitions: Source→ChunkSource, RetrievedChunk→Chunk
+- All 17 refactors complete, pushed to origin
 
 ## Key Files
 - `src/responder.ts` - Claude Code CLI integration
