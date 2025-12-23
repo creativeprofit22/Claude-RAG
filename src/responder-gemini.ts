@@ -4,7 +4,8 @@
  * Uses Google Gemini 2.0 Flash (free tier)
  */
 
-import { GoogleGenAI } from '@google/genai';
+import { getGeminiClient } from './utils/gemini-client.js';
+import { DEFAULT_SYSTEM_PROMPT } from './constants.js';
 
 // Gemini 2.0 Flash - fast and free-tier friendly
 const GEMINI_MODEL = process.env.GEMINI_RESPONSE_MODEL || 'gemini-2.0-flash';
@@ -71,40 +72,6 @@ function classifyError(error: unknown): GeminiAPIError {
 // Import shared types from responder.ts to avoid type divergence
 import type { Source, RAGResponse, ResponseOptions } from './responder.js';
 
-const DEFAULT_SYSTEM_PROMPT = `You are a helpful assistant that answers questions based on provided context.
-- Answer using ONLY the information in the context
-- If the context doesn't contain enough information, say so clearly
-- Reference sources when possible (e.g., "According to [document name]...")
-- Be concise but thorough`;
-
-let genaiClient: GoogleGenAI | null = null;
-let clientInitializing = false;
-
-function getClient(): GoogleGenAI {
-  if (genaiClient) {
-    return genaiClient;
-  }
-
-  // Prevent concurrent initialization attempts
-  if (clientInitializing) {
-    throw new Error('Client initialization already in progress. Please retry.');
-  }
-
-  clientInitializing = true;
-  try {
-    const apiKey = process.env.GOOGLE_AI_API_KEY;
-    if (!apiKey) {
-      throw new Error(
-        'GOOGLE_AI_API_KEY environment variable is required. Get one at https://aistudio.google.com/apikey'
-      );
-    }
-    genaiClient = new GoogleGenAI({ apiKey });
-    return genaiClient;
-  } finally {
-    clientInitializing = false;
-  }
-}
-
 /**
  * Generate a response using Gemini 2.0 Flash based on pre-filtered context
  */
@@ -125,7 +92,7 @@ export async function generateResponse(
     throw new Error('Sources must be an array');
   }
 
-  const client = getClient();
+  const client = getGeminiClient();
 
   const {
     maxTokens = 2048,
@@ -218,7 +185,7 @@ export async function* streamResponse(
     throw new Error('Sources must be an array');
   }
 
-  const client = getClient();
+  const client = getGeminiClient();
 
   const {
     maxTokens = 2048,
@@ -292,7 +259,7 @@ Question: ${query}`;
  */
 export async function checkGeminiReady(): Promise<boolean> {
   try {
-    const client = getClient();
+    const client = getGeminiClient();
     const response = await client.models.generateContent({
       model: GEMINI_MODEL,
       contents: 'Say "ready" in one word.',

@@ -24,10 +24,8 @@ import {
 } from './responder-gemini.js';
 import { getDefaultConfig } from './config.js';
 import { logger } from './utils/logger.js';
-import { exec } from 'child_process';
-import { promisify } from 'util';
-
-const execAsync = promisify(exec);
+import { checkClaudeCodeAvailable } from './utils/cli.js';
+import { buildChunksFromResults, buildContextFromChunks, buildSourcesFromChunks, type Chunk } from './utils/chunks.js';
 
 /**
  * Escape a string for use in LanceDB filter expressions.
@@ -50,17 +48,6 @@ export function getResponderType(): ResponderType {
   return 'claude'; // Default to Claude Code CLI
 }
 
-/**
- * Check if Claude Code CLI is available
- */
-async function checkClaudeCodeAvailable(): Promise<boolean> {
-  try {
-    await execAsync('which claude');
-    return true;
-  } catch {
-    return false;
-  }
-}
 
 /**
  * Get the appropriate responder functions based on configuration and availability
@@ -220,13 +207,7 @@ export async function query(
   }
 
   // Build chunks array from search results
-  const chunks = searchResults.map((r, i) => ({
-    text: r.text,
-    documentId: r.metadata.documentId,
-    documentName: r.metadata.documentName,
-    chunkIndex: r.metadata.chunkIndex,
-    score: r._distance ?? 0
-  }));
+  const chunks = buildChunksFromResults(searchResults);
 
   let context: string;
   let sources: Array<{ documentId: string; documentName: string; chunkIndex: number; snippet: string }>;
@@ -254,16 +235,8 @@ export async function query(
     logger.debug(`Direct flow: passing ${chunks.length} chunks to ${responder.type}`);
 
     // Build context from all chunks with document attribution
-    context = chunks.map((chunk, i) => {
-      return `[Source: ${chunk.documentName}, Chunk ${chunk.chunkIndex}]\n${chunk.text}`;
-    }).join('\n\n---\n\n');
-
-    sources = chunks.map(chunk => ({
-      documentId: chunk.documentId,
-      documentName: chunk.documentName,
-      chunkIndex: chunk.chunkIndex,
-      snippet: chunk.text.slice(0, 150) + '...'
-    }));
+    context = buildContextFromChunks(chunks);
+    sources = buildSourcesFromChunks(chunks);
   }
 
   // Step 4: Generate response using configured responder

@@ -4,18 +4,10 @@
  * Supports both Claude Code CLI and Gemini responders
  */
 
-import { addDocument, listDocuments, deleteDocument, isReady, search } from './index.js';
-import { generateResponse as generateClaudeResponse, streamResponse as streamClaudeResponse } from './responder.js';
-import { generateResponse as generateGeminiResponse, streamResponse as streamGeminiResponse, checkGeminiReady } from './responder-gemini.js';
-import { generateQueryEmbedding } from './embeddings.js';
-import { ragDatabase } from './database.js';
-import { filterAndRankChunks, type SubAgentResult } from './subagents/index.js';
-import { getDefaultConfig } from './config.js';
+import { addDocument, listDocuments, deleteDocument, isReady, search, query, type QueryResult } from './index.js';
+import { checkGeminiReady } from './responder-gemini.js';
 import { logger } from './utils/logger.js';
-import { exec } from 'child_process';
-import { promisify } from 'util';
-
-const execAsync = promisify(exec);
+import { checkClaudeCodeAvailable } from './utils/cli.js';
 
 const PORT = process.env.PORT || 3000;
 const MAX_PAYLOAD_SIZE = 10 * 1024 * 1024; // 10MB limit
@@ -69,8 +61,6 @@ function validateContentLength(req: Request): void {
   }
 }
 
-// Responder types
-type ResponderType = 'claude' | 'gemini' | 'auto';
 
 // CORS headers - configurable origin for security
 const corsHeaders = {
@@ -105,79 +95,12 @@ function parseRoute(pathname: string): { route: string; params: Record<string, s
   return { route: pathname, params: {} };
 }
 
-/**
- * Check if Claude Code CLI is available
- */
-async function checkClaudeCodeAvailable(): Promise<boolean> {
-  try {
-    await execAsync('which claude');
-    return true;
-  } catch {
-    return false;
-  }
-}
 
-/**
- * Determine which responder to use based on request preferences and availability
- */
-async function resolveResponder(
-  requestedResponder: ResponderType
-): Promise<{ responder: 'claude' | 'gemini'; fallback: boolean; message?: string }> {
-  const claudeAvailable = await checkClaudeCodeAvailable();
-  const geminiAvailable = !!process.env.GOOGLE_AI_API_KEY;
-
-  // Explicit Claude request
-  if (requestedResponder === 'claude') {
-    if (claudeAvailable) {
-      return { responder: 'claude', fallback: false };
-    }
-    // Claude requested but not available - check if we can fallback
-    if (geminiAvailable) {
-      return {
-        responder: 'gemini',
-        fallback: true,
-        message: 'Claude Code CLI not available, falling back to Gemini'
-      };
-    }
-    throw new Error(
-      'Claude Code CLI is not installed or not in PATH. ' +
-      'Install it with: npm install -g @anthropic-ai/claude-code'
-    );
-  }
-
-  // Explicit Gemini request
-  if (requestedResponder === 'gemini') {
-    if (geminiAvailable) {
-      return { responder: 'gemini', fallback: false };
-    }
-    throw new Error(
-      'GOOGLE_AI_API_KEY environment variable is required for Gemini responder. ' +
-      'Get one at https://aistudio.google.com/apikey'
-    );
-  }
-
-  // Auto mode: prefer Claude if available, fallback to Gemini
-  if (claudeAvailable) {
-    return { responder: 'claude', fallback: false };
-  }
-  if (geminiAvailable) {
-    return {
-      responder: 'gemini',
-      fallback: true,
-      message: 'Claude Code CLI not available, using Gemini'
-    };
-  }
-
-  throw new Error(
-    'No responder available. Either install Claude Code CLI (npm install -g @anthropic-ai/claude-code) ' +
-    'or set GOOGLE_AI_API_KEY for Gemini.'
-  );
-}
 
 /**
  * Get responder preference from request (query param or header)
  */
-function getResponderPreference(req: Request, url: URL): ResponderType {
+function getResponderPreference(req: Request, url: URL): 'claude' | 'gemini' | undefined {
   // Check query parameter first: ?responder=claude or ?responder=gemini
   const queryParam = url.searchParams.get('responder');
   if (queryParam === 'claude' || queryParam === 'gemini') {
@@ -190,176 +113,8 @@ function getResponderPreference(req: Request, url: URL): ResponderType {
     return headerValue;
   }
 
-  // Default to auto (prefer Claude, fallback to Gemini)
-  return 'auto';
-}
-
-interface QueryOptions {
-  topK?: number;
-  documentId?: string;
-  compress?: boolean;
-  systemPrompt?: string;
-  responder?: ResponderType;
-}
-
-interface QueryResult {
-  answer: string;
-  sources: Array<{ documentId: string; documentName: string; chunkIndex: number; snippet: string }>;
-  tokensUsed: { input: number; output: number };
-  subAgentResult?: SubAgentResult;
-  responder: 'claude' | 'gemini';
-  responderFallback?: boolean;
-  responderMessage?: string;
-  timing: {
-    embedding: number;
-    search: number;
-    filtering?: number;
-    response: number;
-    total: number;
-  };
-}
-
-/**
- * Main RAG query function with responder selection
- */
-async function query(
-  userQuery: string,
-  options: QueryOptions = {}
-): Promise<QueryResult> {
-  const config = getDefaultConfig();
-  const { topK = config.topK, compress = false, documentId, responder: requestedResponder = 'auto' } = options;
-  const timing: QueryResult['timing'] = { embedding: 0, search: 0, response: 0, total: 0 };
-  const startTotal = Date.now();
-
-  logger.info(`Processing query: "${userQuery.slice(0, 50)}..."`);
-
-  // Resolve which responder to use
-  const { responder, fallback, message: responderMessage } = await resolveResponder(requestedResponder);
-  if (responderMessage) {
-    logger.info(responderMessage);
-  }
-
-  // Step 1: Generate query embedding
-  const startEmbed = Date.now();
-  const queryVector = await generateQueryEmbedding(userQuery);
-  timing.embedding = Date.now() - startEmbed;
-  logger.debug(`Embedding generated in ${timing.embedding}ms`);
-
-  // Step 2: Search vector database
-  const startSearch = Date.now();
-  const searchResults = await ragDatabase.search(queryVector, {
-    limit: compress ? topK * 3 : topK,
-    filter: documentId ? `metadata.documentId = "${documentId}"` : undefined
-  });
-  timing.search = Date.now() - startSearch;
-  logger.debug(`Found ${searchResults.length} chunks in ${timing.search}ms`);
-
-  if (searchResults.length === 0) {
-    return {
-      answer: "I don't have any documents to search. Please upload some documents first.",
-      sources: [],
-      tokensUsed: { input: 0, output: 0 },
-      responder,
-      ...(fallback && { responderFallback: true, responderMessage }),
-      timing: { ...timing, total: Date.now() - startTotal }
-    };
-  }
-
-  // Build chunks array from search results
-  const chunks = searchResults.map((r) => ({
-    text: r.text,
-    documentId: r.metadata.documentId,
-    documentName: r.metadata.documentName,
-    chunkIndex: r.metadata.chunkIndex,
-    score: r._distance ?? 0
-  }));
-
-  let context: string;
-  let sources: Array<{ documentId: string; documentName: string; chunkIndex: number; snippet: string }>;
-  let subAgentResult: SubAgentResult | undefined;
-
-  if (compress) {
-    // Step 3a: Haiku sub-agent filters and compresses
-    const startFilter = Date.now();
-    subAgentResult = await filterAndRankChunks(userQuery, chunks, {
-      compress: true,
-      maxChunks: topK
-    });
-    timing.filtering = Date.now() - startFilter;
-    logger.debug(`Haiku filtered to ${subAgentResult.selectedChunks.length} chunks in ${timing.filtering}ms`);
-
-    context = subAgentResult.relevantContext;
-    sources = subAgentResult.selectedChunks.map(i => ({
-      documentId: chunks[i].documentId,
-      documentName: chunks[i].documentName,
-      chunkIndex: chunks[i].chunkIndex,
-      snippet: chunks[i].text.slice(0, 150) + '...'
-    }));
-  } else {
-    // Step 3b: Direct flow - format chunks without Haiku
-    logger.debug(`Direct flow: passing ${chunks.length} chunks to ${responder}`);
-
-    context = chunks.map((chunk) => {
-      return `[Source: ${chunk.documentName}, Chunk ${chunk.chunkIndex}]\n${chunk.text}`;
-    }).join('\n\n---\n\n');
-
-    sources = chunks.map(chunk => ({
-      documentId: chunk.documentId,
-      documentName: chunk.documentName,
-      chunkIndex: chunk.chunkIndex,
-      snippet: chunk.text.slice(0, 150) + '...'
-    }));
-  }
-
-  // Step 4: Generate response using selected responder
-  const startResponse = Date.now();
-  const generateResponse = responder === 'claude' ? generateClaudeResponse : generateGeminiResponse;
-
-  let response;
-  try {
-    response = await generateResponse(
-      userQuery,
-      context,
-      sources,
-      { systemPrompt: options.systemPrompt }
-    );
-  } catch (error) {
-    // If Claude fails and Gemini is available, try fallback
-    if (responder === 'claude' && process.env.GOOGLE_AI_API_KEY) {
-      logger.warn(`Claude responder failed, falling back to Gemini: ${error}`);
-      response = await generateGeminiResponse(
-        userQuery,
-        context,
-        sources,
-        { systemPrompt: options.systemPrompt }
-      );
-      timing.response = Date.now() - startResponse;
-      timing.total = Date.now() - startTotal;
-
-      return {
-        ...response,
-        subAgentResult,
-        responder: 'gemini',
-        responderFallback: true,
-        responderMessage: `Claude Code CLI failed, used Gemini fallback: ${error instanceof Error ? error.message : 'Unknown error'}`,
-        timing
-      };
-    }
-    throw error;
-  }
-
-  timing.response = Date.now() - startResponse;
-  timing.total = Date.now() - startTotal;
-
-  logger.info(`Query completed in ${timing.total}ms using ${responder}`);
-
-  return {
-    ...response,
-    ...(subAgentResult && { subAgentResult }),
-    responder,
-    ...(fallback && { responderFallback: true, responderMessage }),
-    timing
-  };
+  // Default to undefined (let query() decide)
+  return undefined;
 }
 
 // Main request handler
@@ -497,8 +252,8 @@ async function handleRequest(req: Request): Promise<Response> {
 
       // Get responder preference from body, query param, or header
       const responderValue = validateOptionalString(body.responder, 'responder');
-      const responderPreference: ResponderType =
-        (responderValue === 'claude' || responderValue === 'gemini' || responderValue === 'auto')
+      const responderPreference: 'claude' | 'gemini' | undefined =
+        (responderValue === 'claude' || responderValue === 'gemini')
           ? responderValue
           : getResponderPreference(req, url);
 
@@ -515,10 +270,10 @@ async function handleRequest(req: Request): Promise<Response> {
         sources: result.sources,
         tokensUsed: result.tokensUsed,
         timing: result.timing,
-        responder: result.responder,
+        responder: result.responderUsed,
         ...(result.responderFallback && {
           responderFallback: result.responderFallback,
-          responderMessage: result.responderMessage
+          responderMessage: result.responderFallbackMessage
         }),
         ...(result.subAgentResult && { subAgentResult: result.subAgentResult }),
       });

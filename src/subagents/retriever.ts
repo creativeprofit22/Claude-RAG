@@ -1,4 +1,4 @@
-import { GoogleGenAI } from '@google/genai';
+import { getGeminiClient } from '../utils/gemini-client.js';
 
 const GEMINI_MODEL = process.env.GEMINI_RETRIEVER_MODEL || 'gemini-2.0-flash';
 
@@ -63,20 +63,6 @@ export class RetrieverError extends Error {
   }
 }
 
-let genaiClient: GoogleGenAI | null = null;
-
-function getClient(): GoogleGenAI {
-  if (!genaiClient) {
-    const apiKey = process.env.GOOGLE_AI_API_KEY;
-    if (!apiKey) {
-      throw new RetrieverError(
-        'GOOGLE_AI_API_KEY environment variable is required. Get one at https://aistudio.google.com/apikey'
-      );
-    }
-    genaiClient = new GoogleGenAI({ apiKey });
-  }
-  return genaiClient;
-}
 
 /**
  * Formats chunks into a numbered list for the prompt
@@ -217,7 +203,7 @@ export async function filterAndRankChunks(
     };
   }
 
-  const client = getClient();
+  const client = getGeminiClient();
   const chunksText = formatChunksForPrompt(chunks);
 
   try {

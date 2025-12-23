@@ -1,7 +1,6 @@
-import { spawn, exec } from 'child_process';
-import { promisify } from 'util';
-
-const execAsync = promisify(exec);
+import { spawn } from 'child_process';
+import { checkClaudeCodeAvailable } from './utils/cli.js';
+import { DEFAULT_SYSTEM_PROMPT } from './constants.js';
 
 interface Source {
   documentId: string;
@@ -24,12 +23,6 @@ interface ResponseOptions {
   maxTokens?: number;
   temperature?: number;
 }
-
-const DEFAULT_SYSTEM_PROMPT = `You are a helpful assistant that answers questions based on provided context.
-- Answer using ONLY the information in the context
-- If the context doesn't contain enough information, say so clearly
-- Reference sources when possible (e.g., "According to [document name]...")
-- Be concise but thorough`;
 
 /**
  * Build the full prompt for Claude Code CLI
@@ -56,18 +49,6 @@ Please provide a comprehensive answer based on the context above.`;
  */
 function estimateTokens(text: string): number {
   return Math.ceil(text.length / 4);
-}
-
-/**
- * Check if Claude Code CLI is available
- */
-async function checkClaudeCodeAvailable(): Promise<boolean> {
-  try {
-    await execAsync('which claude');
-    return true;
-  } catch {
-    return false;
-  }
 }
 
 /**
