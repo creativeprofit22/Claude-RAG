@@ -225,7 +225,7 @@ export async function query(
     documentId: r.metadata.documentId,
     documentName: r.metadata.documentName,
     chunkIndex: r.metadata.chunkIndex,
-    score: r._distance || 0
+    score: r._distance ?? 0
   }));
 
   let context: string;
@@ -451,7 +451,7 @@ export async function search(
     documentId: r.metadata.documentId,
     documentName: r.metadata.documentName,
     chunkIndex: r.metadata.chunkIndex,
-    score: r._distance || 0
+    score: r._distance ?? 0
   }));
 
   // Format context for Claude Code usage

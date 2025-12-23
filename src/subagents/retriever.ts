@@ -242,6 +242,17 @@ export async function filterAndRankChunks(
     const validIndices = validateIndices(parsed.selectedIndices, chunks.length);
     const limitedIndices = validIndices.slice(0, maxChunks);
 
+    // Warn if no valid indices were selected - may indicate LLM misunderstanding
+    if (limitedIndices.length === 0 && chunks.length > 0) {
+      return {
+        relevantContext: chunks.slice(0, maxChunks).map((c) => c.text).join('\n\n'),
+        selectedChunks: chunks.slice(0, maxChunks).map((_, i) => i),
+        tokensUsed: (response.usageMetadata?.promptTokenCount || 0) +
+          (response.usageMetadata?.candidatesTokenCount || 0),
+        reasoning: `LLM selected no valid chunks (indices: ${parsed.selectedIndices}). Falling back to top ${Math.min(maxChunks, chunks.length)} chunks by vector similarity.`
+      };
+    }
+
     // Calculate tokens used (Gemini provides usage metadata)
     const tokensUsed =
       (response.usageMetadata?.promptTokenCount || 0) +

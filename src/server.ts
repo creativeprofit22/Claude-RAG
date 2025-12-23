@@ -271,7 +271,7 @@ async function query(
     documentId: r.metadata.documentId,
     documentName: r.metadata.documentName,
     chunkIndex: r.metadata.chunkIndex,
-    score: r._distance || 0
+    score: r._distance ?? 0
   }));
 
   let context: string;
@@ -367,8 +367,20 @@ async function handleRequest(req: Request): Promise<Response> {
   const url = new URL(req.url);
   const { route, params } = parseRoute(url.pathname);
 
-  // Handle CORS preflight
+  // Handle CORS preflight - validate route exists before allowing
   if (req.method === 'OPTIONS') {
+    const validRoutes = [
+      '/api/health',
+      '/api/responders',
+      '/api/rag/upload',
+      '/api/rag/query',
+      '/api/rag/search',
+      '/api/rag/documents'
+    ];
+    const isValidRoute = validRoutes.includes(route) || route === '/api/rag/documents/:id';
+    if (!isValidRoute) {
+      return errorResponse('Not found', 404);
+    }
     return new Response(null, { status: 204, headers: corsHeaders });
   }
 

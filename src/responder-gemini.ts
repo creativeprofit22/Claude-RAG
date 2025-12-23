@@ -68,27 +68,8 @@ function classifyError(error: unknown): GeminiAPIError {
   return new GeminiAPIError('Unknown Gemini API error', 'UNKNOWN');
 }
 
-interface Source {
-  documentId: string;
-  documentName: string;
-  chunkIndex: number;
-  snippet: string;
-}
-
-interface RAGResponse {
-  answer: string;
-  sources: Source[];
-  tokensUsed: {
-    input: number;
-    output: number;
-  };
-}
-
-interface ResponseOptions {
-  systemPrompt?: string;
-  maxTokens?: number;
-  temperature?: number;
-}
+// Import shared types from responder.ts to avoid type divergence
+import type { Source, RAGResponse, ResponseOptions } from './responder.js';
 
 const DEFAULT_SYSTEM_PROMPT = `You are a helpful assistant that answers questions based on provided context.
 - Answer using ONLY the information in the context
@@ -97,9 +78,20 @@ const DEFAULT_SYSTEM_PROMPT = `You are a helpful assistant that answers question
 - Be concise but thorough`;
 
 let genaiClient: GoogleGenAI | null = null;
+let clientInitializing = false;
 
 function getClient(): GoogleGenAI {
-  if (!genaiClient) {
+  if (genaiClient) {
+    return genaiClient;
+  }
+
+  // Prevent concurrent initialization attempts
+  if (clientInitializing) {
+    throw new Error('Client initialization already in progress. Please retry.');
+  }
+
+  clientInitializing = true;
+  try {
     const apiKey = process.env.GOOGLE_AI_API_KEY;
     if (!apiKey) {
       throw new Error(
@@ -107,8 +99,10 @@ function getClient(): GoogleGenAI {
       );
     }
     genaiClient = new GoogleGenAI({ apiKey });
+    return genaiClient;
+  } finally {
+    clientInitializing = false;
   }
-  return genaiClient;
 }
 
 /**
@@ -139,8 +133,18 @@ export async function generateResponse(
     systemPrompt = DEFAULT_SYSTEM_PROMPT
   } = options;
 
+  // Sanitize context to prevent prompt injection attacks
+  // Use clear delimiters that are unlikely to appear in legitimate content
+  const sanitizedContext = context
+    .replace(/```/g, '′′′')  // Replace code fences that could escape context
+    .replace(/<\/?system>/gi, '[system]')  // Neutralize system tags
+    .replace(/\[INST\]/gi, '[inst]')  // Neutralize instruction markers
+    .replace(/<<SYS>>/gi, '[[SYS]]');  // Neutralize system markers
+
   const userMessage = `Context (pre-filtered for relevance):
-${context}
+\`\`\`context
+${sanitizedContext}
+\`\`\`
 
 Question: ${query}
 
@@ -222,8 +226,17 @@ export async function* streamResponse(
     systemPrompt = DEFAULT_SYSTEM_PROMPT
   } = options;
 
+  // Sanitize context to prevent prompt injection attacks
+  const sanitizedContext = context
+    .replace(/```/g, '′′′')
+    .replace(/<\/?system>/gi, '[system]')
+    .replace(/\[INST\]/gi, '[inst]')
+    .replace(/<<SYS>>/gi, '[[SYS]]');
+
   const userMessage = `Context (pre-filtered for relevance):
-${context}
+\`\`\`context
+${sanitizedContext}
+\`\`\`
 
 Question: ${query}`;
 

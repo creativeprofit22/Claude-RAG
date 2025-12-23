@@ -135,7 +135,7 @@ export async function generateResponse(
           return;
         }
         reject(new Error(
-          `Claude Code CLI failed with exit code ${code}: ${stderr || 'Unknown error'}`
+          `Claude Code CLI failed with exit code ${code}: ${stderr || stdout || 'Unknown error'}`
         ));
         return;
       }
@@ -244,7 +244,7 @@ export async function* streamResponse(
             error = new Error('Rate limit exceeded. Please wait before retrying.');
           } else {
             error = new Error(
-              `Claude Code CLI failed with exit code ${code}: ${stderr || 'Unknown error'}`
+              `Claude Code CLI failed with exit code ${code}: ${stderr || fullAnswer || 'Unknown error'}`
             );
           }
         }
