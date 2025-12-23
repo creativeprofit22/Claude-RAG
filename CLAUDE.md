@@ -12,24 +12,36 @@ Reusable RAG component for embedding into projects. Uses Claude Code CLI (user's
 Query → Gemini Embeddings → LanceDB → Chunks → Claude Code CLI → Response
 ```
 
-## Last Session (2025-12-23)
-Migrated from Anthropic API to Claude Code CLI:
-- `src/responder.ts` - Now spawns `claude` CLI
-- `src/responder-gemini.ts` - NEW fallback
-- `src/subagents/retriever.ts` - Uses Gemini instead of Haiku
-- `src/index.ts` - Dual responder support
-- `src/server.ts` - HTTP API with responder selection
-- Removed `@anthropic-ai/sdk` from package.json
+## Current Focus
+Section: CLI Migration
+Files: src/responder.ts, src/responder-gemini.ts, src/subagents/retriever.ts, src/index.ts, src/server.ts
 
-## Refinements Pending
-User will specify. Migration is complete but needs testing/adjustments.
+## Pipeline State
+Phase: refactoring
+Feature: CLI Migration
+Tier: high
+Tier-Status: complete
+Reports:
+  - bugs: reports/bugs-cli-migration.md
+  - refactors: reports/refactors-cli-migration.md
+
+## Last Session (2025-12-23)
+High priority refactors complete (commit 1664bca):
+- Extracted checkClaudeCodeAvailable() and execAsync to src/utils/cli.ts
+- Moved DEFAULT_SYSTEM_PROMPT to src/constants.ts
+- Created shared Gemini client singleton in src/utils/gemini-client.ts
+- Extracted chunk utilities to src/utils/chunks.ts
+- Removed duplicate query() from server.ts (imports from index.ts)
+- Removed 374 lines of duplicate code
+
+Remaining: 6 medium priority, 5 low priority refactors
 
 ## Key Files
 - `src/responder.ts` - Claude Code CLI integration
 - `src/responder-gemini.ts` - Gemini fallback
 - `src/index.ts` - Main API (query, search)
 - `src/server.ts` - Bun HTTP server
-- `src/components/rag/` - React components
+- `src/subagents/retriever.ts` - Chunk retrieval
 
 ## Environment
 ```
