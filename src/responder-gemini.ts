@@ -61,6 +61,17 @@ export async function generateResponse(
   sources: Source[],
   options: ResponseOptions = {}
 ): Promise<RAGResponse> {
+  // Validate required parameters
+  if (!query || typeof query !== 'string' || query.trim().length === 0) {
+    throw new Error('Query must be a non-empty string');
+  }
+  if (!context || typeof context !== 'string') {
+    throw new Error('Context must be a string');
+  }
+  if (!Array.isArray(sources)) {
+    throw new Error('Sources must be an array');
+  }
+
   const client = getClient();
 
   const {
@@ -79,7 +90,7 @@ Please provide a comprehensive answer based on the context above.`;
   try {
     const response = await client.models.generateContent({
       model: GEMINI_MODEL,
-      contents: userMessage,
+      contents: [{ role: 'user', parts: [{ text: userMessage }] }],
       config: {
         systemInstruction: systemPrompt,
         maxOutputTokens: maxTokens,
@@ -87,7 +98,15 @@ Please provide a comprehensive answer based on the context above.`;
       },
     });
 
-    const text = response.text;
+    // Safely extract text from response with proper error handling
+    let text: string | undefined;
+    try {
+      text = response.text;
+    } catch (textError) {
+      // response.text getter can throw if response structure is malformed
+      throw new Error(`Failed to extract text from Gemini response: ${textError instanceof Error ? textError.message : 'Unknown error'}`);
+    }
+
     if (!text) {
       throw new Error('Empty response from Gemini');
     }
@@ -131,6 +150,17 @@ export async function* streamResponse(
   sources: Source[],
   options: ResponseOptions = {}
 ): AsyncGenerator<string, RAGResponse, unknown> {
+  // Validate required parameters
+  if (!query || typeof query !== 'string' || query.trim().length === 0) {
+    throw new Error('Query must be a non-empty string');
+  }
+  if (!context || typeof context !== 'string') {
+    throw new Error('Context must be a string');
+  }
+  if (!Array.isArray(sources)) {
+    throw new Error('Sources must be an array');
+  }
+
   const client = getClient();
 
   const {
@@ -151,7 +181,7 @@ Question: ${query}`;
   try {
     const response = await client.models.generateContentStream({
       model: GEMINI_MODEL,
-      contents: userMessage,
+      contents: [{ role: 'user', parts: [{ text: userMessage }] }],
       config: {
         systemInstruction: systemPrompt,
         maxOutputTokens: maxTokens,

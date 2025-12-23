@@ -18,6 +18,53 @@ import { promisify } from 'util';
 const execAsync = promisify(exec);
 
 const PORT = process.env.PORT || 3000;
+const MAX_PAYLOAD_SIZE = 10 * 1024 * 1024; // 10MB limit
+
+/**
+ * Validate optional string field from request body
+ */
+function validateOptionalString(value: unknown, fieldName: string): string | undefined {
+  if (value === undefined || value === null) return undefined;
+  if (typeof value !== 'string') {
+    throw new Error(`Field '${fieldName}' must be a string`);
+  }
+  return value;
+}
+
+/**
+ * Validate optional number field from request body
+ */
+function validateOptionalNumber(value: unknown, fieldName: string): number | undefined {
+  if (value === undefined || value === null) return undefined;
+  if (typeof value !== 'number' || !Number.isFinite(value)) {
+    throw new Error(`Field '${fieldName}' must be a number`);
+  }
+  return value;
+}
+
+/**
+ * Validate optional boolean field from request body
+ */
+function validateOptionalBoolean(value: unknown, fieldName: string): boolean | undefined {
+  if (value === undefined || value === null) return undefined;
+  if (typeof value !== 'boolean') {
+    throw new Error(`Field '${fieldName}' must be a boolean`);
+  }
+  return value;
+}
+
+/**
+ * Validate Content-Length header against max payload size
+ */
+function validateContentLength(req: Request): void {
+  const contentLength = req.headers.get('Content-Length');
+  if (contentLength) {
+    const size = parseInt(contentLength, 10);
+    if (!Number.isNaN(size) && size > MAX_PAYLOAD_SIZE) {
+      throw new Error(`Payload too large. Maximum size is ${MAX_PAYLOAD_SIZE / 1024 / 1024}MB`);
+    }
+  }
+}
 
 // Responder types
 type ResponderType = 'claude' | 'gemini' | 'auto';
@@ -378,6 +425,8 @@ async function handleRequest(req: Request): Promise<Response> {
 
     // POST /api/rag/upload - Upload and process document
     if (route === '/api/rag/upload' && req.method === 'POST') {
+      validateContentLength(req);
+
       let body: Record<string, unknown>;
       try {
         body = await req.json() as Record<string, unknown>;
@@ -392,10 +441,14 @@ async function handleRequest(req: Request): Promise<Response> {
         return errorResponse('Missing required field: name');
       }
 
+      // Validate optional fields with proper type checking
+      const source = validateOptionalString(body.source, 'source');
+      const type = validateOptionalString(body.type, 'type');
+
       const result = await addDocument(body.text, {
         name: body.name,
-        source: body.source as string | undefined,
-        type: body.type as string | undefined,
+        source,
+        type,
       });
 
       return jsonResponse({
@@ -408,6 +461,8 @@ async function handleRequest(req: Request): Promise<Response> {
 
     // POST /api/rag/query - Query with RAG
     if (route === '/api/rag/query' && req.method === 'POST') {
+      validateContentLength(req);
+
       let body: Record<string, unknown>;
       try {
         body = await req.json() as Record<string, unknown>;
@@ -419,14 +474,24 @@ async function handleRequest(req: Request): Promise<Response> {
         return errorResponse('Missing required field: query');
       }
 
+      // Validate optional fields with proper type checking
+      const topK = validateOptionalNumber(body.topK, 'topK');
+      const documentId = validateOptionalString(body.documentId, 'documentId');
+      const compress = validateOptionalBoolean(body.compress, 'compress');
+      const systemPrompt = validateOptionalString(body.systemPrompt, 'systemPrompt');
+
       // Get responder preference from body, query param, or header
-      const responderPreference = (body.responder as ResponderType) || getResponderPreference(req, url);
+      const responderValue = validateOptionalString(body.responder, 'responder');
+      const responderPreference: ResponderType =
+        (responderValue === 'claude' || responderValue === 'gemini' || responderValue === 'auto')
+          ? responderValue
+          : getResponderPreference(req, url);
 
       const result = await query(body.query, {
-        topK: body.topK as number | undefined,
-        documentId: body.documentId as string | undefined,
-        compress: body.compress as boolean | undefined,
-        systemPrompt: body.systemPrompt as string | undefined,
+        topK,
+        documentId,
+        compress,
+        systemPrompt,
         responder: responderPreference,
       });
 
@@ -446,6 +511,8 @@ async function handleRequest(req: Request): Promise<Response> {
 
     // POST /api/rag/search - Search only (no LLM call)
     if (route === '/api/rag/search' && req.method === 'POST') {
+      validateContentLength(req);
+
       let body: Record<string, unknown>;
       try {
         body = await req.json() as Record<string, unknown>;
@@ -457,9 +524,13 @@ async function handleRequest(req: Request): Promise<Response> {
         return errorResponse('Missing required field: query');
       }
 
+      // Validate optional fields with proper type checking
+      const topK = validateOptionalNumber(body.topK, 'topK');
+      const documentId = validateOptionalString(body.documentId, 'documentId');
+
       const result = await search(body.query, {
-        topK: body.topK as number | undefined,
-        documentId: body.documentId as string | undefined,
+        topK,
+        documentId,
       });
 
       return jsonResponse({

@@ -218,7 +218,7 @@ export async function filterAndRankChunks(
   try {
     const response = await client.models.generateContent({
       model: GEMINI_MODEL,
-      contents: buildUserPrompt(query, chunksText, compress),
+      contents: [{ role: 'user', parts: [{ text: buildUserPrompt(query, chunksText, compress) }] }],
       config: {
         systemInstruction: buildSystemPrompt(),
         maxOutputTokens: 1024,
