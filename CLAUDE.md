@@ -19,22 +19,17 @@ Files: src/responder.ts, src/responder-gemini.ts, src/subagents/retriever.ts, sr
 ## Pipeline State
 Phase: refactoring
 Feature: CLI Migration
-Tier: high
-Tier-Status: complete
+Tier: medium
+Tier-Status: pending
 Reports:
   - bugs: reports/bugs-cli-migration.md
   - refactors: reports/refactors-cli-migration.md
 
 ## Last Session (2025-12-23)
-High priority refactors complete (commit 1664bca):
-- Extracted checkClaudeCodeAvailable() and execAsync to src/utils/cli.ts
-- Moved DEFAULT_SYSTEM_PROMPT to src/constants.ts
-- Created shared Gemini client singleton in src/utils/gemini-client.ts
-- Extracted chunk utilities to src/utils/chunks.ts
-- Removed duplicate query() from server.ts (imports from index.ts)
-- Removed 374 lines of duplicate code
-
-Remaining: 6 medium priority, 5 low priority refactors
+High priority refactors complete (commits 1664bca, 342586e):
+- Created 4 shared utilities: cli.ts, constants.ts, gemini-client.ts, chunks.ts
+- Removed 374 lines of duplicate code across 6 files
+- Pushed to origin
 
 ## Key Files
 - `src/responder.ts` - Claude Code CLI integration
