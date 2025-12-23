@@ -1,4 +1,5 @@
 import { getGeminiClient } from '../utils/gemini-client.js';
+import { validateQuery } from '../utils/validation.js';
 
 const GEMINI_MODEL = process.env.GEMINI_RETRIEVER_MODEL || 'gemini-2.0-flash';
 
@@ -175,9 +176,10 @@ export async function filterAndRankChunks(
   chunks: RetrievedChunk[],
   options: FilterOptions = {}
 ): Promise<SubAgentResult> {
-  // Validate query
-  if (!query || typeof query !== 'string' || query.trim().length === 0) {
-    throw new RetrieverError('Query must be a non-empty string');
+  try {
+    validateQuery(query);
+  } catch (error) {
+    throw new RetrieverError(error instanceof Error ? error.message : 'Invalid query');
   }
 
   const { compress = true, maxChunks = 5 } = options;

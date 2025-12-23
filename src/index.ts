@@ -26,6 +26,7 @@ import { getDefaultConfig } from './config.js';
 import { logger } from './utils/logger.js';
 import { checkClaudeCodeAvailable } from './utils/cli.js';
 import { buildChunksFromResults, buildContextFromChunks, buildSourcesFromChunks, type Chunk } from './utils/chunks.js';
+import { validateQuery } from './utils/validation.js';
 
 /**
  * Escape a string for use in LanceDB filter expressions.
@@ -143,10 +144,7 @@ export async function query(
   userQuery: string,
   options: QueryOptions = {}
 ): Promise<QueryResult> {
-  // Validate query
-  if (!userQuery || typeof userQuery !== 'string' || userQuery.trim().length === 0) {
-    throw new Error('Query must be a non-empty string');
-  }
+  validateQuery(userQuery);
 
   const config = getDefaultConfig();
   const { topK = config.topK, compress = false, documentId } = options;

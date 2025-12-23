@@ -6,12 +6,25 @@
 
 import { getGeminiClient } from './utils/gemini-client.js';
 import { DEFAULT_SYSTEM_PROMPT } from './constants.js';
+import { validateQuery, validateContext, validateSources } from './utils/validation.js';
 
 // Gemini 2.0 Flash - fast and free-tier friendly
 const GEMINI_MODEL = process.env.GEMINI_RESPONSE_MODEL || 'gemini-2.0-flash';
 
 // API timeout in milliseconds (default: 60 seconds)
 const API_TIMEOUT_MS = parseInt(process.env.GEMINI_TIMEOUT_MS || '60000', 10);
+
+/**
+ * Sanitize context to prevent prompt injection attacks.
+ * Uses clear delimiters that are unlikely to appear in legitimate content.
+ */
+function sanitizeContext(context: string): string {
+  return context
+    .replace(/```/g, '′′′')  // Replace code fences that could escape context
+    .replace(/<\/?system>/gi, '[system]')  // Neutralize system tags
+    .replace(/\[INST\]/gi, '[inst]')  // Neutralize instruction markers
+    .replace(/<<SYS>>/gi, '[[SYS]]');  // Neutralize system markers
+}
 
 /**
  * Error types for Gemini API failures
@@ -81,16 +94,9 @@ export async function generateResponse(
   sources: Source[],
   options: ResponseOptions = {}
 ): Promise<RAGResponse> {
-  // Validate required parameters
-  if (!query || typeof query !== 'string' || query.trim().length === 0) {
-    throw new Error('Query must be a non-empty string');
-  }
-  if (!context || typeof context !== 'string') {
-    throw new Error('Context must be a string');
-  }
-  if (!Array.isArray(sources)) {
-    throw new Error('Sources must be an array');
-  }
+  validateQuery(query);
+  validateContext(context);
+  validateSources(sources);
 
   const client = getGeminiClient();
 
@@ -100,17 +106,11 @@ export async function generateResponse(
     systemPrompt = DEFAULT_SYSTEM_PROMPT
   } = options;
 
-  // Sanitize context to prevent prompt injection attacks
-  // Use clear delimiters that are unlikely to appear in legitimate content
-  const sanitizedContext = context
-    .replace(/```/g, '′′′')  // Replace code fences that could escape context
-    .replace(/<\/?system>/gi, '[system]')  // Neutralize system tags
-    .replace(/\[INST\]/gi, '[inst]')  // Neutralize instruction markers
-    .replace(/<<SYS>>/gi, '[[SYS]]');  // Neutralize system markers
+  const sanitizedCtx = sanitizeContext(context);
 
   const userMessage = `Context (pre-filtered for relevance):
 \`\`\`context
-${sanitizedContext}
+${sanitizedCtx}
 \`\`\`
 
 Question: ${query}
@@ -174,16 +174,9 @@ export async function* streamResponse(
   sources: Source[],
   options: ResponseOptions = {}
 ): AsyncGenerator<string, RAGResponse, unknown> {
-  // Validate required parameters
-  if (!query || typeof query !== 'string' || query.trim().length === 0) {
-    throw new Error('Query must be a non-empty string');
-  }
-  if (!context || typeof context !== 'string') {
-    throw new Error('Context must be a string');
-  }
-  if (!Array.isArray(sources)) {
-    throw new Error('Sources must be an array');
-  }
+  validateQuery(query);
+  validateContext(context);
+  validateSources(sources);
 
   const client = getGeminiClient();
 
@@ -193,16 +186,11 @@ export async function* streamResponse(
     systemPrompt = DEFAULT_SYSTEM_PROMPT
   } = options;
 
-  // Sanitize context to prevent prompt injection attacks
-  const sanitizedContext = context
-    .replace(/```/g, '′′′')
-    .replace(/<\/?system>/gi, '[system]')
-    .replace(/\[INST\]/gi, '[inst]')
-    .replace(/<<SYS>>/gi, '[[SYS]]');
+  const sanitizedCtx = sanitizeContext(context);
 
   const userMessage = `Context (pre-filtered for relevance):
 \`\`\`context
-${sanitizedContext}
+${sanitizedCtx}
 \`\`\`
 
 Question: ${query}`;

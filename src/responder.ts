@@ -1,6 +1,42 @@
-import { spawn } from 'child_process';
+import { spawn, ChildProcess } from 'child_process';
 import { checkClaudeCodeAvailable } from './utils/cli.js';
 import { DEFAULT_SYSTEM_PROMPT } from './constants.js';
+
+/**
+ * Classify CLI errors from stderr content and exit code
+ */
+function classifyCliError(stderr: string, fallbackOutput: string, code: number | null): Error {
+  // Handle signal termination (code is null when killed by signal)
+  if (code === null) {
+    return new Error('Claude Code CLI was terminated by a signal');
+  }
+  // Check for common error patterns (case-insensitive)
+  const stderrLower = stderr.toLowerCase();
+  if (stderrLower.includes('not authenticated') || stderrLower.includes('auth')) {
+    return new Error(
+      'Claude Code authentication error. Run "claude login" to authenticate.'
+    );
+  }
+  if (stderrLower.includes('rate limit') || stderrLower.includes('429')) {
+    return new Error('Rate limit exceeded. Please wait before retrying.');
+  }
+  return new Error(
+    `Claude Code CLI failed with exit code ${code}: ${stderr || fallbackOutput || 'Unknown error'}`
+  );
+}
+
+/**
+ * Spawn Claude CLI process with stdin prompt
+ */
+function spawnClaudeProcess(prompt: string): ChildProcess {
+  const claudeProcess = spawn('claude', ['--print'], {
+    stdio: ['pipe', 'pipe', 'pipe'],
+    env: { ...process.env }
+  });
+  claudeProcess.stdin.write(prompt);
+  claudeProcess.stdin.end();
+  return claudeProcess;
+}
 
 interface Source {
   documentId: string;
@@ -74,61 +110,30 @@ export async function generateResponse(
   const fullPrompt = buildPrompt(query, context, systemPrompt);
 
   return new Promise((resolve, reject) => {
-    // Use stdin to pass prompt - avoids command injection via shell metacharacters
-    const args = ['--print'];
-    const claudeProcess = spawn('claude', args, {
-      stdio: ['pipe', 'pipe', 'pipe'],
-      env: { ...process.env }
-    });
-
-    // Write prompt to stdin and close it
-    claudeProcess.stdin.write(fullPrompt);
-    claudeProcess.stdin.end();
-
+    const claudeProcess = spawnClaudeProcess(fullPrompt);
     let stdout = '';
     let stderr = '';
 
-    claudeProcess.stdout.on('data', (data: Buffer) => {
+    claudeProcess.stdout!.on('data', (data: Buffer) => {
       stdout += data.toString();
     });
 
-    claudeProcess.stderr.on('data', (data: Buffer) => {
+    claudeProcess.stderr!.on('data', (data: Buffer) => {
       stderr += data.toString();
     });
 
     claudeProcess.on('close', (code: number | null) => {
       if (code !== 0) {
-        // Handle signal termination (code is null when killed by signal)
-        if (code === null) {
-          reject(new Error('Claude Code CLI was terminated by a signal'));
-          return;
-        }
-        // Check for common error patterns (case-insensitive)
-        const stderrLower = stderr.toLowerCase();
-        if (stderrLower.includes('not authenticated') || stderrLower.includes('auth')) {
-          reject(new Error(
-            'Claude Code authentication error. Run "claude login" to authenticate.'
-          ));
-          return;
-        }
-        if (stderrLower.includes('rate limit') || stderrLower.includes('429')) {
-          reject(new Error('Rate limit exceeded. Please wait before retrying.'));
-          return;
-        }
-        reject(new Error(
-          `Claude Code CLI failed with exit code ${code}: ${stderr || stdout || 'Unknown error'}`
-        ));
+        reject(classifyCliError(stderr, stdout, code));
         return;
       }
 
-      const answer = stdout.trim();
-
       resolve({
-        answer,
+        answer: stdout.trim(),
         sources,
         tokensUsed: {
           input: estimateTokens(fullPrompt),
-          output: estimateTokens(answer)
+          output: estimateTokens(stdout)
         }
       });
     });
@@ -147,6 +152,83 @@ export async function generateResponse(
 }
 
 /**
+ * State for streaming chunk queue
+ */
+interface StreamState {
+  chunkQueue: string[];
+  processComplete: boolean;
+  resolveWait: (() => void) | null;
+}
+
+/**
+ * Wait for either a chunk or process completion
+ */
+function waitForChunk(state: StreamState): Promise<void> {
+  return new Promise((resolve) => {
+    if (state.chunkQueue.length > 0 || state.processComplete) {
+      resolve();
+      return;
+    }
+    state.resolveWait = resolve;
+  });
+}
+
+/**
+ * Set up event handlers for streaming Claude process
+ */
+function setupStreamHandlers(
+  claudeProcess: ChildProcess,
+  state: StreamState,
+  fullAnswer: { value: string },
+  resolve: () => void,
+  reject: (error: Error) => void
+): void {
+  let stderr = '';
+
+  claudeProcess.stdout!.on('data', (data: Buffer) => {
+    const chunk = data.toString();
+    fullAnswer.value += chunk;
+    state.chunkQueue.push(chunk);
+    const waitResolve = state.resolveWait;
+    state.resolveWait = null;
+    waitResolve?.();
+  });
+
+  claudeProcess.stderr!.on('data', (data: Buffer) => {
+    stderr += data.toString();
+  });
+
+  claudeProcess.on('close', (code: number | null) => {
+    state.processComplete = true;
+    const waitResolve = state.resolveWait;
+    state.resolveWait = null;
+    waitResolve?.();
+
+    if (code !== 0) {
+      reject(classifyCliError(stderr, fullAnswer.value, code));
+      return;
+    }
+    resolve();
+  });
+
+  claudeProcess.on('error', (err: Error) => {
+    state.processComplete = true;
+    const waitResolve = state.resolveWait;
+    state.resolveWait = null;
+    waitResolve?.();
+
+    if ((err as NodeJS.ErrnoException).code === 'ENOENT') {
+      reject(new Error(
+        'Claude Code CLI is not installed or not in PATH. ' +
+        'Install it with: npm install -g @anthropic-ai/claude-code'
+      ));
+    } else {
+      reject(new Error(`Failed to spawn Claude Code CLI: ${err.message}`));
+    }
+  });
+}
+
+/**
  * Streaming version for real-time responses.
  * Yields text chunks as they arrive from Claude Code CLI stdout,
  * returns full RAGResponse at the end.
@@ -159,7 +241,6 @@ export async function* streamResponse(
 ): AsyncGenerator<string, RAGResponse, unknown> {
   const { systemPrompt = DEFAULT_SYSTEM_PROMPT } = options;
 
-  // Check if Claude Code is available
   const isAvailable = await checkClaudeCodeAvailable();
   if (!isAvailable) {
     throw new Error(
@@ -169,134 +250,37 @@ export async function* streamResponse(
   }
 
   const fullPrompt = buildPrompt(query, context, systemPrompt);
+  const fullAnswer = { value: '' };
+  const state: StreamState = {
+    chunkQueue: [],
+    processComplete: false,
+    resolveWait: null
+  };
 
-  let fullAnswer = '';
-  let error: Error | null = null;
-
-  // Create a promise-based wrapper for the streaming process
   const processPromise = new Promise<void>((resolve, reject) => {
-    // Use stdin to pass prompt - avoids command injection via shell metacharacters
-    const args = ['--print'];
-    const claudeProcess = spawn('claude', args, {
-      stdio: ['pipe', 'pipe', 'pipe'],
-      env: { ...process.env }
-    });
-
-    // Write prompt to stdin and close it
-    claudeProcess.stdin.write(fullPrompt);
-    claudeProcess.stdin.end();
-
-    let stderr = '';
-
-    // We'll collect chunks via an event emitter pattern
-    claudeProcess.stdout.on('data', (data: Buffer) => {
-      const chunk = data.toString();
-      fullAnswer += chunk;
-      // Queue the chunk for yielding
-      chunkQueue.push(chunk);
-      // Capture and clear resolveWait atomically to prevent race condition
-      const resolve = resolveWait;
-      resolveWait = null;
-      resolve?.();
-    });
-
-    claudeProcess.stderr.on('data', (data: Buffer) => {
-      stderr += data.toString();
-    });
-
-    claudeProcess.on('close', (code: number | null) => {
-      processComplete = true;
-      const resolveFunc = resolveWait;
-      resolveWait = null;
-      resolveFunc?.();
-
-      if (code !== 0) {
-        // Handle signal termination (code is null when killed by signal)
-        if (code === null) {
-          error = new Error('Claude Code CLI was terminated by a signal');
-        } else {
-          // Check for common error patterns (case-insensitive)
-          const stderrLower = stderr.toLowerCase();
-          if (stderrLower.includes('not authenticated') || stderrLower.includes('auth')) {
-            error = new Error(
-              'Claude Code authentication error. Run "claude login" to authenticate.'
-            );
-          } else if (stderrLower.includes('rate limit') || stderrLower.includes('429')) {
-            error = new Error('Rate limit exceeded. Please wait before retrying.');
-          } else {
-            error = new Error(
-              `Claude Code CLI failed with exit code ${code}: ${stderr || fullAnswer || 'Unknown error'}`
-            );
-          }
-        }
-        reject(error);
-        return;
-      }
-      resolve();
-    });
-
-    claudeProcess.on('error', (err: Error) => {
-      processComplete = true;
-      const resolve = resolveWait;
-      resolveWait = null;
-      resolve?.();
-
-      if ((err as NodeJS.ErrnoException).code === 'ENOENT') {
-        error = new Error(
-          'Claude Code CLI is not installed or not in PATH. ' +
-          'Install it with: npm install -g @anthropic-ai/claude-code'
-        );
-      } else {
-        error = new Error(`Failed to spawn Claude Code CLI: ${err.message}`);
-      }
-      reject(error);
-    });
+    const claudeProcess = spawnClaudeProcess(fullPrompt);
+    setupStreamHandlers(claudeProcess, state, fullAnswer, resolve, reject);
   });
 
-  // Queue for chunks and synchronization
-  const chunkQueue: string[] = [];
-  let processComplete = false;
-  let resolveWait: (() => void) | null = null;
-
-  // Wait for either a chunk or process completion
-  function waitForChunk(): Promise<void> {
-    return new Promise((resolve) => {
-      if (chunkQueue.length > 0 || processComplete) {
-        resolve();
-        return;
-      }
-      resolveWait = resolve;
-    });
-  }
-
-  // Yield chunks as they arrive
   try {
-    while (!processComplete || chunkQueue.length > 0) {
-      await waitForChunk();
-
-      while (chunkQueue.length > 0) {
-        const chunk = chunkQueue.shift()!;
-        yield chunk;
+    while (!state.processComplete || state.chunkQueue.length > 0) {
+      await waitForChunk(state);
+      while (state.chunkQueue.length > 0) {
+        yield state.chunkQueue.shift()!;
       }
     }
 
-    // Wait for process to fully complete - must await to catch errors
     await processPromise;
 
-    if (error) {
-      throw error;
-    }
-
     return {
-      answer: fullAnswer.trim(),
+      answer: fullAnswer.value.trim(),
       sources,
       tokensUsed: {
         input: estimateTokens(fullPrompt),
-        output: estimateTokens(fullAnswer)
+        output: estimateTokens(fullAnswer.value)
       }
     };
   } finally {
-    // Ensure process promise is always awaited even if generator is abandoned early
     await processPromise.catch(() => {});
   }
 }

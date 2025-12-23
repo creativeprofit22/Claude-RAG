@@ -95,6 +95,217 @@ function parseRoute(pathname: string): { route: string; params: Record<string, s
   return { route: pathname, params: {} };
 }
 
+// Valid routes for CORS preflight
+const VALID_ROUTES = [
+  '/api/health',
+  '/api/responders',
+  '/api/rag/upload',
+  '/api/rag/query',
+  '/api/rag/search',
+  '/api/rag/documents'
+];
+
+/**
+ * GET /api/health - Health check
+ */
+async function handleHealthCheck(): Promise<Response> {
+  const status = await isReady();
+  const claudeAvailable = await checkClaudeCodeAvailable();
+  const geminiAvailable = !!process.env.GOOGLE_AI_API_KEY;
+
+  return jsonResponse({
+    status: status.ready ? 'healthy' : 'unhealthy',
+    ...status,
+    responders: {
+      claude: claudeAvailable,
+      gemini: geminiAvailable,
+      default: claudeAvailable ? 'claude' : (geminiAvailable ? 'gemini' : 'none')
+    },
+    timestamp: new Date().toISOString(),
+  });
+}
+
+/**
+ * GET /api/responders - Get available responders
+ */
+async function handleRespondersCheck(): Promise<Response> {
+  const claudeAvailable = await checkClaudeCodeAvailable();
+  const geminiAvailable = !!process.env.GOOGLE_AI_API_KEY;
+
+  let geminiReady = false;
+  if (geminiAvailable) {
+    try {
+      geminiReady = await checkGeminiReady();
+    } catch {
+      geminiReady = false;
+    }
+  }
+
+  return jsonResponse({
+    available: {
+      claude: {
+        available: claudeAvailable,
+        description: 'Claude Code CLI (requires installation and authentication)'
+      },
+      gemini: {
+        available: geminiAvailable,
+        ready: geminiReady,
+        description: 'Google Gemini 2.0 Flash (requires GOOGLE_AI_API_KEY)'
+      }
+    },
+    default: claudeAvailable ? 'claude' : (geminiAvailable ? 'gemini' : 'none'),
+    usage: {
+      queryParam: '?responder=claude or ?responder=gemini',
+      header: 'X-Responder: claude or X-Responder: gemini'
+    }
+  });
+}
+
+/**
+ * POST /api/rag/upload - Upload and process document
+ */
+async function handleUpload(req: Request): Promise<Response> {
+  validateContentLength(req);
+
+  let body: Record<string, unknown>;
+  try {
+    body = await req.json() as Record<string, unknown>;
+  } catch {
+    return errorResponse('Invalid JSON in request body', 400);
+  }
+
+  if (!body.text || typeof body.text !== 'string') {
+    return errorResponse('Missing required field: text');
+  }
+  if (!body.name || typeof body.name !== 'string') {
+    return errorResponse('Missing required field: name');
+  }
+
+  const source = validateOptionalString(body.source, 'source');
+  const type = validateOptionalString(body.type, 'type');
+
+  const result = await addDocument(body.text, {
+    name: body.name,
+    source,
+    type,
+  });
+
+  return jsonResponse({
+    success: true,
+    documentId: result.documentId,
+    chunks: result.chunks,
+    message: `Document "${body.name}" uploaded and processed into ${result.chunks} chunks`,
+  }, 201);
+}
+
+/**
+ * POST /api/rag/query - Query with RAG
+ */
+async function handleQuery(req: Request, url: URL): Promise<Response> {
+  validateContentLength(req);
+
+  let body: Record<string, unknown>;
+  try {
+    body = await req.json() as Record<string, unknown>;
+  } catch {
+    return errorResponse('Invalid JSON in request body', 400);
+  }
+
+  if (!body.query || typeof body.query !== 'string' || (body.query as string).trim().length === 0) {
+    return errorResponse('Missing required field: query (must be non-empty string)');
+  }
+
+  const topK = validateOptionalNumber(body.topK, 'topK');
+  const documentId = validateOptionalString(body.documentId, 'documentId');
+  const compress = validateOptionalBoolean(body.compress, 'compress');
+  const systemPrompt = validateOptionalString(body.systemPrompt, 'systemPrompt');
+
+  const responderValue = validateOptionalString(body.responder, 'responder');
+  const responderPreference: 'claude' | 'gemini' | undefined =
+    (responderValue === 'claude' || responderValue === 'gemini')
+      ? responderValue
+      : getResponderPreference(req, url);
+
+  const result = await query(body.query, {
+    topK,
+    documentId,
+    compress,
+    systemPrompt,
+    responder: responderPreference,
+  });
+
+  return jsonResponse({
+    answer: result.answer,
+    sources: result.sources,
+    tokensUsed: result.tokensUsed,
+    timing: result.timing,
+    responder: result.responderUsed,
+    ...(result.responderFallback && {
+      responderFallback: result.responderFallback,
+      responderMessage: result.responderFallbackMessage
+    }),
+    ...(result.subAgentResult && { subAgentResult: result.subAgentResult }),
+  });
+}
+
+/**
+ * POST /api/rag/search - Search only (no LLM call)
+ */
+async function handleSearch(req: Request): Promise<Response> {
+  validateContentLength(req);
+
+  let body: Record<string, unknown>;
+  try {
+    body = await req.json() as Record<string, unknown>;
+  } catch {
+    return errorResponse('Invalid JSON in request body', 400);
+  }
+
+  if (!body.query || typeof body.query !== 'string' || (body.query as string).trim().length === 0) {
+    return errorResponse('Missing required field: query (must be non-empty string)');
+  }
+
+  const topK = validateOptionalNumber(body.topK, 'topK');
+  const documentId = validateOptionalString(body.documentId, 'documentId');
+
+  const result = await search(body.query, {
+    topK,
+    documentId,
+  });
+
+  return jsonResponse({
+    context: result.context,
+    chunks: result.chunks,
+    timing: result.timing,
+  });
+}
+
+/**
+ * GET /api/rag/documents - List documents
+ */
+async function handleListDocuments(): Promise<Response> {
+  const documents = await listDocuments();
+  return jsonResponse({
+    documents,
+    count: documents.length,
+  });
+}
+
+/**
+ * DELETE /api/rag/documents/:id - Delete document
+ */
+async function handleDeleteDocument(documentId: string): Promise<Response> {
+  if (!documentId) {
+    return errorResponse('Document ID is required');
+  }
+
+  await deleteDocument(documentId);
+  return jsonResponse({
+    success: true,
+    message: `Document ${documentId} deleted`,
+  });
+}
+
 
 
 /**
@@ -117,22 +328,39 @@ function getResponderPreference(req: Request, url: URL): 'claude' | 'gemini' | u
   return undefined;
 }
 
+// Safe error patterns for client-facing messages
+const SAFE_ERROR_PATTERNS = [
+  /^Query must be/,
+  /^Missing required field/,
+  /^Invalid/,
+  /^Document .* not found/,
+  /^Claude Code/,
+  /^Gemini API/,
+  /^Rate limit/,
+  /^Payload too large/,
+  /^GOOGLE_AI_API_KEY/,
+  /^No responder available/
+];
+
+/**
+ * Sanitize error message for client response
+ */
+function sanitizeErrorMessage(error: unknown): string {
+  if (error instanceof Error) {
+    const isSafeMessage = SAFE_ERROR_PATTERNS.some(pattern => pattern.test(error.message));
+    return isSafeMessage ? error.message : 'Internal server error';
+  }
+  return 'Internal server error';
+}
+
 // Main request handler
 async function handleRequest(req: Request): Promise<Response> {
   const url = new URL(req.url);
   const { route, params } = parseRoute(url.pathname);
 
-  // Handle CORS preflight - validate route exists before allowing
+  // Handle CORS preflight
   if (req.method === 'OPTIONS') {
-    const validRoutes = [
-      '/api/health',
-      '/api/responders',
-      '/api/rag/upload',
-      '/api/rag/query',
-      '/api/rag/search',
-      '/api/rag/documents'
-    ];
-    const isValidRoute = validRoutes.includes(route) || route === '/api/rag/documents/:id';
+    const isValidRoute = VALID_ROUTES.includes(route) || route === '/api/rag/documents/:id';
     if (!isValidRoute) {
       return errorResponse('Not found', 404);
     }
@@ -140,225 +368,34 @@ async function handleRequest(req: Request): Promise<Response> {
   }
 
   try {
-    // GET /api/health - Health check
+    // Route dispatch
     if (route === '/api/health' && req.method === 'GET') {
-      const status = await isReady();
-      const claudeAvailable = await checkClaudeCodeAvailable();
-      const geminiAvailable = !!process.env.GOOGLE_AI_API_KEY;
-
-      return jsonResponse({
-        status: status.ready ? 'healthy' : 'unhealthy',
-        ...status,
-        responders: {
-          claude: claudeAvailable,
-          gemini: geminiAvailable,
-          default: claudeAvailable ? 'claude' : (geminiAvailable ? 'gemini' : 'none')
-        },
-        timestamp: new Date().toISOString(),
-      });
+      return handleHealthCheck();
     }
-
-    // GET /api/responders - Get available responders
     if (route === '/api/responders' && req.method === 'GET') {
-      const claudeAvailable = await checkClaudeCodeAvailable();
-      const geminiAvailable = !!process.env.GOOGLE_AI_API_KEY;
-
-      // Optionally check if Gemini is actually responding
-      let geminiReady = false;
-      if (geminiAvailable) {
-        try {
-          geminiReady = await checkGeminiReady();
-        } catch {
-          geminiReady = false;
-        }
-      }
-
-      return jsonResponse({
-        available: {
-          claude: {
-            available: claudeAvailable,
-            description: 'Claude Code CLI (requires installation and authentication)'
-          },
-          gemini: {
-            available: geminiAvailable,
-            ready: geminiReady,
-            description: 'Google Gemini 2.0 Flash (requires GOOGLE_AI_API_KEY)'
-          }
-        },
-        default: claudeAvailable ? 'claude' : (geminiAvailable ? 'gemini' : 'none'),
-        usage: {
-          queryParam: '?responder=claude or ?responder=gemini',
-          header: 'X-Responder: claude or X-Responder: gemini'
-        }
-      });
+      return handleRespondersCheck();
     }
-
-    // POST /api/rag/upload - Upload and process document
     if (route === '/api/rag/upload' && req.method === 'POST') {
-      validateContentLength(req);
-
-      let body: Record<string, unknown>;
-      try {
-        body = await req.json() as Record<string, unknown>;
-      } catch {
-        return errorResponse('Invalid JSON in request body', 400);
-      }
-
-      if (!body.text || typeof body.text !== 'string') {
-        return errorResponse('Missing required field: text');
-      }
-      if (!body.name || typeof body.name !== 'string') {
-        return errorResponse('Missing required field: name');
-      }
-
-      // Validate optional fields with proper type checking
-      const source = validateOptionalString(body.source, 'source');
-      const type = validateOptionalString(body.type, 'type');
-
-      const result = await addDocument(body.text, {
-        name: body.name,
-        source,
-        type,
-      });
-
-      return jsonResponse({
-        success: true,
-        documentId: result.documentId,
-        chunks: result.chunks,
-        message: `Document "${body.name}" uploaded and processed into ${result.chunks} chunks`,
-      }, 201);
+      return handleUpload(req);
     }
-
-    // POST /api/rag/query - Query with RAG
     if (route === '/api/rag/query' && req.method === 'POST') {
-      validateContentLength(req);
-
-      let body: Record<string, unknown>;
-      try {
-        body = await req.json() as Record<string, unknown>;
-      } catch {
-        return errorResponse('Invalid JSON in request body', 400);
-      }
-
-      if (!body.query || typeof body.query !== 'string' || (body.query as string).trim().length === 0) {
-        return errorResponse('Missing required field: query (must be non-empty string)');
-      }
-
-      // Validate optional fields with proper type checking
-      const topK = validateOptionalNumber(body.topK, 'topK');
-      const documentId = validateOptionalString(body.documentId, 'documentId');
-      const compress = validateOptionalBoolean(body.compress, 'compress');
-      const systemPrompt = validateOptionalString(body.systemPrompt, 'systemPrompt');
-
-      // Get responder preference from body, query param, or header
-      const responderValue = validateOptionalString(body.responder, 'responder');
-      const responderPreference: 'claude' | 'gemini' | undefined =
-        (responderValue === 'claude' || responderValue === 'gemini')
-          ? responderValue
-          : getResponderPreference(req, url);
-
-      const result = await query(body.query, {
-        topK,
-        documentId,
-        compress,
-        systemPrompt,
-        responder: responderPreference,
-      });
-
-      return jsonResponse({
-        answer: result.answer,
-        sources: result.sources,
-        tokensUsed: result.tokensUsed,
-        timing: result.timing,
-        responder: result.responderUsed,
-        ...(result.responderFallback && {
-          responderFallback: result.responderFallback,
-          responderMessage: result.responderFallbackMessage
-        }),
-        ...(result.subAgentResult && { subAgentResult: result.subAgentResult }),
-      });
+      return handleQuery(req, url);
     }
-
-    // POST /api/rag/search - Search only (no LLM call)
     if (route === '/api/rag/search' && req.method === 'POST') {
-      validateContentLength(req);
-
-      let body: Record<string, unknown>;
-      try {
-        body = await req.json() as Record<string, unknown>;
-      } catch {
-        return errorResponse('Invalid JSON in request body', 400);
-      }
-
-      if (!body.query || typeof body.query !== 'string' || (body.query as string).trim().length === 0) {
-        return errorResponse('Missing required field: query (must be non-empty string)');
-      }
-
-      // Validate optional fields with proper type checking
-      const topK = validateOptionalNumber(body.topK, 'topK');
-      const documentId = validateOptionalString(body.documentId, 'documentId');
-
-      const result = await search(body.query, {
-        topK,
-        documentId,
-      });
-
-      return jsonResponse({
-        context: result.context,
-        chunks: result.chunks,
-        timing: result.timing,
-      });
+      return handleSearch(req);
     }
-
-    // GET /api/rag/documents - List documents
     if (route === '/api/rag/documents' && req.method === 'GET') {
-      const documents = await listDocuments();
-      return jsonResponse({
-        documents,
-        count: documents.length,
-      });
+      return handleListDocuments();
     }
-
-    // DELETE /api/rag/documents/:id - Delete document
     if (route === '/api/rag/documents/:id' && req.method === 'DELETE') {
-      const documentId = params.id;
-
-      if (!documentId) {
-        return errorResponse('Document ID is required');
-      }
-
-      await deleteDocument(documentId);
-      return jsonResponse({
-        success: true,
-        message: `Document ${documentId} deleted`,
-      });
+      return handleDeleteDocument(params.id);
     }
 
-    // 404 for unknown routes
     return errorResponse('Not found', 404);
 
   } catch (error) {
     console.error('Request error:', error);
-    // Sanitize error messages to prevent leaking implementation details
-    let message = 'Internal server error';
-    if (error instanceof Error) {
-      // Only expose safe, user-friendly error messages
-      const safePatterns = [
-        /^Query must be/,
-        /^Missing required field/,
-        /^Invalid/,
-        /^Document .* not found/,
-        /^Claude Code/,
-        /^Gemini API/,
-        /^Rate limit/,
-        /^Payload too large/,
-        /^GOOGLE_AI_API_KEY/,
-        /^No responder available/
-      ];
-      const isSafeMessage = safePatterns.some(pattern => pattern.test(error.message));
-      message = isSafeMessage ? error.message : 'Internal server error';
-    }
-    return errorResponse(message, 500);
+    return errorResponse(sanitizeErrorMessage(error), 500);
   }
 }
 
