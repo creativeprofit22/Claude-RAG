@@ -1,6 +1,6 @@
-import Anthropic from '@anthropic-ai/sdk';
+import { GoogleGenAI } from '@google/genai';
 
-const HAIKU_MODEL = 'claude-haiku-4-5-20241022';
+const GEMINI_MODEL = process.env.GEMINI_RETRIEVER_MODEL || 'gemini-2.0-flash';
 
 /**
  * Represents a chunk of text retrieved from a document
@@ -35,16 +35,16 @@ export interface SubAgentResult {
   selectedChunks: number[];
   /** Summary of the context if compression was enabled */
   summary?: string;
-  /** Total tokens used by the Haiku call */
+  /** Total tokens used by the LLM call */
   tokensUsed: number;
-  /** Reasoning provided by Haiku for chunk selection */
+  /** Reasoning provided by the LLM for chunk selection */
   reasoning?: string;
 }
 
 /**
- * Response structure expected from Haiku
+ * Response structure expected from the LLM
  */
-interface HaikuResponse {
+interface LLMResponse {
   selectedIndices: number[];
   relevantContext: string;
   reasoning: string;
@@ -61,6 +61,21 @@ export class RetrieverError extends Error {
     super(message);
     this.name = 'RetrieverError';
   }
+}
+
+let genaiClient: GoogleGenAI | null = null;
+
+function getClient(): GoogleGenAI {
+  if (!genaiClient) {
+    const apiKey = process.env.GOOGLE_AI_API_KEY;
+    if (!apiKey) {
+      throw new RetrieverError(
+        'GOOGLE_AI_API_KEY environment variable is required. Get one at https://aistudio.google.com/apikey'
+      );
+    }
+    genaiClient = new GoogleGenAI({ apiKey });
+  }
+  return genaiClient;
 }
 
 /**
@@ -111,17 +126,17 @@ Respond in this exact JSON format (no markdown, just raw JSON):
 }
 
 /**
- * Parses the JSON response from Haiku
+ * Parses the JSON response from the LLM
  */
-function parseHaikuResponse(text: string): HaikuResponse {
+function parseLLMResponse(text: string): LLMResponse {
   // Try to extract JSON from the response (handles markdown code blocks)
   const jsonMatch = text.match(/\{[\s\S]*\}/);
   if (!jsonMatch) {
-    throw new RetrieverError('Could not find JSON in Haiku response');
+    throw new RetrieverError('Could not find JSON in LLM response');
   }
 
   try {
-    const parsed = JSON.parse(jsonMatch[0]) as HaikuResponse;
+    const parsed = JSON.parse(jsonMatch[0]) as LLMResponse;
 
     // Validate required fields
     if (!Array.isArray(parsed.selectedIndices)) {
@@ -136,7 +151,7 @@ function parseHaikuResponse(text: string): HaikuResponse {
     if (error instanceof RetrieverError) {
       throw error;
     }
-    throw new RetrieverError('Failed to parse Haiku response as JSON', error);
+    throw new RetrieverError('Failed to parse LLM response as JSON', error);
   }
 }
 
@@ -148,9 +163,9 @@ function validateIndices(indices: number[], maxIndex: number): number[] {
 }
 
 /**
- * Uses Claude Haiku to filter and rank retrieved chunks by relevance.
+ * Uses Gemini Flash to filter and rank retrieved chunks by relevance.
  *
- * This sub-agent takes chunks from a vector search and uses Haiku's
+ * This sub-agent takes chunks from a vector search and uses Gemini's
  * understanding to determine which are most relevant to the query,
  * optionally summarizing them to reduce context size.
  *
@@ -197,38 +212,41 @@ export async function filterAndRankChunks(
     };
   }
 
-  const anthropic = new Anthropic();
+  const client = getClient();
   const chunksText = formatChunksForPrompt(chunks);
 
   try {
-    const response = await anthropic.messages.create({
-      model: HAIKU_MODEL,
-      max_tokens: 1024,
-      system: buildSystemPrompt(),
-      messages: [
-        {
-          role: 'user',
-          content: buildUserPrompt(query, chunksText, compress)
-        }
-      ]
+    const response = await client.models.generateContent({
+      model: GEMINI_MODEL,
+      contents: buildUserPrompt(query, chunksText, compress),
+      config: {
+        systemInstruction: buildSystemPrompt(),
+        maxOutputTokens: 1024,
+        temperature: 0.1 // Low temperature for more deterministic output
+      }
     });
 
     // Extract text content from response
-    const content = response.content[0];
-    if (content.type !== 'text') {
-      throw new RetrieverError('Unexpected response type from Haiku (expected text)');
+    const text = response.text;
+    if (!text) {
+      throw new RetrieverError('Empty response from Gemini');
     }
 
     // Parse and validate the response
-    const parsed = parseHaikuResponse(content.text);
+    const parsed = parseLLMResponse(text);
     const validIndices = validateIndices(parsed.selectedIndices, chunks.length);
     const limitedIndices = validIndices.slice(0, maxChunks);
+
+    // Calculate tokens used (Gemini provides usage metadata)
+    const tokensUsed =
+      (response.usageMetadata?.promptTokenCount || 0) +
+      (response.usageMetadata?.candidatesTokenCount || 0);
 
     return {
       relevantContext: parsed.relevantContext,
       selectedChunks: limitedIndices,
       summary: compress ? parsed.relevantContext : undefined,
-      tokensUsed: response.usage.input_tokens + response.usage.output_tokens,
+      tokensUsed,
       reasoning: parsed.reasoning
     };
   } catch (error) {
@@ -236,12 +254,9 @@ export async function filterAndRankChunks(
       throw error;
     }
 
-    // Handle Anthropic API errors
-    if (error instanceof Anthropic.APIError) {
-      throw new RetrieverError(`Anthropic API error: ${error.message}`, error);
-    }
-
-    throw new RetrieverError('Unexpected error during chunk filtering', error);
+    // Handle general errors
+    const message = error instanceof Error ? error.message : 'Unknown error';
+    throw new RetrieverError(`Gemini API error: ${message}`, error);
   }
 }
 

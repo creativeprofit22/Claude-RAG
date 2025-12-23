@@ -1,64 +1,75 @@
 # Claude RAG
 
-A two-tier Retrieval-Augmented Generation (RAG) system using Claude AI with Voyage AI embeddings and LanceDB vector storage.
+A context retrieval library for Claude Code CLI that leverages your existing Claude subscription - no Anthropic API key required.
 
 ## Overview
 
-This system provides a complete RAG pipeline with:
+This system provides semantic search over your documents using Google Gemini embeddings, then uses **Claude Code CLI** (your existing subscription) to generate responses. This means you get Claude Opus 4.5 quality responses without paying per-token API costs.
 
-- **Voyage AI** for high-quality embeddings (200M free tokens)
-- **LanceDB** for efficient vector storage and similarity search
-- **Claude Opus 4.5** for final response generation
-- **Optional Haiku compression layer** for filtering and summarizing context before Opus
+**Key Benefits:**
+- **Zero Claude API costs** - Uses your Claude Pro/Team subscription via Claude Code CLI
+- **High-quality embeddings** - Google Gemini embeddings for accurate retrieval
+- **Local vector storage** - LanceDB for fast, efficient similarity search
+- **Gemini fallback** - Can use Gemini for responses if Claude Code CLI unavailable
 
 ## Architecture
 
 ```
 ┌─────────────┐     ┌──────────────┐     ┌─────────────┐
-│   Query     │────▶│  Voyage AI   │────▶│  LanceDB    │
+│   Query     │────▶│   Gemini     │────▶│  LanceDB    │
 │             │     │  Embeddings  │     │  Vector DB  │
 └─────────────┘     └──────────────┘     └─────────────┘
-                                                │
-                    ┌───────────────────────────┘
-                    │
-                    ▼
-        ┌───────────────────────┐
-        │  Retrieved Chunks     │
-        └───────────────────────┘
-                    │
-       ┌────────────┴────────────┐
-       │                         │
-       ▼                         ▼
+                                               │
+                   ┌───────────────────────────┘
+                   │
+                   ▼
+       ┌───────────────────────┐
+       │  Retrieved Chunks     │
+       │  (Relevant Context)   │
+       └───────────────────────┘
+                   │
+      ┌────────────┴────────────┐
+      │                         │
+      ▼                         ▼
 ┌─────────────────┐     ┌─────────────────┐
-│  Direct Flow    │     │ Compressed Flow │
-│  (Default)      │     │ (--compress)    │
+│  Claude Code    │     │    Gemini       │
+│  CLI (Default)  │     │   (Fallback)    │
+│                 │     │                 │
+│  Your existing  │     │  RAG_RESPONDER  │
+│  subscription   │     │  =gemini        │
 └─────────────────┘     └─────────────────┘
-       │                         │
-       │                         ▼
-       │                ┌─────────────────┐
-       │                │  Haiku 3.5      │
-       │                │  (Filter/Rank)  │
-       │                └─────────────────┘
-       │                         │
-       └────────────┬────────────┘
-                    │
-                    ▼
-          ┌─────────────────┐
-          │  Opus 4.5       │
-          │  (Response)     │
-          └─────────────────┘
-                    │
-                    ▼
-          ┌─────────────────┐
-          │  Final Answer   │
-          └─────────────────┘
+          │                     │
+          └──────────┬──────────┘
+                     │
+                     ▼
+           ┌─────────────────┐
+           │  Final Answer   │
+           └─────────────────┘
 ```
 
-### Two Query Modes
+### How It Works
 
-1. **Direct Flow** (default): Sends retrieved chunks directly to Opus 4.5 for response generation. Faster and simpler for most use cases.
+1. **Embedding**: Your query is embedded using Google Gemini's embedding model
+2. **Retrieval**: LanceDB finds the most similar document chunks
+3. **Response Generation**:
+   - **Claude Mode (default)**: Spawns Claude Code CLI with the query + retrieved context
+   - **Gemini Mode (fallback)**: Uses Gemini API for response generation
 
-2. **Compressed Flow** (`--compress`): Uses Haiku 3.5 as an intermediate layer to filter, rank, and summarize chunks before sending to Opus. Better for large contexts or when precision is critical.
+## Prerequisites
+
+### Required
+- **Node.js** 18+
+- **Google AI API key** - For embeddings (free tier available)
+  - Get one at https://aistudio.google.com/apikey
+
+### Recommended (for Claude responses)
+- **Claude Code CLI** installed and authenticated
+  - Install: `npm install -g @anthropic-ai/claude-code`
+  - Authenticate: `claude login`
+  - Requires Claude Pro, Team, or Enterprise subscription
+
+### Alternative (Gemini fallback)
+- Same Google AI API key works for both embeddings and responses
 
 ## Installation
 
@@ -79,15 +90,21 @@ npm run build
 Create a `.env` file or export these environment variables:
 
 ```bash
-# Required: Anthropic API key for Claude models
-export ANTHROPIC_API_KEY="your-anthropic-api-key"
+# Required: Google AI API key for embeddings (and optionally responses)
+# Get one at https://aistudio.google.com/apikey
+export GOOGLE_AI_API_KEY="your-google-ai-api-key"
 
-# Required: Voyage AI API key for embeddings
-# Get one at https://dash.voyageai.com/
-export VOYAGE_API_KEY="your-voyage-api-key"
+# Optional: Response provider (default: claude)
+# - "claude": Use Claude Code CLI (requires subscription + CLI installed)
+# - "gemini": Use Gemini API (uses same GOOGLE_AI_API_KEY)
+export RAG_RESPONDER="claude"
 
-# Optional: Custom Voyage model (default: voyage-3.5-lite)
-export VOYAGE_MODEL="voyage-3.5-lite"
+# Optional: Custom Gemini embedding model (default: gemini-embedding-001)
+export GEMINI_EMBEDDING_MODEL="gemini-embedding-001"
+
+# Optional: Embedding output dimensionality (default: 1024)
+# Supported: 256, 512, 768, 1024, 1536, 3072
+export GEMINI_EMBEDDING_DIM="1024"
 
 # Optional: Custom database path (default: ./data/vectors)
 export RAG_DB_PATH="./data/vectors"
@@ -97,17 +114,17 @@ export RAG_DB_PATH="./data/vectors"
 
 ### CLI
 
-The CLI provides a simple interface for testing the RAG system:
+The CLI provides a simple interface for the RAG system:
 
 ```bash
 # Add a document to the system
 npx tsx src/cli.ts add ./docs/readme.md
 
-# Query the system (direct flow)
+# Query using Claude Code CLI (default)
 npx tsx src/cli.ts query "How do I configure authentication?"
 
-# Query with Haiku compression (better for complex queries)
-npx tsx src/cli.ts query "Explain the architecture" --compress
+# Query using Gemini instead
+RAG_RESPONDER=gemini npx tsx src/cli.ts query "How do I configure authentication?"
 
 # Query with custom chunk count
 npx tsx src/cli.ts query "What are the main features?" --topK 10
@@ -137,18 +154,21 @@ const result = await addDocument(
 );
 console.log(`Added ${result.chunks} chunks with ID: ${result.documentId}`);
 
-// Query with default settings (direct to Opus)
+// Query with Claude Code CLI (default)
 const response = await query("What is this about?");
 console.log(response.answer);
-console.log(`Tokens used: ${response.tokensUsed.input + response.tokensUsed.output}`);
 
-// Query with Haiku compression
-const compressedResponse = await query("Explain the architecture", {
-  compress: true,
-  topK: 10
+// Query with Gemini fallback
+const geminiResponse = await query("Explain the architecture", {
+  responder: 'gemini'
 });
-console.log(compressedResponse.answer);
-console.log(`Haiku tokens: ${compressedResponse.subAgentResult?.tokensUsed}`);
+console.log(geminiResponse.answer);
+
+// Query with custom settings
+const customResponse = await query("What are the key features?", {
+  topK: 10,
+  documentId: "specific-doc-id"
+});
 
 // List documents
 const docs = await listDocuments();
@@ -163,11 +183,30 @@ await deleteDocument("doc_1234567890");
 interface QueryOptions {
   topK?: number;          // Number of chunks to retrieve (default: 5)
   documentId?: string;    // Filter to specific document
-  compress?: boolean;     // Use Haiku compression layer (default: false)
+  responder?: 'claude' | 'gemini';  // Response provider (default: claude)
   stream?: boolean;       // Enable streaming response
-  systemPrompt?: string;  // Custom system prompt for Opus
+  systemPrompt?: string;  // Custom system prompt
 }
 ```
+
+## React Components
+
+This library includes React components for building RAG-powered interfaces:
+
+```typescript
+import { RAGProvider, SearchBox, ResultsList } from 'claude-rag/react';
+
+function App() {
+  return (
+    <RAGProvider>
+      <SearchBox placeholder="Ask a question..." />
+      <ResultsList />
+    </RAGProvider>
+  );
+}
+```
+
+See the `/components` directory for full component documentation.
 
 ## Project Structure
 
@@ -175,17 +214,14 @@ interface QueryOptions {
 claude-rag/
 ├── src/
 │   ├── index.ts           # Main entry point and query function
-│   ├── embeddings.ts      # Voyage AI embedding generation
+│   ├── embeddings.ts      # Google Gemini embedding generation
 │   ├── database.ts        # LanceDB vector storage
-│   ├── responder.ts       # Opus response generation
+│   ├── responder.ts       # Claude CLI / Gemini response generation
 │   ├── cli.ts             # Command-line interface
 │   ├── config.ts          # Configuration and defaults
 │   ├── types.ts           # TypeScript type definitions
-│   ├── utils/
-│   │   └── logger.ts      # Logging utility
-│   └── subagents/
-│       ├── index.ts       # Sub-agent exports
-│       └── retriever.ts   # Haiku chunk filtering
+│   └── utils/
+│       └── logger.ts      # Logging utility
 ├── data/
 │   └── vectors/           # LanceDB storage (gitignored)
 ├── package.json
@@ -193,13 +229,16 @@ claude-rag/
 └── README.md
 ```
 
-## Models Used
+## Cost Breakdown
 
-| Model | Purpose | Use Case |
-|-------|---------|----------|
-| `voyage-3.5-lite` | Embeddings | Document and query embeddings |
-| `claude-haiku-4-5-20241022` | Sub-agent | Chunk filtering and compression (optional) |
-| `claude-opus-4-5-20251101` | Main agent | Final response generation |
+| Component | Cost | Notes |
+|-----------|------|-------|
+| **Embeddings** | Free tier / Low cost | Google AI free tier: 1,500 requests/day |
+| **Vector Storage** | Free | LanceDB is local, no cloud costs |
+| **Claude Responses** | $0 (subscription) | Uses Claude Code CLI with your existing subscription |
+| **Gemini Responses** | Free tier / Low cost | Fallback option, uses same API key |
+
+**This design maximizes your existing Claude subscription value** - you're already paying for Claude Pro/Team, so why pay per-token API costs too?
 
 ## Default Settings
 
@@ -208,8 +247,7 @@ claude-rag/
 | Top K | 5 | Number of chunks to retrieve |
 | Chunk Size | 100 words | Size of document chunks |
 | Chunk Overlap | 20 words | Overlap between chunks |
-| Max Tokens | 2048 | Maximum response tokens |
-| Temperature | 0.7 | Response creativity |
+| Responder | claude | Claude Code CLI (or gemini fallback) |
 
 ## Response Format
 
@@ -217,24 +255,37 @@ claude-rag/
 interface QueryResult {
   answer: string;              // The generated response
   sources: Source[];           // Referenced document chunks
-  tokensUsed: {
-    input: number;
-    output: number;
-  };
-  subAgentResult?: {           // Only when compress=true
-    relevantContext: string;
-    selectedChunks: number[];
-    tokensUsed: number;
-    reasoning?: string;
-  };
+  responder: 'claude' | 'gemini';  // Which responder was used
   timing: {
     embedding: number;         // Embedding generation time (ms)
     search: number;            // Vector search time (ms)
-    filtering?: number;        // Haiku filtering time (ms)
-    response: number;          // Opus response time (ms)
+    response: number;          // Response generation time (ms)
     total: number;             // Total processing time (ms)
   };
 }
+```
+
+## Troubleshooting
+
+### Claude Code CLI not found
+```bash
+# Install globally
+npm install -g @anthropic-ai/claude-code
+
+# Authenticate
+claude login
+```
+
+### Fallback to Gemini automatically
+If Claude Code CLI fails or isn't installed, set the fallback:
+```bash
+export RAG_RESPONDER="gemini"
+```
+
+### Embedding errors
+Ensure your Google AI API key is valid:
+```bash
+curl "https://generativelanguage.googleapis.com/v1/models?key=$GOOGLE_AI_API_KEY"
 ```
 
 ## License

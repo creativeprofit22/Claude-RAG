@@ -1,6 +1,7 @@
-import Anthropic from '@anthropic-ai/sdk';
+import { spawn, exec } from 'child_process';
+import { promisify } from 'util';
 
-const OPUS_MODEL = 'claude-opus-4-5-20251101';
+const execAsync = promisify(exec);
 
 interface Source {
   documentId: string;
@@ -31,8 +32,46 @@ const DEFAULT_SYSTEM_PROMPT = `You are a helpful assistant that answers question
 - Be concise but thorough`;
 
 /**
- * Generate a response using Claude Opus 4.5 based on pre-filtered context
- * from the Haiku sub-agent.
+ * Build the full prompt for Claude Code CLI
+ */
+function buildPrompt(
+  query: string,
+  context: string,
+  systemPrompt: string
+): string {
+  return `${systemPrompt}
+
+Context (pre-filtered for relevance):
+${context}
+
+Question: ${query}
+
+Please provide a comprehensive answer based on the context above.`;
+}
+
+/**
+ * Estimate token counts based on text length.
+ * Claude Code CLI doesn't provide token usage, so we estimate.
+ * Rough estimate: ~4 characters per token for English text.
+ */
+function estimateTokens(text: string): number {
+  return Math.ceil(text.length / 4);
+}
+
+/**
+ * Check if Claude Code CLI is available
+ */
+async function checkClaudeCodeAvailable(): Promise<boolean> {
+  try {
+    await execAsync('which claude');
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+/**
+ * Generate a response using Claude Code CLI based on pre-filtered context.
  */
 export async function generateResponse(
   query: string,
@@ -40,54 +79,85 @@ export async function generateResponse(
   sources: Source[],
   options: ResponseOptions = {}
 ): Promise<RAGResponse> {
-  const anthropic = new Anthropic();
+  const { systemPrompt = DEFAULT_SYSTEM_PROMPT } = options;
 
-  const {
-    maxTokens = 2048,
-    temperature = 0.7,
-    systemPrompt = DEFAULT_SYSTEM_PROMPT
-  } = options;
+  // Check if Claude Code is available
+  const isAvailable = await checkClaudeCodeAvailable();
+  if (!isAvailable) {
+    throw new Error(
+      'Claude Code CLI is not installed or not in PATH. ' +
+      'Install it with: npm install -g @anthropic-ai/claude-code'
+    );
+  }
 
-  const userMessage = `Context (pre-filtered for relevance):
-${context}
+  const fullPrompt = buildPrompt(query, context, systemPrompt);
 
-Question: ${query}
-
-Please provide a comprehensive answer based on the context above.`;
-
-  try {
-    const response = await anthropic.messages.create({
-      model: OPUS_MODEL,
-      max_tokens: maxTokens,
-      temperature,
-      system: systemPrompt,
-      messages: [{ role: 'user', content: userMessage }]
+  return new Promise((resolve, reject) => {
+    const args = ['-p', fullPrompt, '--print'];
+    const claudeProcess = spawn('claude', args, {
+      stdio: ['pipe', 'pipe', 'pipe'],
+      env: { ...process.env }
     });
 
-    const content = response.content[0];
-    if (content.type !== 'text') {
-      throw new Error('Unexpected response type from Opus');
-    }
+    let stdout = '';
+    let stderr = '';
 
-    return {
-      answer: content.text,
-      sources,
-      tokensUsed: {
-        input: response.usage.input_tokens,
-        output: response.usage.output_tokens
+    claudeProcess.stdout.on('data', (data: Buffer) => {
+      stdout += data.toString();
+    });
+
+    claudeProcess.stderr.on('data', (data: Buffer) => {
+      stderr += data.toString();
+    });
+
+    claudeProcess.on('close', (code: number | null) => {
+      if (code !== 0) {
+        // Check for common error patterns
+        if (stderr.includes('not authenticated') || stderr.includes('auth')) {
+          reject(new Error(
+            'Claude Code authentication error. Run "claude login" to authenticate.'
+          ));
+          return;
+        }
+        if (stderr.includes('rate limit') || stderr.includes('429')) {
+          reject(new Error('Rate limit exceeded. Please wait before retrying.'));
+          return;
+        }
+        reject(new Error(
+          `Claude Code CLI failed with exit code ${code}: ${stderr || 'Unknown error'}`
+        ));
+        return;
       }
-    };
-  } catch (error) {
-    if (error instanceof Anthropic.APIError) {
-      throw new Error(`Anthropic API error: ${error.status} - ${error.message}`);
-    }
-    throw error;
-  }
+
+      const answer = stdout.trim();
+
+      resolve({
+        answer,
+        sources,
+        tokensUsed: {
+          input: estimateTokens(fullPrompt),
+          output: estimateTokens(answer)
+        }
+      });
+    });
+
+    claudeProcess.on('error', (error: Error) => {
+      if ((error as NodeJS.ErrnoException).code === 'ENOENT') {
+        reject(new Error(
+          'Claude Code CLI is not installed or not in PATH. ' +
+          'Install it with: npm install -g @anthropic-ai/claude-code'
+        ));
+        return;
+      }
+      reject(new Error(`Failed to spawn Claude Code CLI: ${error.message}`));
+    });
+  });
 }
 
 /**
  * Streaming version for real-time responses.
- * Yields text chunks as they arrive, returns full RAGResponse at the end.
+ * Yields text chunks as they arrive from Claude Code CLI stdout,
+ * returns full RAGResponse at the end.
  */
 export async function* streamResponse(
   query: string,
@@ -95,55 +165,127 @@ export async function* streamResponse(
   sources: Source[],
   options: ResponseOptions = {}
 ): AsyncGenerator<string, RAGResponse, unknown> {
-  const anthropic = new Anthropic();
+  const { systemPrompt = DEFAULT_SYSTEM_PROMPT } = options;
 
-  const {
-    maxTokens = 2048,
-    temperature = 0.7,
-    systemPrompt = DEFAULT_SYSTEM_PROMPT
-  } = options;
+  // Check if Claude Code is available
+  const isAvailable = await checkClaudeCodeAvailable();
+  if (!isAvailable) {
+    throw new Error(
+      'Claude Code CLI is not installed or not in PATH. ' +
+      'Install it with: npm install -g @anthropic-ai/claude-code'
+    );
+  }
 
-  const userMessage = `Context (pre-filtered for relevance):
-${context}
-
-Question: ${query}`;
+  const fullPrompt = buildPrompt(query, context, systemPrompt);
 
   let fullAnswer = '';
-  let inputTokens = 0;
-  let outputTokens = 0;
+  let error: Error | null = null;
 
-  try {
-    const stream = anthropic.messages.stream({
-      model: OPUS_MODEL,
-      max_tokens: maxTokens,
-      temperature,
-      system: systemPrompt,
-      messages: [{ role: 'user', content: userMessage }]
+  // Create a promise-based wrapper for the streaming process
+  const processPromise = new Promise<void>((resolve, reject) => {
+    const args = ['-p', fullPrompt, '--print'];
+    const claudeProcess = spawn('claude', args, {
+      stdio: ['pipe', 'pipe', 'pipe'],
+      env: { ...process.env }
     });
 
-    for await (const event of stream) {
-      if (event.type === 'content_block_delta' && event.delta.type === 'text_delta') {
-        fullAnswer += event.delta.text;
-        yield event.delta.text;
+    let stderr = '';
+
+    // We'll collect chunks via an event emitter pattern
+    claudeProcess.stdout.on('data', (data: Buffer) => {
+      const chunk = data.toString();
+      fullAnswer += chunk;
+      // Queue the chunk for yielding
+      chunkQueue.push(chunk);
+      resolveWait?.();
+    });
+
+    claudeProcess.stderr.on('data', (data: Buffer) => {
+      stderr += data.toString();
+    });
+
+    claudeProcess.on('close', (code: number | null) => {
+      processComplete = true;
+      resolveWait?.();
+
+      if (code !== 0) {
+        if (stderr.includes('not authenticated') || stderr.includes('auth')) {
+          error = new Error(
+            'Claude Code authentication error. Run "claude login" to authenticate.'
+          );
+        } else if (stderr.includes('rate limit') || stderr.includes('429')) {
+          error = new Error('Rate limit exceeded. Please wait before retrying.');
+        } else {
+          error = new Error(
+            `Claude Code CLI failed with exit code ${code}: ${stderr || 'Unknown error'}`
+          );
+        }
+        reject(error);
+        return;
       }
-      if (event.type === 'message_delta' && event.usage) {
-        outputTokens = event.usage.output_tokens;
+      resolve();
+    });
+
+    claudeProcess.on('error', (err: Error) => {
+      processComplete = true;
+      resolveWait?.();
+
+      if ((err as NodeJS.ErrnoException).code === 'ENOENT') {
+        error = new Error(
+          'Claude Code CLI is not installed or not in PATH. ' +
+          'Install it with: npm install -g @anthropic-ai/claude-code'
+        );
+      } else {
+        error = new Error(`Failed to spawn Claude Code CLI: ${err.message}`);
       }
-      if (event.type === 'message_start' && event.message.usage) {
-        inputTokens = event.message.usage.input_tokens;
+      reject(error);
+    });
+  });
+
+  // Queue for chunks and synchronization
+  const chunkQueue: string[] = [];
+  let processComplete = false;
+  let resolveWait: (() => void) | null = null;
+
+  // Wait for either a chunk or process completion
+  function waitForChunk(): Promise<void> {
+    return new Promise((resolve) => {
+      if (chunkQueue.length > 0 || processComplete) {
+        resolve();
+        return;
       }
+      resolveWait = resolve;
+    });
+  }
+
+  // Yield chunks as they arrive
+  try {
+    while (!processComplete || chunkQueue.length > 0) {
+      await waitForChunk();
+
+      while (chunkQueue.length > 0) {
+        const chunk = chunkQueue.shift()!;
+        yield chunk;
+      }
+    }
+
+    // Wait for process to fully complete
+    await processPromise;
+
+    if (error) {
+      throw error;
     }
 
     return {
-      answer: fullAnswer,
+      answer: fullAnswer.trim(),
       sources,
-      tokensUsed: { input: inputTokens, output: outputTokens }
+      tokensUsed: {
+        input: estimateTokens(fullPrompt),
+        output: estimateTokens(fullAnswer)
+      }
     };
-  } catch (error) {
-    if (error instanceof Anthropic.APIError) {
-      throw new Error(`Anthropic API error: ${error.status} - ${error.message}`);
-    }
-    throw error;
+  } catch (err) {
+    throw err;
   }
 }
 

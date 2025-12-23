@@ -3,7 +3,7 @@
  * Uses LanceDB for vector storage and similarity search
  */
 
-import * as lancedb from 'vectordb';
+import { connect, type Connection, type Table } from '@lancedb/lancedb';
 import { join } from 'path';
 
 const DB_PATH = process.env.RAG_DB_PATH || join(process.cwd(), 'data', 'vectors');
@@ -17,7 +17,7 @@ export interface DocumentMetadata {
   documentName: string;
   chunkIndex: number;
   timestamp: number;
-  [key: string]: string | number | boolean;
+  [key: string]: string | number | boolean | undefined;
 }
 
 /**
@@ -49,8 +49,8 @@ export interface SearchOptions {
  * RAG Database class for managing vector storage
  */
 class RAGDatabase {
-  private db: lancedb.Connection | null = null;
-  private table: lancedb.Table | null = null;
+  private db: Connection | null = null;
+  private table: Table | null = null;
   private dbPath: string;
 
   constructor(dbPath: string = DB_PATH) {
@@ -59,19 +59,17 @@ class RAGDatabase {
 
   /**
    * Connect to the LanceDB database
-   * Creates the database directory if it doesn't exist
    */
   async connect(): Promise<void> {
     if (!this.db) {
-      this.db = await lancedb.connect(this.dbPath);
+      this.db = await connect(this.dbPath);
     }
   }
 
   /**
    * Ensure the documents table exists and return it
-   * @returns The LanceDB table or null if it doesn't exist
    */
-  async ensureTable(): Promise<lancedb.Table | null> {
+  async ensureTable(): Promise<Table | null> {
     await this.connect();
 
     if (!this.table) {
@@ -86,8 +84,6 @@ class RAGDatabase {
 
   /**
    * Add documents to the vector database
-   * Creates the table if it doesn't exist
-   * @param docs - Array of documents to add
    */
   async addDocuments(docs: VectorDocument[]): Promise<void> {
     if (!docs || docs.length === 0) {
@@ -97,7 +93,7 @@ class RAGDatabase {
     // Validate documents
     for (const doc of docs) {
       if (!doc.id || !doc.vector || !doc.text || !doc.metadata) {
-        throw new Error('Invalid document: missing required fields (id, vector, text, metadata)');
+        throw new Error('Invalid document: missing required fields');
       }
       if (!Array.isArray(doc.vector) || doc.vector.length === 0) {
         throw new Error('Invalid document: vector must be a non-empty array');
@@ -118,9 +114,6 @@ class RAGDatabase {
 
   /**
    * Search for similar documents using vector similarity
-   * @param queryVector - The embedding vector to search with
-   * @param options - Search options (limit, filter)
-   * @returns Array of matching documents sorted by similarity
    */
   async search(
     queryVector: number[],
@@ -137,19 +130,18 @@ class RAGDatabase {
       return [];
     }
 
-    let query = table.search(queryVector).limit(limit);
+    let query = table.vectorSearch(queryVector).limit(limit);
 
     if (filter) {
       query = query.where(filter);
     }
 
-    const results = await query.execute();
+    const results = await query.toArray();
     return results as unknown as SearchResult[];
   }
 
   /**
    * List all unique document IDs in the database
-   * @returns Array of document IDs
    */
   async listDocuments(): Promise<string[]> {
     const table = await this.ensureTable();
@@ -157,18 +149,8 @@ class RAGDatabase {
       return [];
     }
 
-    // Use a zero vector to get all documents (LanceDB requires a vector for search)
-    // We'll get a sample to determine vector dimension first
     try {
-      const sample = await table.search([0]).limit(1).execute();
-      if (sample.length === 0) {
-        return [];
-      }
-
-      const vectorDim = (sample[0] as unknown as VectorDocument).vector?.length || 384;
-      const zeroVector = new Array(vectorDim).fill(0);
-
-      const all = await table.search(zeroVector).limit(10000).execute();
+      const all = await table.query().limit(10000).toArray();
       const docIds = new Set<string>();
 
       for (const row of all) {
@@ -186,8 +168,6 @@ class RAGDatabase {
 
   /**
    * Get all chunks for a specific document
-   * @param documentId - The document ID to retrieve chunks for
-   * @returns Array of document chunks
    */
   async getDocumentChunks(documentId: string): Promise<VectorDocument[]> {
     const table = await this.ensureTable();
@@ -196,19 +176,11 @@ class RAGDatabase {
     }
 
     try {
-      const sample = await table.search([0]).limit(1).execute();
-      if (sample.length === 0) {
-        return [];
-      }
-
-      const vectorDim = (sample[0] as unknown as VectorDocument).vector?.length || 384;
-      const zeroVector = new Array(vectorDim).fill(0);
-
       const results = await table
-        .search(zeroVector)
+        .query()
         .where(`metadata.documentId = "${documentId}"`)
         .limit(10000)
-        .execute();
+        .toArray();
 
       return results as unknown as VectorDocument[];
     } catch {
@@ -218,7 +190,6 @@ class RAGDatabase {
 
   /**
    * Delete all chunks for a specific document
-   * @param documentId - The document ID to delete
    */
   async deleteDocument(documentId: string): Promise<void> {
     if (!documentId) {
@@ -248,7 +219,6 @@ class RAGDatabase {
 
   /**
    * Get the total number of chunks in the database
-   * @returns Number of chunks
    */
   async getChunkCount(): Promise<number> {
     const table = await this.ensureTable();
@@ -257,24 +227,15 @@ class RAGDatabase {
     }
 
     try {
-      const sample = await table.search([0]).limit(1).execute();
-      if (sample.length === 0) {
-        return 0;
-      }
-
-      const vectorDim = (sample[0] as unknown as VectorDocument).vector?.length || 384;
-      const zeroVector = new Array(vectorDim).fill(0);
-
-      const all = await table.search(zeroVector).limit(100000).execute();
-      return all.length;
+      const count = await table.countRows();
+      return count;
     } catch {
       return 0;
     }
   }
 
   /**
-   * Check if the database is initialized and has data
-   * @returns True if the database has documents
+   * Check if the database has data
    */
   async hasData(): Promise<boolean> {
     const table = await this.ensureTable();
@@ -283,7 +244,6 @@ class RAGDatabase {
 
   /**
    * Get database statistics
-   * @returns Object with database stats
    */
   async getStats(): Promise<{
     documentCount: number;
@@ -310,7 +270,7 @@ class RAGDatabase {
   }
 }
 
-// Export a singleton instance for convenience
+// Export a singleton instance
 export const ragDatabase = new RAGDatabase();
 
 // Export the class for custom instances

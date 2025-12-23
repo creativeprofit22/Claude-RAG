@@ -1,12 +1,14 @@
 /**
  * Embeddings module for RAG system
- * Uses Voyage AI for high-quality embeddings (200M free tokens)
- * https://docs.voyageai.com/docs/embeddings
+ * Uses Google Gemini for high-quality embeddings
+ * https://ai.google.dev/gemini-api/docs/embeddings
  */
 
-const VOYAGE_API_URL = 'https://api.voyageai.com/v1/embeddings';
-const VOYAGE_MODEL = process.env.VOYAGE_MODEL || 'voyage-3.5-lite';
-const MAX_TEXT_LENGTH = 16000; // Voyage supports up to 32K context
+import { GoogleGenAI } from '@google/genai';
+
+const GEMINI_MODEL = process.env.GEMINI_EMBEDDING_MODEL || 'gemini-embedding-001';
+const OUTPUT_DIMENSIONALITY = Number(process.env.GEMINI_EMBEDDING_DIM) || 1024;
+const MAX_TEXT_LENGTH = 8000; // Gemini supports up to 2048 tokens (~8K chars)
 
 export interface EmbeddingResponse {
   embedding: number[];
@@ -17,31 +19,23 @@ export interface EmbeddingError extends Error {
   model?: string;
 }
 
-interface VoyageResponse {
-  object: string;
-  data: Array<{
-    object: string;
-    embedding: number[];
-    index: number;
-  }>;
-  model: string;
-  usage: {
-    total_tokens: number;
-  };
-}
+let genaiClient: GoogleGenAI | null = null;
 
-function getApiKey(): string {
-  const key = process.env.VOYAGE_API_KEY;
-  if (!key) {
-    throw new Error(
-      'VOYAGE_API_KEY environment variable is required. Get one at https://dash.voyageai.com/'
-    );
+function getClient(): GoogleGenAI {
+  if (!genaiClient) {
+    const apiKey = process.env.GOOGLE_AI_API_KEY;
+    if (!apiKey) {
+      throw new Error(
+        'GOOGLE_AI_API_KEY environment variable is required. Get one at https://aistudio.google.com/apikey'
+      );
+    }
+    genaiClient = new GoogleGenAI({ apiKey });
   }
-  return key;
+  return genaiClient;
 }
 
 /**
- * Generate an embedding vector for a single text string
+ * Generate an embedding vector for a single text string (document)
  * @param text - The text to generate an embedding for
  * @returns Promise resolving to the embedding vector
  * @throws EmbeddingError if the API call fails
@@ -55,46 +49,31 @@ export async function generateEmbedding(text: string): Promise<number[]> {
   const truncated = text.slice(0, MAX_TEXT_LENGTH);
 
   try {
-    const response = await fetch(VOYAGE_API_URL, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${getApiKey()}`,
+    const client = getClient();
+    const response = await client.models.embedContent({
+      model: GEMINI_MODEL,
+      contents: truncated,
+      config: {
+        taskType: 'RETRIEVAL_DOCUMENT',
+        outputDimensionality: OUTPUT_DIMENSIONALITY,
       },
-      body: JSON.stringify({
-        model: VOYAGE_MODEL,
-        input: truncated,
-        input_type: 'document',
-      }),
     });
 
-    if (!response.ok) {
-      const errorBody = await response.text();
-      const error = new Error(
-        `Voyage AI embedding failed: ${response.status} ${response.statusText} - ${errorBody}`
-      ) as EmbeddingError;
-      error.statusCode = response.status;
-      error.model = VOYAGE_MODEL;
-      throw error;
-    }
-
-    const data: VoyageResponse = await response.json();
-
-    if (!data.data?.[0]?.embedding) {
+    if (!response.embeddings?.[0]?.values) {
       throw new Error('Invalid embedding response: missing embedding array');
     }
 
-    return data.data[0].embedding;
+    return response.embeddings[0].values;
   } catch (error) {
     if (error instanceof TypeError && error.message.includes('fetch')) {
-      throw new Error('Failed to connect to Voyage AI API. Check your internet connection.');
+      throw new Error('Failed to connect to Google AI API. Check your internet connection.');
     }
     throw error;
   }
 }
 
 /**
- * Generate embedding for a query (uses query input_type for better retrieval)
+ * Generate embedding for a query (uses RETRIEVAL_QUERY task type for better retrieval)
  * @param text - The query text
  * @returns Promise resolving to the embedding vector
  */
@@ -105,38 +84,40 @@ export async function generateQueryEmbedding(text: string): Promise<number[]> {
 
   const truncated = text.slice(0, MAX_TEXT_LENGTH);
 
-  const response = await fetch(VOYAGE_API_URL, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'Authorization': `Bearer ${getApiKey()}`,
-    },
-    body: JSON.stringify({
-      model: VOYAGE_MODEL,
-      input: truncated,
-      input_type: 'query', // Optimized for retrieval queries
-    }),
-  });
+  try {
+    const client = getClient();
+    const response = await client.models.embedContent({
+      model: GEMINI_MODEL,
+      contents: truncated,
+      config: {
+        taskType: 'RETRIEVAL_QUERY',
+        outputDimensionality: OUTPUT_DIMENSIONALITY,
+      },
+    });
 
-  if (!response.ok) {
-    const errorBody = await response.text();
-    throw new Error(`Voyage AI query embedding failed: ${response.status} - ${errorBody}`);
+    if (!response.embeddings?.[0]?.values) {
+      throw new Error('Invalid embedding response: missing embedding array');
+    }
+
+    return response.embeddings[0].values;
+  } catch (error) {
+    if (error instanceof TypeError && error.message.includes('fetch')) {
+      throw new Error('Failed to connect to Google AI API. Check your internet connection.');
+    }
+    throw error;
   }
-
-  const data: VoyageResponse = await response.json();
-  return data.data[0].embedding;
 }
 
 /**
  * Generate embeddings for multiple texts in a single API call (more efficient)
  * @param texts - Array of texts to generate embeddings for
- * @param batchSize - Number of texts per API call (max 128 for Voyage)
+ * @param batchSize - Number of texts per API call (max 100 for Gemini)
  * @param onProgress - Optional callback for progress updates
  * @returns Promise resolving to array of embedding vectors
  */
 export async function generateEmbeddingsBatch(
   texts: string[],
-  batchSize = 64, // Voyage supports up to 128
+  batchSize = 50, // Gemini supports up to 100
   onProgress?: (completed: number, total: number) => void
 ): Promise<number[][]> {
   if (!Array.isArray(texts)) {
@@ -148,37 +129,27 @@ export async function generateEmbeddingsBatch(
   }
 
   const results: number[][] = [];
-  const apiKey = getApiKey();
+  const client = getClient();
 
   for (let i = 0; i < texts.length; i += batchSize) {
     const batch = texts.slice(i, i + batchSize).map((t) => t.slice(0, MAX_TEXT_LENGTH));
 
-    const response = await fetch(VOYAGE_API_URL, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${apiKey}`,
+    const response = await client.models.embedContent({
+      model: GEMINI_MODEL,
+      contents: batch,
+      config: {
+        taskType: 'RETRIEVAL_DOCUMENT',
+        outputDimensionality: OUTPUT_DIMENSIONALITY,
       },
-      body: JSON.stringify({
-        model: VOYAGE_MODEL,
-        input: batch,
-        input_type: 'document',
-      }),
     });
 
-    if (!response.ok) {
-      const errorBody = await response.text();
-      throw new Error(`Voyage AI batch embedding failed: ${response.status} - ${errorBody}`);
+    if (!response.embeddings) {
+      throw new Error('Invalid batch embedding response: missing embeddings array');
     }
 
-    const data: VoyageResponse = await response.json();
-
-    // Ensure embeddings are in correct order
-    const sortedEmbeddings = data.data
-      .sort((a, b) => a.index - b.index)
-      .map((d) => d.embedding);
-
-    results.push(...sortedEmbeddings);
+    // Extract embeddings in order
+    const batchEmbeddings = response.embeddings.map((e) => e.values || []);
+    results.push(...batchEmbeddings);
 
     if (onProgress) {
       onProgress(Math.min(i + batchSize, texts.length), texts.length);
@@ -216,7 +187,7 @@ export function cosineSimilarity(a: number[], b: number[]): number {
 }
 
 /**
- * Check if Voyage AI is available and API key is valid
+ * Check if Google AI embeddings are available and API key is valid
  * @returns Promise resolving to true if ready
  */
 export async function checkEmbeddingsReady(): Promise<boolean> {

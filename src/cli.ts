@@ -14,6 +14,7 @@ import { readFileSync, existsSync } from 'fs';
 import { basename } from 'path';
 import {
   query,
+  search,
   addDocument,
   listDocuments,
   deleteDocument,
@@ -21,19 +22,20 @@ import {
 } from './index.js';
 import { logger } from './utils/logger.js';
 
-const COMMANDS = ['add', 'query', 'list', 'delete', 'status', 'help'] as const;
+const COMMANDS = ['add', 'search', 'query', 'list', 'delete', 'status', 'help'] as const;
 type Command = typeof COMMANDS[number];
 
 function printUsage(): void {
   console.log(`
-Claude RAG CLI - Two-tier RAG system with Haiku sub-agents and Opus main agent
+Claude RAG CLI - Vector search with Google Gemini embeddings
 
 Usage:
   npx tsx src/cli.ts <command> [arguments]
 
 Commands:
   add <file>         Add a document to the RAG system
-  query <question>   Query the RAG system
+  search <question>  Search and get context (for Claude Code CLI - NO API costs)
+  query <question>   Full RAG query with LLM response (requires Anthropic API)
   list               List all documents
   delete <id>        Delete a document by ID
   status             Check if the system is ready
@@ -41,20 +43,19 @@ Commands:
 
 Options:
   --topK <n>         Number of chunks to retrieve (default: 5)
-  --compress         Use Haiku to filter/summarize chunks before Opus (slower, better for large contexts)
+  --compress         Use Haiku to filter/summarize chunks before Opus (query only)
   --verbose          Enable verbose logging
 
-Query Modes:
-  Default:           Direct to Opus - faster and simpler, sends raw chunks directly
-  With --compress:   Via Haiku first - filters and summarizes chunks before Opus responds
+Search vs Query:
+  search:  Returns context only (Google Gemini + LanceDB) - FREE with your monthly plan
+  query:   Full LLM response (requires Anthropic API key) - PAID API usage
 
 Examples:
   npx tsx src/cli.ts add ./docs/readme.md
-  npx tsx src/cli.ts query "How do I configure the system?"
-  npx tsx src/cli.ts query "How does X work?" --compress
+  npx tsx src/cli.ts search "How do I configure the system?"
+  npx tsx src/cli.ts search "What is X?" --topK 10
   npx tsx src/cli.ts list
   npx tsx src/cli.ts delete doc_1234567890
-  npx tsx src/cli.ts status
 `);
 }
 
@@ -78,6 +79,31 @@ async function handleAdd(filePath: string): Promise<void> {
   console.log(`\nDocument added successfully!`);
   console.log(`  ID: ${result.documentId}`);
   console.log(`  Chunks: ${result.chunks}`);
+}
+
+/**
+ * Search-only handler - returns context for use in Claude Code CLI
+ * NO Anthropic API calls - just Google Gemini embeddings + LanceDB search
+ */
+async function handleSearch(question: string, options: { topK?: number }): Promise<void> {
+  console.error(`\nSearching: "${question}"\n`);
+
+  const result = await search(question, { topK: options.topK });
+
+  if (result.chunks.length === 0) {
+    console.log('No relevant documents found. Add some documents first with: npx tsx src/cli.ts add <file>');
+    return;
+  }
+
+  // Output the context (ready to paste into Claude Code)
+  console.log('# Retrieved Context\n');
+  console.log(result.context);
+  console.log('\n---\n');
+
+  // Stats to stderr so they don't pollute the context output
+  console.error(`Found ${result.chunks.length} relevant chunks`);
+  console.error(`Timing: embedding=${result.timing.embedding}ms, search=${result.timing.search}ms, total=${result.timing.total}ms`);
+  console.error('\nCopy the context above and use it in Claude Code CLI.');
 }
 
 async function handleQuery(question: string, options: { topK?: number; compress?: boolean }): Promise<void> {
@@ -152,15 +178,15 @@ async function handleStatus(): Promise<void> {
 
   if (status.ready) {
     console.log('System Status: READY');
-    console.log('  - Ollama: Connected');
-    console.log('  - Embedding model: Available');
-    console.log('  - Vector DB: Initialized');
+    console.log('  - Google Gemini: Connected');
+    console.log('  - Embedding model: gemini-embedding-001');
+    console.log('  - Vector DB: LanceDB initialized');
   } else {
     console.log('System Status: NOT READY');
     console.log(`  Error: ${status.error}`);
     console.log('\nTroubleshooting:');
-    console.log('  1. Make sure Ollama is running: ollama serve');
-    console.log('  2. Pull the embedding model: ollama pull nomic-embed-text');
+    console.log('  1. Check GOOGLE_AI_API_KEY in .env file');
+    console.log('  2. Get a key at: https://aistudio.google.com/apikey');
   }
 }
 
@@ -220,6 +246,17 @@ async function main(): Promise<void> {
           process.exit(1);
         }
         await handleAdd(args[0]);
+        break;
+
+      case 'search':
+        if (args.length === 0) {
+          console.error('Error: Please provide a search query');
+          console.log('Usage: npx tsx src/cli.ts search <question>');
+          process.exit(1);
+        }
+        await handleSearch(args.join(' '), {
+          topK: typeof options.topK === 'number' ? options.topK : undefined
+        });
         break;
 
       case 'query':
