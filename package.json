@@ -1,0 +1,35 @@
+{
+  "name": "claude-rag",
+  "version": "1.0.0",
+  "description": "RAG system using Claude AI with LanceDB vector storage",
+  "main": "dist/index.js",
+  "type": "module",
+  "scripts": {
+    "build": "tsc",
+    "dev": "bun run src/server.ts",
+    "start": "bun run src/server.ts",
+    "dev:tsc": "tsc --watch"
+  },
+  "keywords": [
+    "rag",
+    "claude",
+    "ai",
+    "vector-database",
+    "lancedb"
+  ],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "@anthropic-ai/sdk": "^0.32.1",
+    "lucide-react": "^0.468.0",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "vectordb": "^0.4.20"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.2",
+    "@types/react": "^18.3.14",
+    "@types/react-dom": "^18.3.2",
+    "typescript": "^5.7.2"
+  }
+}

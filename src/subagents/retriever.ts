@@ -1,0 +1,266 @@
+import Anthropic from '@anthropic-ai/sdk';
+
+const HAIKU_MODEL = 'claude-haiku-4-5-20241022';
+
+/**
+ * Represents a chunk of text retrieved from a document
+ */
+export interface RetrievedChunk {
+  text: string;
+  documentId: string;
+  documentName: string;
+  chunkIndex: number;
+  score: number;
+}
+
+/**
+ * Options for filtering and ranking chunks
+ */
+export interface FilterOptions {
+  /** Whether to compress/summarize the context (default: true) */
+  compress?: boolean;
+  /** Maximum number of chunks to return (default: 5) */
+  maxChunks?: number;
+  /** Minimum relevance threshold (0-1) for chunk selection */
+  minRelevance?: number;
+}
+
+/**
+ * Result from the retrieval sub-agent
+ */
+export interface SubAgentResult {
+  /** The filtered and optionally summarized context */
+  relevantContext: string;
+  /** Indices of chunks that were deemed relevant */
+  selectedChunks: number[];
+  /** Summary of the context if compression was enabled */
+  summary?: string;
+  /** Total tokens used by the Haiku call */
+  tokensUsed: number;
+  /** Reasoning provided by Haiku for chunk selection */
+  reasoning?: string;
+}
+
+/**
+ * Response structure expected from Haiku
+ */
+interface HaikuResponse {
+  selectedIndices: number[];
+  relevantContext: string;
+  reasoning: string;
+}
+
+/**
+ * Error thrown when the retriever sub-agent fails
+ */
+export class RetrieverError extends Error {
+  constructor(
+    message: string,
+    public readonly cause?: unknown
+  ) {
+    super(message);
+    this.name = 'RetrieverError';
+  }
+}
+
+/**
+ * Formats chunks into a numbered list for the prompt
+ */
+function formatChunksForPrompt(chunks: RetrievedChunk[]): string {
+  return chunks
+    .map((c, i) => `[${i}] (${c.documentName}, score: ${c.score.toFixed(3)}): ${c.text}`)
+    .join('\n\n');
+}
+
+/**
+ * Builds the system prompt for the retrieval assistant
+ */
+function buildSystemPrompt(): string {
+  return `You are a retrieval assistant specialized in filtering and ranking document chunks for relevance.
+Your job is to analyze chunks retrieved from a vector search and determine which are most useful for answering a query.
+Be precise and only select chunks that contain information directly relevant to the query.
+Discard chunks that are tangentially related or contain no useful information.`;
+}
+
+/**
+ * Builds the user prompt for chunk filtering
+ */
+function buildUserPrompt(query: string, chunksText: string, compress: boolean): string {
+  const outputInstruction = compress
+    ? 'Summarize the key information from relevant chunks into a condensed, coherent context'
+    : 'Concatenate the text from relevant chunks';
+
+  return `Given the following user query and document chunks, identify the most relevant chunks.
+
+User Query: "${query}"
+
+Retrieved Chunks:
+${chunksText}
+
+Instructions:
+1. Identify which chunks are MOST relevant to answering the query
+2. ${outputInstruction}
+3. Explain your reasoning briefly
+
+Respond in this exact JSON format (no markdown, just raw JSON):
+{
+  "selectedIndices": [0, 2, 4],
+  "relevantContext": "The condensed or concatenated relevant information...",
+  "reasoning": "Brief explanation of why these chunks were selected and others were discarded"
+}`;
+}
+
+/**
+ * Parses the JSON response from Haiku
+ */
+function parseHaikuResponse(text: string): HaikuResponse {
+  // Try to extract JSON from the response (handles markdown code blocks)
+  const jsonMatch = text.match(/\{[\s\S]*\}/);
+  if (!jsonMatch) {
+    throw new RetrieverError('Could not find JSON in Haiku response');
+  }
+
+  try {
+    const parsed = JSON.parse(jsonMatch[0]) as HaikuResponse;
+
+    // Validate required fields
+    if (!Array.isArray(parsed.selectedIndices)) {
+      throw new RetrieverError('Response missing selectedIndices array');
+    }
+    if (typeof parsed.relevantContext !== 'string') {
+      throw new RetrieverError('Response missing relevantContext string');
+    }
+
+    return parsed;
+  } catch (error) {
+    if (error instanceof RetrieverError) {
+      throw error;
+    }
+    throw new RetrieverError('Failed to parse Haiku response as JSON', error);
+  }
+}
+
+/**
+ * Validates that selected indices are within bounds
+ */
+function validateIndices(indices: number[], maxIndex: number): number[] {
+  return indices.filter((i) => Number.isInteger(i) && i >= 0 && i < maxIndex);
+}
+
+/**
+ * Uses Claude Haiku to filter and rank retrieved chunks by relevance.
+ *
+ * This sub-agent takes chunks from a vector search and uses Haiku's
+ * understanding to determine which are most relevant to the query,
+ * optionally summarizing them to reduce context size.
+ *
+ * @param query - The user's original query
+ * @param chunks - Retrieved document chunks from vector search
+ * @param options - Configuration options for filtering
+ * @returns Filtered and optionally summarized context
+ *
+ * @example
+ * ```typescript
+ * const result = await filterAndRankChunks(
+ *   "How do I configure authentication?",
+ *   retrievedChunks,
+ *   { compress: true, maxChunks: 3 }
+ * );
+ * console.log(result.relevantContext);
+ * ```
+ */
+export async function filterAndRankChunks(
+  query: string,
+  chunks: RetrievedChunk[],
+  options: FilterOptions = {}
+): Promise<SubAgentResult> {
+  const { compress = true, maxChunks = 5 } = options;
+
+  // Handle empty chunks
+  if (chunks.length === 0) {
+    return {
+      relevantContext: '',
+      selectedChunks: [],
+      tokensUsed: 0,
+      reasoning: 'No chunks provided'
+    };
+  }
+
+  // If we have fewer chunks than maxChunks and no compression needed,
+  // we might skip the API call entirely (optimization)
+  if (!compress && chunks.length <= maxChunks) {
+    return {
+      relevantContext: chunks.map((c) => c.text).join('\n\n'),
+      selectedChunks: chunks.map((_, i) => i),
+      tokensUsed: 0,
+      reasoning: 'All chunks returned without filtering (count below maxChunks)'
+    };
+  }
+
+  const anthropic = new Anthropic();
+  const chunksText = formatChunksForPrompt(chunks);
+
+  try {
+    const response = await anthropic.messages.create({
+      model: HAIKU_MODEL,
+      max_tokens: 1024,
+      system: buildSystemPrompt(),
+      messages: [
+        {
+          role: 'user',
+          content: buildUserPrompt(query, chunksText, compress)
+        }
+      ]
+    });
+
+    // Extract text content from response
+    const content = response.content[0];
+    if (content.type !== 'text') {
+      throw new RetrieverError('Unexpected response type from Haiku (expected text)');
+    }
+
+    // Parse and validate the response
+    const parsed = parseHaikuResponse(content.text);
+    const validIndices = validateIndices(parsed.selectedIndices, chunks.length);
+    const limitedIndices = validIndices.slice(0, maxChunks);
+
+    return {
+      relevantContext: parsed.relevantContext,
+      selectedChunks: limitedIndices,
+      summary: compress ? parsed.relevantContext : undefined,
+      tokensUsed: response.usage.input_tokens + response.usage.output_tokens,
+      reasoning: parsed.reasoning
+    };
+  } catch (error) {
+    if (error instanceof RetrieverError) {
+      throw error;
+    }
+
+    // Handle Anthropic API errors
+    if (error instanceof Anthropic.APIError) {
+      throw new RetrieverError(`Anthropic API error: ${error.message}`, error);
+    }
+
+    throw new RetrieverError('Unexpected error during chunk filtering', error);
+  }
+}
+
+/**
+ * Batch process multiple queries with their respective chunks.
+ * Useful for processing multiple retrieval results in parallel.
+ *
+ * @param queries - Array of query-chunks pairs
+ * @param options - Shared options for all queries
+ * @returns Array of results in the same order as input
+ */
+export async function batchFilterChunks(
+  queries: Array<{ query: string; chunks: RetrievedChunk[] }>,
+  options: FilterOptions = {}
+): Promise<SubAgentResult[]> {
+  const results = await Promise.all(
+    queries.map(({ query, chunks }) => filterAndRankChunks(query, chunks, options))
+  );
+  return results;
+}
+
+export default filterAndRankChunks;
