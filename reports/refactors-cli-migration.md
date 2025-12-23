@@ -33,18 +33,18 @@ Files analyzed:
 | 5 | index.ts, server.ts | Sources building repeated | ✅ Already existed in `src/utils/chunks.ts` as `buildSourcesFromChunks()` |
 | 6 | responder-gemini.ts | Context sanitization duplicated | ✅ Extracted `sanitizeContext()` helper function |
 
-## Low Priority (Nice-to-Have)
+## Low Priority (Nice-to-Have) - COMPLETED
 
-| # | Location | Issue | Suggested Fix | Effort |
-|---|----------|-------|---------------|--------|
-| 1 | responder-gemini.ts:249-250 | AbortController created but signal not used | Either use signal or remove unused code | S |
-| 2 | responder.ts vs responder-gemini.ts | Different error handling approaches | Standardize error classification across responders | M |
-| 3 | Multiple files | Timing measurement done inline | Create `withTiming()` utility wrapper | S |
-| 4 | server.ts:372-379 | Valid routes hardcoded in array | Define routes as constants with metadata | S |
-| 5 | index.ts, server.ts | Type definitions for chunks/sources repeated | Consolidate in types.ts | S |
+| # | Location | Issue | Status |
+|---|----------|-------|--------|
+| 1 | responder-gemini.ts | AbortController created but signal not used | ✅ Removed unused AbortController and timeout cleanup |
+| 2 | responder.ts, responder-gemini.ts | Different error handling approaches | ✅ Created shared `ResponderError` class in `src/utils/responder-errors.ts` with unified error codes |
+| 3 | Multiple files | Timing measurement done inline | ✅ Created `withTiming()` utility wrapper in `src/utils/timing.ts` |
+| 4 | server.ts | Valid routes hardcoded in array | ✅ Created `ROUTES` object with method and description metadata |
+| 5 | index.ts, server.ts | Type definitions for chunks/sources repeated | ✅ Consolidated: `Source` re-exports `ChunkSource`, `RetrievedChunk` re-exports `Chunk` |
 
 ## Summary
 - High: 6 refactors - COMPLETED (2025-12-23)
 - Medium: 6 refactors - COMPLETED (2025-12-23)
-- Low: 5 refactors (Polish and consistency) - PENDING
-- Total: 17 refactors (12 complete, 5 remaining)
+- Low: 5 refactors - COMPLETED (2025-12-23)
+- Total: 17 refactors (17 complete, 0 remaining)

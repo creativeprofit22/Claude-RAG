@@ -1,18 +1,11 @@
 import { getGeminiClient } from '../utils/gemini-client.js';
 import { validateQuery } from '../utils/validation.js';
+import type { Chunk } from '../utils/chunks.js';
 
 const GEMINI_MODEL = process.env.GEMINI_RETRIEVER_MODEL || 'gemini-2.0-flash';
 
-/**
- * Represents a chunk of text retrieved from a document
- */
-export interface RetrievedChunk {
-  text: string;
-  documentId: string;
-  documentName: string;
-  chunkIndex: number;
-  score: number;
-}
+// Re-export Chunk as RetrievedChunk for backward compatibility
+export type RetrievedChunk = Chunk;
 
 /**
  * Options for filtering and ranking chunks

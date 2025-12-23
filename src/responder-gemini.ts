@@ -7,6 +7,7 @@
 import { getGeminiClient } from './utils/gemini-client.js';
 import { DEFAULT_SYSTEM_PROMPT } from './constants.js';
 import { validateQuery, validateContext, validateSources } from './utils/validation.js';
+import { ResponderError, classifyGeminiError, createTimeoutError } from './utils/responder-errors.js';
 
 // Gemini 2.0 Flash - fast and free-tier friendly
 const GEMINI_MODEL = process.env.GEMINI_RESPONSE_MODEL || 'gemini-2.0-flash';
@@ -27,59 +28,15 @@ function sanitizeContext(context: string): string {
 }
 
 /**
- * Error types for Gemini API failures
- */
-export class GeminiAPIError extends Error {
-  constructor(
-    message: string,
-    public readonly code: 'API_KEY' | 'QUOTA' | 'SAFETY' | 'TIMEOUT' | 'NETWORK' | 'UNKNOWN'
-  ) {
-    super(message);
-    this.name = 'GeminiAPIError';
-  }
-}
-
-/**
  * Wrap a promise with a timeout
  */
 function withTimeout<T>(promise: Promise<T>, ms: number, operation: string): Promise<T> {
   return Promise.race([
     promise,
     new Promise<T>((_, reject) =>
-      setTimeout(() => reject(new GeminiAPIError(`${operation} timed out after ${ms}ms`, 'TIMEOUT')), ms)
+      setTimeout(() => reject(createTimeoutError(operation, ms)), ms)
     )
   ]);
-}
-
-/**
- * Classify and wrap Gemini API errors with specific types
- */
-function classifyError(error: unknown): GeminiAPIError {
-  if (error instanceof GeminiAPIError) {
-    return error;
-  }
-
-  if (error instanceof Error) {
-    const msg = error.message.toLowerCase();
-    if (msg.includes('api key') || msg.includes('apikey') || msg.includes('authentication')) {
-      return new GeminiAPIError('Invalid or missing GOOGLE_AI_API_KEY', 'API_KEY');
-    }
-    if (msg.includes('quota') || msg.includes('rate limit') || msg.includes('429')) {
-      return new GeminiAPIError('Gemini API quota exceeded. Try again later or check your usage limits.', 'QUOTA');
-    }
-    if (msg.includes('safety') || msg.includes('blocked')) {
-      return new GeminiAPIError('Response blocked by Gemini safety filters. Try rephrasing your query.', 'SAFETY');
-    }
-    if (msg.includes('timeout') || msg.includes('timed out')) {
-      return new GeminiAPIError(`Gemini API request timed out after ${API_TIMEOUT_MS}ms`, 'TIMEOUT');
-    }
-    if (msg.includes('network') || msg.includes('econnrefused') || msg.includes('fetch failed')) {
-      return new GeminiAPIError('Network error connecting to Gemini API', 'NETWORK');
-    }
-    return new GeminiAPIError(`Gemini API error: ${error.message}`, 'UNKNOWN');
-  }
-
-  return new GeminiAPIError('Unknown Gemini API error', 'UNKNOWN');
 }
 
 // Import shared types from responder.ts to avoid type divergence
@@ -138,14 +95,15 @@ Please provide a comprehensive answer based on the context above.`;
       text = response.text;
     } catch (textError) {
       // response.text getter can throw if response structure is malformed
-      throw new GeminiAPIError(
+      throw new ResponderError(
         `Failed to extract text from Gemini response: ${textError instanceof Error ? textError.message : 'Unknown error'}`,
-        'UNKNOWN'
+        'UNKNOWN',
+        'gemini'
       );
     }
 
     if (!text) {
-      throw new GeminiAPIError('Empty response from Gemini', 'UNKNOWN');
+      throw new ResponderError('Empty response from Gemini', 'UNKNOWN', 'gemini');
     }
 
     // Gemini provides usage metadata when available
@@ -160,7 +118,7 @@ Please provide a comprehensive answer based on the context above.`;
       }
     };
   } catch (error) {
-    throw classifyError(error);
+    throw classifyGeminiError(error, API_TIMEOUT_MS);
   }
 }
 
@@ -200,45 +158,37 @@ Question: ${query}`;
   let outputTokens = 0;
 
   try {
-    // Create abort controller for timeout
-    const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), API_TIMEOUT_MS);
+    const response = await client.models.generateContentStream({
+      model: GEMINI_MODEL,
+      contents: [{ role: 'user', parts: [{ text: userMessage }] }],
+      config: {
+        systemInstruction: systemPrompt,
+        maxOutputTokens: maxTokens,
+        temperature,
+      },
+    });
 
-    try {
-      const response = await client.models.generateContentStream({
-        model: GEMINI_MODEL,
-        contents: [{ role: 'user', parts: [{ text: userMessage }] }],
-        config: {
-          systemInstruction: systemPrompt,
-          maxOutputTokens: maxTokens,
-          temperature,
-        },
-      });
-
-      for await (const chunk of response) {
-        const text = chunk.text;
-        if (text) {
-          fullAnswer += text;
-          yield text;
-        }
-
-        // Update token counts from usage metadata when available
-        if (chunk.usageMetadata) {
-          inputTokens = chunk.usageMetadata.promptTokenCount ?? inputTokens;
-          outputTokens = chunk.usageMetadata.candidatesTokenCount ?? outputTokens;
-        }
+    for await (const chunk of response) {
+      const text = chunk.text;
+      if (text) {
+        fullAnswer += text;
+        yield text;
       }
 
-      return {
-        answer: fullAnswer,
-        sources,
-        tokensUsed: { input: inputTokens, output: outputTokens }
-      };
-    } finally {
-      clearTimeout(timeoutId);
+      // Update token counts from usage metadata when available
+      if (chunk.usageMetadata) {
+        inputTokens = chunk.usageMetadata.promptTokenCount ?? inputTokens;
+        outputTokens = chunk.usageMetadata.candidatesTokenCount ?? outputTokens;
+      }
     }
+
+    return {
+      answer: fullAnswer,
+      sources,
+      tokensUsed: { input: inputTokens, output: outputTokens }
+    };
   } catch (error) {
-    throw classifyError(error);
+    throw classifyGeminiError(error, API_TIMEOUT_MS);
   }
 }
 

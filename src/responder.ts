@@ -1,29 +1,8 @@
 import { spawn, ChildProcess } from 'child_process';
 import { checkClaudeCodeAvailable } from './utils/cli.js';
 import { DEFAULT_SYSTEM_PROMPT } from './constants.js';
-
-/**
- * Classify CLI errors from stderr content and exit code
- */
-function classifyCliError(stderr: string, fallbackOutput: string, code: number | null): Error {
-  // Handle signal termination (code is null when killed by signal)
-  if (code === null) {
-    return new Error('Claude Code CLI was terminated by a signal');
-  }
-  // Check for common error patterns (case-insensitive)
-  const stderrLower = stderr.toLowerCase();
-  if (stderrLower.includes('not authenticated') || stderrLower.includes('auth')) {
-    return new Error(
-      'Claude Code authentication error. Run "claude login" to authenticate.'
-    );
-  }
-  if (stderrLower.includes('rate limit') || stderrLower.includes('429')) {
-    return new Error('Rate limit exceeded. Please wait before retrying.');
-  }
-  return new Error(
-    `Claude Code CLI failed with exit code ${code}: ${stderr || fallbackOutput || 'Unknown error'}`
-  );
-}
+import { classifyCliError, cliNotFoundError } from './utils/responder-errors.js';
+import type { ChunkSource } from './utils/chunks.js';
 
 /**
  * Spawn Claude CLI process with stdin prompt
@@ -38,12 +17,8 @@ function spawnClaudeProcess(prompt: string): ChildProcess {
   return claudeProcess;
 }
 
-interface Source {
-  documentId: string;
-  documentName: string;
-  chunkIndex: number;
-  snippet: string;
-}
+// Re-export ChunkSource as Source for API compatibility
+export type Source = ChunkSource;
 
 interface RAGResponse {
   answer: string;
@@ -101,10 +76,7 @@ export async function generateResponse(
   // Check if Claude Code is available
   const isAvailable = await checkClaudeCodeAvailable();
   if (!isAvailable) {
-    throw new Error(
-      'Claude Code CLI is not installed or not in PATH. ' +
-      'Install it with: npm install -g @anthropic-ai/claude-code'
-    );
+    throw cliNotFoundError();
   }
 
   const fullPrompt = buildPrompt(query, context, systemPrompt);
@@ -140,13 +112,10 @@ export async function generateResponse(
 
     claudeProcess.on('error', (error: Error) => {
       if ((error as NodeJS.ErrnoException).code === 'ENOENT') {
-        reject(new Error(
-          'Claude Code CLI is not installed or not in PATH. ' +
-          'Install it with: npm install -g @anthropic-ai/claude-code'
-        ));
+        reject(cliNotFoundError());
         return;
       }
-      reject(new Error(`Failed to spawn Claude Code CLI: ${error.message}`));
+      reject(classifyCliError(error.message, '', 1));
     });
   });
 }
@@ -218,12 +187,9 @@ function setupStreamHandlers(
     waitResolve?.();
 
     if ((err as NodeJS.ErrnoException).code === 'ENOENT') {
-      reject(new Error(
-        'Claude Code CLI is not installed or not in PATH. ' +
-        'Install it with: npm install -g @anthropic-ai/claude-code'
-      ));
+      reject(cliNotFoundError());
     } else {
-      reject(new Error(`Failed to spawn Claude Code CLI: ${err.message}`));
+      reject(classifyCliError(err.message, '', 1));
     }
   });
 }
@@ -243,10 +209,7 @@ export async function* streamResponse(
 
   const isAvailable = await checkClaudeCodeAvailable();
   if (!isAvailable) {
-    throw new Error(
-      'Claude Code CLI is not installed or not in PATH. ' +
-      'Install it with: npm install -g @anthropic-ai/claude-code'
-    );
+    throw cliNotFoundError();
   }
 
   const fullPrompt = buildPrompt(query, context, systemPrompt);
@@ -285,5 +248,5 @@ export async function* streamResponse(
   }
 }
 
-// Export types for use in other modules
-export type { Source, RAGResponse, ResponseOptions };
+// Export types for use in other modules (Source already exported at top)
+export type { RAGResponse, ResponseOptions };

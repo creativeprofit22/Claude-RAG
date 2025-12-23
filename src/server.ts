@@ -95,15 +95,60 @@ function parseRoute(pathname: string): { route: string; params: Record<string, s
   return { route: pathname, params: {} };
 }
 
-// Valid routes for CORS preflight
-const VALID_ROUTES = [
-  '/api/health',
-  '/api/responders',
-  '/api/rag/upload',
-  '/api/rag/query',
-  '/api/rag/search',
-  '/api/rag/documents'
-];
+/**
+ * Route configuration with metadata
+ */
+interface RouteConfig {
+  path: string;
+  method: 'GET' | 'POST' | 'DELETE';
+  description: string;
+}
+
+/**
+ * API route definitions with metadata
+ */
+const ROUTES: Record<string, RouteConfig> = {
+  health: {
+    path: '/api/health',
+    method: 'GET',
+    description: 'Health check (includes responder status)'
+  },
+  responders: {
+    path: '/api/responders',
+    method: 'GET',
+    description: 'Get available responders'
+  },
+  upload: {
+    path: '/api/rag/upload',
+    method: 'POST',
+    description: 'Upload document'
+  },
+  query: {
+    path: '/api/rag/query',
+    method: 'POST',
+    description: 'Query with RAG (supports ?responder=claude|gemini)'
+  },
+  search: {
+    path: '/api/rag/search',
+    method: 'POST',
+    description: 'Search only (no LLM call)'
+  },
+  documents: {
+    path: '/api/rag/documents',
+    method: 'GET',
+    description: 'List documents'
+  },
+  deleteDocument: {
+    path: '/api/rag/documents/:id',
+    method: 'DELETE',
+    description: 'Delete document'
+  }
+};
+
+// Valid routes for CORS preflight (derived from ROUTES)
+const VALID_ROUTES = Object.values(ROUTES)
+  .filter(r => !r.path.includes(':'))
+  .map(r => r.path);
 
 /**
  * GET /api/health - Health check
@@ -368,26 +413,26 @@ async function handleRequest(req: Request): Promise<Response> {
   }
 
   try {
-    // Route dispatch
-    if (route === '/api/health' && req.method === 'GET') {
+    // Route dispatch using ROUTES metadata
+    if (route === ROUTES.health.path && req.method === ROUTES.health.method) {
       return handleHealthCheck();
     }
-    if (route === '/api/responders' && req.method === 'GET') {
+    if (route === ROUTES.responders.path && req.method === ROUTES.responders.method) {
       return handleRespondersCheck();
     }
-    if (route === '/api/rag/upload' && req.method === 'POST') {
+    if (route === ROUTES.upload.path && req.method === ROUTES.upload.method) {
       return handleUpload(req);
     }
-    if (route === '/api/rag/query' && req.method === 'POST') {
+    if (route === ROUTES.query.path && req.method === ROUTES.query.method) {
       return handleQuery(req, url);
     }
-    if (route === '/api/rag/search' && req.method === 'POST') {
+    if (route === ROUTES.search.path && req.method === ROUTES.search.method) {
       return handleSearch(req);
     }
-    if (route === '/api/rag/documents' && req.method === 'GET') {
+    if (route === ROUTES.documents.path && req.method === ROUTES.documents.method) {
       return handleListDocuments();
     }
-    if (route === '/api/rag/documents/:id' && req.method === 'DELETE') {
+    if (route === ROUTES.deleteDocument.path && req.method === ROUTES.deleteDocument.method) {
       return handleDeleteDocument(params.id);
     }
 
@@ -415,13 +460,12 @@ Bun.serve({
 console.log(`Server running at http://localhost:${PORT}`);
 console.log('');
 console.log('Available endpoints:');
-console.log('  GET  /api/health              - Health check (includes responder status)');
-console.log('  GET  /api/responders          - Get available responders');
-console.log('  POST /api/rag/upload          - Upload document');
-console.log('  POST /api/rag/query           - Query with RAG (supports ?responder=claude|gemini)');
-console.log('  POST /api/rag/search          - Search only (no LLM call)');
-console.log('  GET  /api/rag/documents       - List documents');
-console.log('  DELETE /api/rag/documents/:id - Delete document');
+// Generate endpoint list from ROUTES metadata
+for (const route of Object.values(ROUTES)) {
+  const method = route.method.padEnd(6);
+  const path = route.path.padEnd(25);
+  console.log(`  ${method} ${path} - ${route.description}`);
+}
 console.log('');
 console.log('Responder selection:');
 console.log('  Query param: ?responder=claude or ?responder=gemini');

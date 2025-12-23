@@ -19,16 +19,19 @@ Files: src/responder.ts, src/responder-gemini.ts, src/subagents/retriever.ts, sr
 ## Pipeline State
 Phase: refactoring
 Feature: CLI Migration
-Tier: medium
+Tier: low
 Tier-Status: pending
 Reports:
   - bugs: reports/bugs-cli-migration.md
   - refactors: reports/refactors-cli-migration.md
 
 ## Last Session (2025-12-23)
-High priority refactors complete (commits 1664bca, 342586e):
-- Created 4 shared utilities: cli.ts, constants.ts, gemini-client.ts, chunks.ts
-- Removed 374 lines of duplicate code across 6 files
+Medium priority refactors complete (commit fef26fa):
+- Split streamResponse() 150→50 lines (responder.ts)
+- Extracted 7 route handlers from handleRequest() 240→45 lines (server.ts)
+- Created utils/validation.ts with validateQuery(), validateContext(), validateSources()
+- Extracted sanitizeContext() helper (responder-gemini.ts)
+- Items #4-5 already existed in chunks.ts
 - Pushed to origin
 
 ## Key Files
