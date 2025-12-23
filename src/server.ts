@@ -20,6 +20,9 @@ const execAsync = promisify(exec);
 const PORT = process.env.PORT || 3000;
 const MAX_PAYLOAD_SIZE = 10 * 1024 * 1024; // 10MB limit
 
+// CORS origin configuration - defaults to localhost for security
+const CORS_ORIGIN = process.env.CORS_ORIGIN || 'http://localhost:3000';
+
 /**
  * Validate optional string field from request body
  */
@@ -69,9 +72,9 @@ function validateContentLength(req: Request): void {
 // Responder types
 type ResponderType = 'claude' | 'gemini' | 'auto';
 
-// CORS headers for local development
+// CORS headers - configurable origin for security
 const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Origin': CORS_ORIGIN,
   'Access-Control-Allow-Methods': 'GET, POST, DELETE, OPTIONS',
   'Access-Control-Allow-Headers': 'Content-Type, Authorization, X-Responder',
 };
@@ -470,8 +473,8 @@ async function handleRequest(req: Request): Promise<Response> {
         return errorResponse('Invalid JSON in request body', 400);
       }
 
-      if (!body.query || typeof body.query !== 'string') {
-        return errorResponse('Missing required field: query');
+      if (!body.query || typeof body.query !== 'string' || (body.query as string).trim().length === 0) {
+        return errorResponse('Missing required field: query (must be non-empty string)');
       }
 
       // Validate optional fields with proper type checking
@@ -520,8 +523,8 @@ async function handleRequest(req: Request): Promise<Response> {
         return errorResponse('Invalid JSON in request body', 400);
       }
 
-      if (!body.query || typeof body.query !== 'string') {
-        return errorResponse('Missing required field: query');
+      if (!body.query || typeof body.query !== 'string' || (body.query as string).trim().length === 0) {
+        return errorResponse('Missing required field: query (must be non-empty string)');
       }
 
       // Validate optional fields with proper type checking
@@ -569,7 +572,25 @@ async function handleRequest(req: Request): Promise<Response> {
 
   } catch (error) {
     console.error('Request error:', error);
-    const message = error instanceof Error ? error.message : 'Internal server error';
+    // Sanitize error messages to prevent leaking implementation details
+    let message = 'Internal server error';
+    if (error instanceof Error) {
+      // Only expose safe, user-friendly error messages
+      const safePatterns = [
+        /^Query must be/,
+        /^Missing required field/,
+        /^Invalid/,
+        /^Document .* not found/,
+        /^Claude Code/,
+        /^Gemini API/,
+        /^Rate limit/,
+        /^Payload too large/,
+        /^GOOGLE_AI_API_KEY/,
+        /^No responder available/
+      ];
+      const isSafeMessage = safePatterns.some(pattern => pattern.test(error.message));
+      message = isSafeMessage ? error.message : 'Internal server error';
+    }
     return errorResponse(message, 500);
   }
 }

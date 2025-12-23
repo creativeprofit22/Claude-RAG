@@ -70,6 +70,8 @@ async function getResponder(): Promise<{
   type: ResponderType;
   generateResponse: typeof claudeGenerateResponse;
   streamResponse: typeof claudeStreamResponse;
+  fallback: boolean;
+  fallbackMessage?: string;
 }> {
   const configuredType = getResponderType();
 
@@ -78,7 +80,8 @@ async function getResponder(): Promise<{
     return {
       type: 'gemini',
       generateResponse: geminiGenerateResponse,
-      streamResponse: geminiStreamResponse
+      streamResponse: geminiStreamResponse,
+      fallback: false
     };
   }
 
@@ -90,16 +93,20 @@ async function getResponder(): Promise<{
     return {
       type: 'claude',
       generateResponse: claudeGenerateResponse,
-      streamResponse: claudeStreamResponse
+      streamResponse: claudeStreamResponse,
+      fallback: false
     };
   }
 
   // Fall back to Gemini if Claude Code is not available
-  logger.warn('Claude Code CLI not available, falling back to Gemini responder');
+  const fallbackMessage = 'Claude Code CLI not available, falling back to Gemini responder';
+  logger.warn(fallbackMessage);
   return {
     type: 'gemini',
     generateResponse: geminiGenerateResponse,
-    streamResponse: geminiStreamResponse
+    streamResponse: geminiStreamResponse,
+    fallback: true,
+    fallbackMessage
   };
 }
 
@@ -115,6 +122,8 @@ export interface QueryOptions {
 export interface QueryResult extends RAGResponse {
   subAgentResult?: SubAgentResult;  // Only present when compress=true
   responderUsed: ResponderType;     // Which responder was actually used
+  responderFallback?: boolean;      // True if fallback responder was used
+  responderFallbackMessage?: string; // Explanation if fallback occurred
   timing: {
     embedding: number;
     search: number;
@@ -147,6 +156,11 @@ export async function query(
   userQuery: string,
   options: QueryOptions = {}
 ): Promise<QueryResult> {
+  // Validate query
+  if (!userQuery || typeof userQuery !== 'string' || userQuery.trim().length === 0) {
+    throw new Error('Query must be a non-empty string');
+  }
+
   const config = getDefaultConfig();
   const { topK = config.topK, compress = false, documentId } = options;
   const timing: QueryResult['timing'] = { embedding: 0, search: 0, response: 0, total: 0 };
@@ -163,13 +177,15 @@ export async function query(
       responder = {
         type: 'gemini',
         generateResponse: geminiGenerateResponse,
-        streamResponse: geminiStreamResponse
+        streamResponse: geminiStreamResponse,
+        fallback: false
       };
     } else {
       responder = {
         type: 'claude',
         generateResponse: claudeGenerateResponse,
-        streamResponse: claudeStreamResponse
+        streamResponse: claudeStreamResponse,
+        fallback: false
       };
     }
     logger.debug(`Using ${options.responder} responder (explicitly specified)`);
@@ -271,6 +287,10 @@ export async function query(
     ...response,
     ...(subAgentResult && { subAgentResult }),
     responderUsed: responder.type,
+    ...(responder.fallback && {
+      responderFallback: true,
+      responderFallbackMessage: responder.fallbackMessage
+    }),
     timing
   };
 }
@@ -283,7 +303,7 @@ export async function addDocument(
   metadata: { name: string; source?: string; type?: string }
 ): Promise<{ documentId: string; chunks: number }> {
   const config = getDefaultConfig();
-  const documentId = `doc_${Date.now()}`;
+  const documentId = `doc_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
 
   // Simple chunking (word-based with overlap)
   const words = text.split(/\s+/);

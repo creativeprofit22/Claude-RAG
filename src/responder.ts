@@ -117,14 +117,20 @@ export async function generateResponse(
 
     claudeProcess.on('close', (code: number | null) => {
       if (code !== 0) {
-        // Check for common error patterns
-        if (stderr.includes('not authenticated') || stderr.includes('auth')) {
+        // Handle signal termination (code is null when killed by signal)
+        if (code === null) {
+          reject(new Error('Claude Code CLI was terminated by a signal'));
+          return;
+        }
+        // Check for common error patterns (case-insensitive)
+        const stderrLower = stderr.toLowerCase();
+        if (stderrLower.includes('not authenticated') || stderrLower.includes('auth')) {
           reject(new Error(
             'Claude Code authentication error. Run "claude login" to authenticate.'
           ));
           return;
         }
-        if (stderr.includes('rate limit') || stderr.includes('429')) {
+        if (stderrLower.includes('rate limit') || stderrLower.includes('429')) {
           reject(new Error('Rate limit exceeded. Please wait before retrying.'));
           return;
         }
@@ -219,21 +225,28 @@ export async function* streamResponse(
 
     claudeProcess.on('close', (code: number | null) => {
       processComplete = true;
-      const resolve = resolveWait;
+      const resolveFunc = resolveWait;
       resolveWait = null;
-      resolve?.();
+      resolveFunc?.();
 
       if (code !== 0) {
-        if (stderr.includes('not authenticated') || stderr.includes('auth')) {
-          error = new Error(
-            'Claude Code authentication error. Run "claude login" to authenticate.'
-          );
-        } else if (stderr.includes('rate limit') || stderr.includes('429')) {
-          error = new Error('Rate limit exceeded. Please wait before retrying.');
+        // Handle signal termination (code is null when killed by signal)
+        if (code === null) {
+          error = new Error('Claude Code CLI was terminated by a signal');
         } else {
-          error = new Error(
-            `Claude Code CLI failed with exit code ${code}: ${stderr || 'Unknown error'}`
-          );
+          // Check for common error patterns (case-insensitive)
+          const stderrLower = stderr.toLowerCase();
+          if (stderrLower.includes('not authenticated') || stderrLower.includes('auth')) {
+            error = new Error(
+              'Claude Code authentication error. Run "claude login" to authenticate.'
+            );
+          } else if (stderrLower.includes('rate limit') || stderrLower.includes('429')) {
+            error = new Error('Rate limit exceeded. Please wait before retrying.');
+          } else {
+            error = new Error(
+              `Claude Code CLI failed with exit code ${code}: ${stderr || 'Unknown error'}`
+            );
+          }
         }
         reject(error);
         return;

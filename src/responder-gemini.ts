@@ -9,6 +9,65 @@ import { GoogleGenAI } from '@google/genai';
 // Gemini 2.0 Flash - fast and free-tier friendly
 const GEMINI_MODEL = process.env.GEMINI_RESPONSE_MODEL || 'gemini-2.0-flash';
 
+// API timeout in milliseconds (default: 60 seconds)
+const API_TIMEOUT_MS = parseInt(process.env.GEMINI_TIMEOUT_MS || '60000', 10);
+
+/**
+ * Error types for Gemini API failures
+ */
+export class GeminiAPIError extends Error {
+  constructor(
+    message: string,
+    public readonly code: 'API_KEY' | 'QUOTA' | 'SAFETY' | 'TIMEOUT' | 'NETWORK' | 'UNKNOWN'
+  ) {
+    super(message);
+    this.name = 'GeminiAPIError';
+  }
+}
+
+/**
+ * Wrap a promise with a timeout
+ */
+function withTimeout<T>(promise: Promise<T>, ms: number, operation: string): Promise<T> {
+  return Promise.race([
+    promise,
+    new Promise<T>((_, reject) =>
+      setTimeout(() => reject(new GeminiAPIError(`${operation} timed out after ${ms}ms`, 'TIMEOUT')), ms)
+    )
+  ]);
+}
+
+/**
+ * Classify and wrap Gemini API errors with specific types
+ */
+function classifyError(error: unknown): GeminiAPIError {
+  if (error instanceof GeminiAPIError) {
+    return error;
+  }
+
+  if (error instanceof Error) {
+    const msg = error.message.toLowerCase();
+    if (msg.includes('api key') || msg.includes('apikey') || msg.includes('authentication')) {
+      return new GeminiAPIError('Invalid or missing GOOGLE_AI_API_KEY', 'API_KEY');
+    }
+    if (msg.includes('quota') || msg.includes('rate limit') || msg.includes('429')) {
+      return new GeminiAPIError('Gemini API quota exceeded. Try again later or check your usage limits.', 'QUOTA');
+    }
+    if (msg.includes('safety') || msg.includes('blocked')) {
+      return new GeminiAPIError('Response blocked by Gemini safety filters. Try rephrasing your query.', 'SAFETY');
+    }
+    if (msg.includes('timeout') || msg.includes('timed out')) {
+      return new GeminiAPIError(`Gemini API request timed out after ${API_TIMEOUT_MS}ms`, 'TIMEOUT');
+    }
+    if (msg.includes('network') || msg.includes('econnrefused') || msg.includes('fetch failed')) {
+      return new GeminiAPIError('Network error connecting to Gemini API', 'NETWORK');
+    }
+    return new GeminiAPIError(`Gemini API error: ${error.message}`, 'UNKNOWN');
+  }
+
+  return new GeminiAPIError('Unknown Gemini API error', 'UNKNOWN');
+}
+
 interface Source {
   documentId: string;
   documentName: string;
@@ -88,15 +147,19 @@ Question: ${query}
 Please provide a comprehensive answer based on the context above.`;
 
   try {
-    const response = await client.models.generateContent({
-      model: GEMINI_MODEL,
-      contents: [{ role: 'user', parts: [{ text: userMessage }] }],
-      config: {
-        systemInstruction: systemPrompt,
-        maxOutputTokens: maxTokens,
-        temperature,
-      },
-    });
+    const response = await withTimeout(
+      client.models.generateContent({
+        model: GEMINI_MODEL,
+        contents: [{ role: 'user', parts: [{ text: userMessage }] }],
+        config: {
+          systemInstruction: systemPrompt,
+          maxOutputTokens: maxTokens,
+          temperature,
+        },
+      }),
+      API_TIMEOUT_MS,
+      'Gemini generateContent'
+    );
 
     // Safely extract text from response with proper error handling
     let text: string | undefined;
@@ -104,11 +167,14 @@ Please provide a comprehensive answer based on the context above.`;
       text = response.text;
     } catch (textError) {
       // response.text getter can throw if response structure is malformed
-      throw new Error(`Failed to extract text from Gemini response: ${textError instanceof Error ? textError.message : 'Unknown error'}`);
+      throw new GeminiAPIError(
+        `Failed to extract text from Gemini response: ${textError instanceof Error ? textError.message : 'Unknown error'}`,
+        'UNKNOWN'
+      );
     }
 
     if (!text) {
-      throw new Error('Empty response from Gemini');
+      throw new GeminiAPIError('Empty response from Gemini', 'UNKNOWN');
     }
 
     // Gemini provides usage metadata when available
@@ -123,20 +189,7 @@ Please provide a comprehensive answer based on the context above.`;
       }
     };
   } catch (error) {
-    if (error instanceof Error) {
-      // Handle common Gemini API errors
-      if (error.message.includes('API key')) {
-        throw new Error('Invalid or missing GOOGLE_AI_API_KEY');
-      }
-      if (error.message.includes('quota')) {
-        throw new Error('Gemini API quota exceeded. Try again later or check your usage limits.');
-      }
-      if (error.message.includes('safety')) {
-        throw new Error('Response blocked by Gemini safety filters. Try rephrasing your query.');
-      }
-      throw new Error(`Gemini API error: ${error.message}`);
-    }
-    throw error;
+    throw classifyError(error);
   }
 }
 
@@ -179,49 +232,45 @@ Question: ${query}`;
   let outputTokens = 0;
 
   try {
-    const response = await client.models.generateContentStream({
-      model: GEMINI_MODEL,
-      contents: [{ role: 'user', parts: [{ text: userMessage }] }],
-      config: {
-        systemInstruction: systemPrompt,
-        maxOutputTokens: maxTokens,
-        temperature,
-      },
-    });
+    // Create abort controller for timeout
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), API_TIMEOUT_MS);
 
-    for await (const chunk of response) {
-      const text = chunk.text;
-      if (text) {
-        fullAnswer += text;
-        yield text;
+    try {
+      const response = await client.models.generateContentStream({
+        model: GEMINI_MODEL,
+        contents: [{ role: 'user', parts: [{ text: userMessage }] }],
+        config: {
+          systemInstruction: systemPrompt,
+          maxOutputTokens: maxTokens,
+          temperature,
+        },
+      });
+
+      for await (const chunk of response) {
+        const text = chunk.text;
+        if (text) {
+          fullAnswer += text;
+          yield text;
+        }
+
+        // Update token counts from usage metadata when available
+        if (chunk.usageMetadata) {
+          inputTokens = chunk.usageMetadata.promptTokenCount ?? inputTokens;
+          outputTokens = chunk.usageMetadata.candidatesTokenCount ?? outputTokens;
+        }
       }
 
-      // Update token counts from usage metadata when available
-      if (chunk.usageMetadata) {
-        inputTokens = chunk.usageMetadata.promptTokenCount ?? inputTokens;
-        outputTokens = chunk.usageMetadata.candidatesTokenCount ?? outputTokens;
-      }
+      return {
+        answer: fullAnswer,
+        sources,
+        tokensUsed: { input: inputTokens, output: outputTokens }
+      };
+    } finally {
+      clearTimeout(timeoutId);
     }
-
-    return {
-      answer: fullAnswer,
-      sources,
-      tokensUsed: { input: inputTokens, output: outputTokens }
-    };
   } catch (error) {
-    if (error instanceof Error) {
-      if (error.message.includes('API key')) {
-        throw new Error('Invalid or missing GOOGLE_AI_API_KEY');
-      }
-      if (error.message.includes('quota')) {
-        throw new Error('Gemini API quota exceeded. Try again later or check your usage limits.');
-      }
-      if (error.message.includes('safety')) {
-        throw new Error('Response blocked by Gemini safety filters. Try rephrasing your query.');
-      }
-      throw new Error(`Gemini API error: ${error.message}`);
-    }
-    throw error;
+    throw classifyError(error);
   }
 }
 

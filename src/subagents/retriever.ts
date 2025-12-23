@@ -189,6 +189,11 @@ export async function filterAndRankChunks(
   chunks: RetrievedChunk[],
   options: FilterOptions = {}
 ): Promise<SubAgentResult> {
+  // Validate query
+  if (!query || typeof query !== 'string' || query.trim().length === 0) {
+    throw new RetrieverError('Query must be a non-empty string');
+  }
+
   const { compress = true, maxChunks = 5 } = options;
 
   // Handle empty chunks
@@ -271,11 +276,21 @@ export async function filterAndRankChunks(
 export async function batchFilterChunks(
   queries: Array<{ query: string; chunks: RetrievedChunk[] }>,
   options: FilterOptions = {}
-): Promise<SubAgentResult[]> {
-  const results = await Promise.all(
+): Promise<Array<SubAgentResult | { error: string; query: string }>> {
+  const results = await Promise.allSettled(
     queries.map(({ query, chunks }) => filterAndRankChunks(query, chunks, options))
   );
-  return results;
+
+  return results.map((result, index) => {
+    if (result.status === 'fulfilled') {
+      return result.value;
+    }
+    // Return error info instead of failing entirely
+    return {
+      error: result.reason instanceof Error ? result.reason.message : 'Unknown error',
+      query: queries[index].query
+    };
+  });
 }
 
 export default filterAndRankChunks;
