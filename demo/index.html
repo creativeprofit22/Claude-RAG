@@ -655,15 +655,24 @@
 
         responderInfo.textContent = `Default: ${data.responders?.default || 'none'}`;
 
-        // Get document count
-        const docsRes = await fetch(`${API_BASE}/api/rag/documents`);
-        const docsData = await docsRes.json();
-        docCount.textContent = `${docsData.count || 0} documents`;
+        // Get document count (separate try-catch so health status isn't affected)
+        try {
+          const docsRes = await fetch(`${API_BASE}/api/rag/documents`);
+          if (!docsRes.ok) {
+            throw new Error(`HTTP ${docsRes.status}`);
+          }
+          const docsData = await docsRes.json();
+          docCount.textContent = `${docsData.count || 0} documents`;
+        } catch (docErr) {
+          console.warn('Failed to fetch document count:', docErr);
+          docCount.textContent = '? documents';
+        }
 
       } catch (err) {
         statusDot.className = 'status-dot unhealthy';
         statusText.textContent = 'Server offline';
         responderInfo.textContent = '-';
+        docCount.textContent = '- documents';
       }
     }
 

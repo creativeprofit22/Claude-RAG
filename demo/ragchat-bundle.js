@@ -8,8 +8,8 @@ const { useState, useRef, useEffect, useCallback } = React;
 // Default accent color
 const DEFAULT_ACCENT_COLOR = '#6366f1';
 
-// Lucide icons (from CDN)
-const createIcon = (paths, size = 24, color = 'currentColor') => {
+// Lucide icons - flexible element creation
+const createIcon = (elements, size = 24, color = 'currentColor') => {
   return React.createElement('svg', {
     xmlns: 'http://www.w3.org/2000/svg',
     width: size,
@@ -20,7 +20,14 @@ const createIcon = (paths, size = 24, color = 'currentColor') => {
     strokeWidth: 2,
     strokeLinecap: 'round',
     strokeLinejoin: 'round'
-  }, paths.map((d, i) => React.createElement('path', { key: i, d })));
+  }, elements.map((el, i) => {
+    // Support both string (path d attribute) and object (element config)
+    if (typeof el === 'string') {
+      return React.createElement('path', { key: i, d: el });
+    }
+    const { type, ...props } = el;
+    return React.createElement(type, { key: i, ...props });
+  }));
 };
 
 const Database = ({ size = 24, style }) => createIcon([
@@ -30,43 +37,42 @@ const Database = ({ size = 24, style }) => createIcon([
 ], size, style?.color);
 
 const Send = ({ size = 24, style }) => createIcon([
-  'M22 2 11 13',
-  'M22 2l-7 20-4-9-9-4 20-7z'
+  { type: 'line', x1: 22, y1: 2, x2: 11, y2: 13 },
+  { type: 'polygon', points: '22 2 15 22 11 13 2 9 22 2' }
 ], size, style?.color);
 
 const Trash2 = ({ size = 24 }) => createIcon([
-  'M3 6h18',
-  'M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6',
-  'M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2',
-  'M10 11v6',
-  'M14 11v6'
+  { type: 'polyline', points: '3 6 5 6 21 6' },
+  'M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2',
+  { type: 'line', x1: 10, y1: 11, x2: 10, y2: 17 },
+  { type: 'line', x1: 14, y1: 11, x2: 14, y2: 17 }
 ], size);
 
 const X = ({ size = 24 }) => createIcon([
-  'M18 6 6 18',
-  'M6 6l12 12'
+  { type: 'line', x1: 18, y1: 6, x2: 6, y2: 18 },
+  { type: 'line', x1: 6, y1: 6, x2: 18, y2: 18 }
 ], size);
 
 const AlertCircle = ({ size = 24 }) => createIcon([
-  'M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2 2 6.477 2 12s4.477 10 10 10z',
-  'M12 8v4',
-  'M12 16h.01'
+  { type: 'circle', cx: 12, cy: 12, r: 10 },
+  { type: 'line', x1: 12, y1: 8, x2: 12, y2: 12 },
+  { type: 'line', x1: 12, y1: 16, x2: 12.01, y2: 16 }
 ], size);
 
 const ChevronDown = ({ size = 24 }) => createIcon([
-  'M6 9l6 6 6-6'
+  { type: 'polyline', points: '6 9 12 15 18 9' }
 ], size);
 
 const ChevronUp = ({ size = 24 }) => createIcon([
-  'M18 15l-6-6-6 6'
+  { type: 'polyline', points: '18 15 12 9 6 15' }
 ], size);
 
 const FileText = ({ size = 24 }) => createIcon([
   'M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z',
-  'M14 2v6h6',
-  'M16 13H8',
-  'M16 17H8',
-  'M10 9H8'
+  { type: 'polyline', points: '14 2 14 8 20 8' },
+  { type: 'line', x1: 16, y1: 13, x2: 8, y2: 13 },
+  { type: 'line', x1: 16, y1: 17, x2: 8, y2: 17 },
+  { type: 'line', x1: 10, y1: 9, x2: 8, y2: 9 }
 ], size);
 
 // Styles (injected once)

@@ -30,6 +30,9 @@ const DEMO_DIR = join(process.cwd(), 'demo');
 const MAX_PAYLOAD_SIZE = 10 * 1024 * 1024; // 10MB limit
 
 // CORS origin configuration - allow all localhost ports for development
+// SECURITY: '*' is for development only. In production, set CORS_ORIGIN to specific allowed origins.
+// TODO: For production deployments, restrict CORS_ORIGIN to your frontend domain(s)
+//       e.g., CORS_ORIGIN=https://your-app.com or CORS_ORIGIN=https://app1.com,https://app2.com
 const CORS_ORIGIN = process.env.CORS_ORIGIN || '*';
 
 /**
@@ -510,6 +513,13 @@ Bun.serve({
 });
 
 console.log(`Server running at http://localhost:${PORT}`);
+
+// Warn if CORS is permissive in production
+if (process.env.NODE_ENV === 'production' && CORS_ORIGIN === '*') {
+  console.warn('\n⚠️  WARNING: CORS is set to allow all origins (*) in production.');
+  console.warn('   This is a security risk. Set CORS_ORIGIN to your specific frontend domain(s).');
+  console.warn('   Example: CORS_ORIGIN=https://your-app.com\n');
+}
 console.log('');
 console.log(`Demo UI: http://localhost:${PORT}/demo`);
 console.log('');
