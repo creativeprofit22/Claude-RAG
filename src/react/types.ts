@@ -66,3 +66,43 @@ export interface RAGChatActions {
   clearChat: () => void;
   setError: (error: string | null) => void;
 }
+
+// ============================================
+// Document Management Types
+// ============================================
+
+/** Document summary for list views */
+export interface DocumentSummary {
+  documentId: string;
+  documentName: string;
+  chunkCount: number;
+  timestamp: number;
+  source?: string;
+  type?: string;
+  categories?: string[];
+  tags?: string[];
+}
+
+/** Full document details with chunks */
+export interface DocumentDetails extends DocumentSummary {
+  chunks: Array<{ chunkIndex: number; snippet: string }>;
+}
+
+/** Category definition for document organization */
+export interface Category {
+  id: string;
+  name: string;
+  color: string;
+  icon?: string;
+}
+
+/** Document library state for UI */
+export interface DocumentLibraryState {
+  documents: DocumentSummary[];
+  isLoading: boolean;
+  error: string | null;
+  searchQuery: string;
+  sortBy: 'name' | 'date' | 'chunks';
+  sortOrder: 'asc' | 'desc';
+  selectedCategory: string | null;
+}

@@ -4,12 +4,26 @@
  * Supports both Claude Code CLI and Gemini responders
  */
 
-import { addDocument, listDocuments, deleteDocument, isReady, search, query, type QueryResult } from './index.js';
+import { addDocument, listDocuments, deleteDocument, isReady, search, query, getDocumentSummaries, getDocumentDetails, type QueryResult } from './index.js';
 import { checkGeminiReady } from './responder-gemini.js';
 import { logger } from './utils/logger.js';
 import { checkClaudeCodeAvailable } from './utils/cli.js';
 import { readFileSync, existsSync, realpathSync } from 'fs';
 import { join, extname, resolve, normalize } from 'path';
+import {
+  initializeCategoryStore,
+  getCategories,
+  createCategory,
+  updateCategory,
+  deleteCategory,
+  getDocumentMetadata,
+  setDocumentCategories,
+  setDocumentTags,
+  getTags,
+  addTag,
+  removeTag,
+  type Category,
+} from './categories.js';
 
 const PORT = process.env.PORT || 3000;
 
@@ -91,7 +105,7 @@ function validateContentLength(req: Request): void {
 // CORS headers - configurable origin for security
 const corsHeaders = {
   'Access-Control-Allow-Origin': CORS_ORIGIN,
-  'Access-Control-Allow-Methods': 'GET, POST, DELETE, OPTIONS',
+  'Access-Control-Allow-Methods': 'GET, POST, PATCH, DELETE, OPTIONS',
   'Access-Control-Allow-Headers': 'Content-Type, Authorization, X-Responder',
 };
 
@@ -113,10 +127,25 @@ function errorResponse(message: string, status = 400): Response {
 
 // Parse URL path and extract route params
 function parseRoute(pathname: string): { route: string; params: Record<string, string> } {
+  // Match /api/rag/documents/:id/metadata pattern (for category/tag updates)
+  const docMetadataMatch = pathname.match(/^\/api\/rag\/documents\/([^\/]+)\/metadata$/);
+  if (docMetadataMatch) {
+    return { route: '/api/rag/documents/:id/metadata', params: { id: docMetadataMatch[1] } };
+  }
+  // Match /api/rag/documents/:id/details pattern (must come before :id pattern)
+  const docDetailsMatch = pathname.match(/^\/api\/rag\/documents\/([^\/]+)\/details$/);
+  if (docDetailsMatch) {
+    return { route: '/api/rag/documents/:id/details', params: { id: docDetailsMatch[1] } };
+  }
   // Match /api/rag/documents/:id pattern
   const docIdMatch = pathname.match(/^\/api\/rag\/documents\/([^\/]+)$/);
   if (docIdMatch) {
     return { route: '/api/rag/documents/:id', params: { id: docIdMatch[1] } };
+  }
+  // Match /api/rag/categories/:id pattern
+  const catIdMatch = pathname.match(/^\/api\/rag\/categories\/([^\/]+)$/);
+  if (catIdMatch) {
+    return { route: '/api/rag/categories/:id', params: { id: catIdMatch[1] } };
   }
   return { route: pathname, params: {} };
 }
@@ -126,7 +155,7 @@ function parseRoute(pathname: string): { route: string; params: Record<string, s
  */
 interface RouteConfig {
   path: string;
-  method: 'GET' | 'POST' | 'DELETE';
+  method: 'GET' | 'POST' | 'PATCH' | 'DELETE';
   description: string;
 }
 
@@ -168,6 +197,48 @@ const ROUTES: Record<string, RouteConfig> = {
     path: '/api/rag/documents/:id',
     method: 'DELETE',
     description: 'Delete document'
+  },
+  documentsDetails: {
+    path: '/api/rag/documents/details',
+    method: 'GET',
+    description: 'List all documents with full metadata'
+  },
+  documentDetails: {
+    path: '/api/rag/documents/:id/details',
+    method: 'GET',
+    description: 'Get single document details with chunk previews'
+  },
+  documentMetadata: {
+    path: '/api/rag/documents/:id/metadata',
+    method: 'PATCH',
+    description: 'Update document categories and tags'
+  },
+  // Category endpoints
+  categories: {
+    path: '/api/rag/categories',
+    method: 'GET',
+    description: 'List all categories'
+  },
+  createCategory: {
+    path: '/api/rag/categories',
+    method: 'POST',
+    description: 'Create a new category'
+  },
+  updateCategory: {
+    path: '/api/rag/categories/:id',
+    method: 'PATCH',
+    description: 'Update a category'
+  },
+  deleteCategory: {
+    path: '/api/rag/categories/:id',
+    method: 'DELETE',
+    description: 'Delete a category'
+  },
+  // Tags endpoint
+  tags: {
+    path: '/api/rag/tags',
+    method: 'GET',
+    description: 'List all tags'
   }
 };
 
@@ -195,6 +266,16 @@ const ROUTE_HANDLERS: Record<string, RouteHandler> = {
   [`POST:${ROUTES.search.path}`]: ({ req }) => handleSearch(req),
   [`GET:${ROUTES.documents.path}`]: () => handleListDocuments(),
   [`DELETE:${ROUTES.deleteDocument.path}`]: ({ params }) => handleDeleteDocument(params.id),
+  [`GET:${ROUTES.documentsDetails.path}`]: () => handleListDocumentsDetails(),
+  [`GET:${ROUTES.documentDetails.path}`]: ({ params }) => handleGetDocumentDetails(params.id),
+  [`PATCH:${ROUTES.documentMetadata.path}`]: ({ req, params }) => handleUpdateDocumentMetadata(req, params.id),
+  // Category handlers
+  [`GET:${ROUTES.categories.path}`]: () => handleGetCategories(),
+  [`POST:${ROUTES.createCategory.path}`]: ({ req }) => handleCreateCategory(req),
+  [`PATCH:${ROUTES.updateCategory.path}`]: ({ req, params }) => handleUpdateCategory(req, params.id),
+  [`DELETE:${ROUTES.deleteCategory.path}`]: ({ params }) => handleDeleteCategory(params.id),
+  // Tags handler
+  [`GET:${ROUTES.tags.path}`]: () => handleGetTags(),
 };
 
 /**
@@ -395,7 +476,208 @@ async function handleDeleteDocument(documentId: string): Promise<Response> {
   });
 }
 
+/**
+ * GET /api/rag/documents/details - List all documents with full metadata
+ */
+async function handleListDocumentsDetails(): Promise<Response> {
+  const documents = await getDocumentSummaries();
+  return jsonResponse({
+    documents,
+  });
+}
 
+/**
+ * GET /api/rag/documents/:id/details - Get single document details
+ */
+async function handleGetDocumentDetails(documentId: string): Promise<Response> {
+  if (!documentId) {
+    return errorResponse('Document ID is required');
+  }
+
+  const details = await getDocumentDetails(documentId);
+  if (!details) {
+    return errorResponse('Document not found', 404);
+  }
+
+  return jsonResponse(details);
+}
+
+/**
+ * PATCH /api/rag/documents/:id/metadata - Update document categories and tags
+ */
+async function handleUpdateDocumentMetadata(req: Request, documentId: string): Promise<Response> {
+  if (!documentId) {
+    return errorResponse('Document ID is required');
+  }
+
+  const parsed = await parseJsonBody(req);
+  if (!parsed.ok) return parsed.error;
+  const body = parsed.data;
+
+  // Validate categories array if provided
+  if (body.categories !== undefined) {
+    if (!Array.isArray(body.categories)) {
+      return errorResponse('categories must be an array of strings');
+    }
+    for (const cat of body.categories) {
+      if (typeof cat !== 'string') {
+        return errorResponse('categories must be an array of strings');
+      }
+    }
+    setDocumentCategories(documentId, body.categories as string[]);
+  }
+
+  // Validate tags array if provided
+  if (body.tags !== undefined) {
+    if (!Array.isArray(body.tags)) {
+      return errorResponse('tags must be an array of strings');
+    }
+    for (const tag of body.tags) {
+      if (typeof tag !== 'string') {
+        return errorResponse('tags must be an array of strings');
+      }
+    }
+    setDocumentTags(documentId, body.tags as string[]);
+  }
+
+  // Return updated metadata
+  const metadata = getDocumentMetadata(documentId);
+  return jsonResponse({
+    success: true,
+    documentId,
+    ...metadata,
+  });
+}
+
+// ============================================
+// Category Handlers
+// ============================================
+
+/**
+ * GET /api/rag/categories - List all categories
+ */
+async function handleGetCategories(): Promise<Response> {
+  const categories = getCategories();
+  return jsonResponse({
+    categories,
+    count: categories.length,
+  });
+}
+
+/**
+ * POST /api/rag/categories - Create a new category
+ */
+async function handleCreateCategory(req: Request): Promise<Response> {
+  const parsed = await parseJsonBody(req);
+  if (!parsed.ok) return parsed.error;
+  const body = parsed.data;
+
+  if (!body.name || typeof body.name !== 'string' || body.name.trim().length === 0) {
+    return errorResponse('Missing required field: name (non-empty string)');
+  }
+
+  if (!body.color || typeof body.color !== 'string') {
+    return errorResponse('Missing required field: color (hex color string)');
+  }
+
+  // Validate hex color format
+  if (!/^#[0-9A-Fa-f]{6}$/.test(body.color)) {
+    return errorResponse('Invalid color format. Use hex format: #RRGGBB');
+  }
+
+  const icon = validateOptionalString(body.icon, 'icon');
+
+  try {
+    const category = createCategory(body.name, body.color, icon);
+    return jsonResponse({
+      success: true,
+      category,
+    }, 201);
+  } catch (error) {
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+    return errorResponse(`Failed to create category: ${errorMessage}`, 500);
+  }
+}
+
+/**
+ * PATCH /api/rag/categories/:id - Update a category
+ */
+async function handleUpdateCategory(req: Request, categoryId: string): Promise<Response> {
+  if (!categoryId) {
+    return errorResponse('Category ID is required');
+  }
+
+  const parsed = await parseJsonBody(req);
+  if (!parsed.ok) return parsed.error;
+  const body = parsed.data;
+
+  const updates: Partial<Category> = {};
+
+  if (body.name !== undefined) {
+    if (typeof body.name !== 'string' || body.name.trim().length === 0) {
+      return errorResponse('name must be a non-empty string');
+    }
+    updates.name = body.name;
+  }
+
+  if (body.color !== undefined) {
+    if (typeof body.color !== 'string' || !/^#[0-9A-Fa-f]{6}$/.test(body.color)) {
+      return errorResponse('Invalid color format. Use hex format: #RRGGBB');
+    }
+    updates.color = body.color;
+  }
+
+  if (body.icon !== undefined) {
+    if (typeof body.icon !== 'string') {
+      return errorResponse('icon must be a string');
+    }
+    updates.icon = body.icon;
+  }
+
+  if (Object.keys(updates).length === 0) {
+    return errorResponse('No valid fields to update. Provide name, color, or icon.');
+  }
+
+  const category = updateCategory(categoryId, updates);
+  if (!category) {
+    return errorResponse('Category not found', 404);
+  }
+
+  return jsonResponse({
+    success: true,
+    category,
+  });
+}
+
+/**
+ * DELETE /api/rag/categories/:id - Delete a category
+ */
+async function handleDeleteCategory(categoryId: string): Promise<Response> {
+  if (!categoryId) {
+    return errorResponse('Category ID is required');
+  }
+
+  const deleted = deleteCategory(categoryId);
+  if (!deleted) {
+    return errorResponse('Category not found', 404);
+  }
+
+  return jsonResponse({
+    success: true,
+    message: `Category ${categoryId} deleted`,
+  });
+}
+
+/**
+ * GET /api/rag/tags - List all tags
+ */
+async function handleGetTags(): Promise<Response> {
+  const tags = getTags();
+  return jsonResponse({
+    tags,
+    count: tags.length,
+  });
+}
 
 /**
  * Get the default responder based on availability (prefers Claude)
@@ -539,6 +821,9 @@ Responder selection:
   Default: auto (prefers Claude, falls back to Gemini)
 `);
 }
+
+// Initialize category store
+initializeCategoryStore();
 
 // Start server
 Bun.serve({

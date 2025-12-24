@@ -328,6 +328,20 @@ export async function deleteDocument(documentId: string): Promise<void> {
 }
 
 /**
+ * Get summary of all documents with full metadata
+ */
+export async function getDocumentSummaries() {
+  return ragDatabase.getDocumentSummaries();
+}
+
+/**
+ * Get detailed info for a single document including chunk previews
+ */
+export async function getDocumentDetails(documentId: string) {
+  return ragDatabase.getDocumentDetails(documentId);
+}
+
+/**
  * Check if the system is ready
  * Checks both embedding service and configured responder
  */
@@ -440,7 +454,7 @@ export async function search(
 // Re-export types and utilities
 export * from './types.js';
 export { getDefaultConfig } from './config.js';
-export { ragDatabase } from './database.js';
+export { ragDatabase, type DocumentSummary, type DocumentDetails } from './database.js';
 export { generateEmbedding, generateQueryEmbedding } from './embeddings.js';
 export { filterAndRankChunks } from './subagents/index.js';
 

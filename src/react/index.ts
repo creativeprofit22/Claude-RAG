@@ -31,8 +31,14 @@ export { ChatInput } from './components/ChatInput.js';
 export { MessageBubble } from './components/MessageBubble.js';
 export { TypingIndicator } from './components/TypingIndicator.js';
 
-// Hook for custom implementations
+// Category components
+export { CategoryBadge, CategoryFilter } from './components/categories/index.js';
+export type { CategoryBadgeProps, CategoryFilterProps } from './components/categories/index.js';
+
+// Hooks for custom implementations
 export { useRAGChat } from './hooks/useRAGChat.js';
+export { useDocuments } from './hooks/useDocuments.js';
+export { useCategories } from './hooks/useCategories.js';
 
 // Types
 export type {
@@ -42,4 +48,8 @@ export type {
   RAGChatConfig,
   RAGChatState,
   RAGChatActions,
+  Category,
+  DocumentSummary,
+  DocumentDetails,
+  DocumentLibraryState,
 } from './types.js';

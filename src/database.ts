@@ -10,6 +10,25 @@ const DB_PATH = process.env.RAG_DB_PATH || join(process.cwd(), 'data', 'vectors'
 const TABLE_NAME = 'documents';
 
 /**
+ * Summary of a document (aggregated from chunks)
+ */
+export interface DocumentSummary {
+  documentId: string;
+  documentName: string;
+  chunkCount: number;
+  timestamp: number;
+  source?: string;
+  type?: string;
+}
+
+/**
+ * Detailed document info including chunk previews
+ */
+export interface DocumentDetails extends DocumentSummary {
+  chunks: Array<{ chunkIndex: number; snippet: string }>;
+}
+
+/**
  * Metadata associated with each document chunk
  */
 export interface DocumentMetadata {
@@ -44,6 +63,15 @@ export interface SearchResult extends VectorDocument {
 export interface SearchOptions {
   limit?: number;
   filter?: string;
+}
+
+/**
+ * Escape a string value for use in LanceDB WHERE clause
+ * Prevents SQL injection by escaping special characters
+ */
+function escapeFilterValue(value: string): string {
+  // Escape backslashes first, then double quotes
+  return value.replace(/\\/g, '\\\\').replace(/"/g, '\\"');
 }
 
 /**
@@ -179,7 +207,7 @@ class RAGDatabase {
     try {
       const results = await table
         .query()
-        .where(`metadata.documentId = "${documentId}"`)
+        .where(`metadata.documentId = "${escapeFilterValue(documentId)}"`)
         .limit(10000)
         .toArray();
 
@@ -202,7 +230,7 @@ class RAGDatabase {
       return;
     }
 
-    await table.delete(`metadata.documentId = "${documentId}"`);
+    await table.delete(`metadata.documentId = "${escapeFilterValue(documentId)}"`);
   }
 
   /**
@@ -268,6 +296,95 @@ class RAGDatabase {
       chunkCount,
       tableExists: true,
     };
+  }
+
+  /**
+   * Get summary of all documents (aggregated by documentId)
+   */
+  async getDocumentSummaries(): Promise<DocumentSummary[]> {
+    const table = await this.ensureTable();
+    if (!table) {
+      return [];
+    }
+
+    try {
+      const all = await table.query().limit(10000).toArray();
+      const docMap = new Map<string, {
+        documentName: string;
+        chunkCount: number;
+        timestamp: number;
+        source?: string;
+        type?: string;
+      }>();
+
+      for (const row of all) {
+        const doc = row as unknown as VectorDocument;
+        if (!doc.metadata?.documentId) continue;
+
+        const existing = docMap.get(doc.metadata.documentId);
+        if (existing) {
+          existing.chunkCount++;
+        } else {
+          docMap.set(doc.metadata.documentId, {
+            documentName: doc.metadata.documentName,
+            chunkCount: 1,
+            timestamp: doc.metadata.timestamp,
+            source: doc.metadata.source as string | undefined,
+            type: doc.metadata.type as string | undefined,
+          });
+        }
+      }
+
+      return Array.from(docMap.entries()).map(([documentId, data]) => ({
+        documentId,
+        ...data,
+      }));
+    } catch {
+      return [];
+    }
+  }
+
+  /**
+   * Get detailed info for a single document including chunk previews
+   */
+  async getDocumentDetails(documentId: string): Promise<DocumentDetails | null> {
+    const table = await this.ensureTable();
+    if (!table) {
+      return null;
+    }
+
+    try {
+      const results = await table
+        .query()
+        .where(`metadata.documentId = "${escapeFilterValue(documentId)}"`)
+        .limit(10000)
+        .toArray();
+
+      if (results.length === 0) {
+        return null;
+      }
+
+      const docs = results as unknown as VectorDocument[];
+      const firstDoc = docs[0];
+
+      // Sort chunks by chunkIndex
+      const sortedDocs = docs.sort((a, b) => a.metadata.chunkIndex - b.metadata.chunkIndex);
+
+      return {
+        documentId,
+        documentName: firstDoc.metadata.documentName,
+        chunkCount: docs.length,
+        timestamp: firstDoc.metadata.timestamp,
+        source: firstDoc.metadata.source as string | undefined,
+        type: firstDoc.metadata.type as string | undefined,
+        chunks: sortedDocs.map((doc) => ({
+          chunkIndex: doc.metadata.chunkIndex,
+          snippet: doc.text.slice(0, 200),
+        })),
+      };
+    } catch {
+      return null;
+    }
   }
 }
 
