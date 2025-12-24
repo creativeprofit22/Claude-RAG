@@ -16,8 +16,17 @@ Query → Gemini Embeddings → LanceDB → Chunks → Claude Code CLI → Respo
 Phase: idle
 Feature: None
 
+## Last Session (2025-12-24)
+- Committed and pushed Demo UI security fixes and refactors
+- Verified server health endpoint on port 3001
+- Tested RAG query via curl - both responders working
+- Marked Demo UI Page feature complete
+
 ## Completed Features
 - **Demo UI Page** (2025-12-24): Security fixes (XSS, memory leak, path traversal), refactors (CSS extraction, DRY helpers), tested and verified
+
+## Next Steps
+1. Pick next feature to work on (user decision)
 
 ## Package Usage
 ```tsx
