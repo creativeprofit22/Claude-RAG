@@ -5,14 +5,14 @@
  * All API endpoints are configurable via props.
  */
 
-export { DocumentUpload } from './DocumentUpload';
-export type { DocumentUploadProps } from './DocumentUpload';
+export { DocumentUpload } from './DocumentUpload.js';
+export type { DocumentUploadProps } from './DocumentUpload.js';
 
-export { QueryInterface } from './QueryInterface';
-export type { QueryInterfaceProps, QueryResult, Source as QuerySource } from './QueryInterface';
+export { QueryInterface } from './QueryInterface.js';
+export type { QueryInterfaceProps, QueryResult, Source as QuerySource } from './QueryInterface.js';
 
-export { RAGModal } from './RAGModal';
-export type { RAGModalProps, Document } from './RAGModal';
+export { RAGModal } from './RAGModal.js';
+export type { RAGModalProps, Document } from './RAGModal.js';
 
-export { SourceCitation } from './SourceCitation';
-export type { SourceCitationProps, Source as CitationSource } from './SourceCitation';
+export { SourceCitation } from './SourceCitation.js';
+export type { SourceCitationProps, Source as CitationSource } from './SourceCitation.js';

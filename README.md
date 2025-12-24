@@ -191,22 +191,78 @@ interface QueryOptions {
 
 ## React Components
 
-This library includes React components for building RAG-powered interfaces:
+Drop-in chat UI for any React project:
 
-```typescript
-import { RAGProvider, SearchBox, ResultsList } from 'claude-rag/react';
+```bash
+npm install claude-rag
+```
+
+### Quick Start
+
+```tsx
+import { RAGChat } from 'claude-rag/react';
+import 'claude-rag/react/styles.css';
 
 function App() {
   return (
-    <RAGProvider>
-      <SearchBox placeholder="Ask a question..." />
-      <ResultsList />
-    </RAGProvider>
+    <div style={{ height: '600px' }}>
+      <RAGChat
+        endpoint="http://localhost:3000/api/rag/query"
+        title="Document Assistant"
+        accentColor="#6366f1"
+      />
+    </div>
   );
 }
 ```
 
-See the `/components` directory for full component documentation.
+### RAGChat Props
+
+| Prop | Type | Default | Description |
+|------|------|---------|-------------|
+| `endpoint` | `string` | `/api/rag/query` | API endpoint URL |
+| `title` | `string` | `RAG Assistant` | Header title |
+| `placeholder` | `string` | `Ask a question...` | Input placeholder |
+| `accentColor` | `string` | `#6366f1` | Theme color (hex) |
+| `showSources` | `boolean` | `true` | Show source citations |
+| `systemPrompt` | `string` | - | Custom system prompt |
+| `topK` | `number` | - | Number of chunks to retrieve |
+| `documentId` | `string` | - | Filter to specific document |
+| `headers` | `Record<string, string>` | - | Custom API headers |
+
+### Custom Implementation
+
+Use the hook for full control:
+
+```tsx
+import { useRAGChat, MessageBubble, ChatInput } from 'claude-rag/react';
+
+function CustomChat() {
+  const { messages, isTyping, sendMessage, clearChat } = useRAGChat({
+    endpoint: '/api/rag/query',
+  });
+
+  return (
+    <div>
+      {messages.map(msg => (
+        <MessageBubble key={msg.id} message={msg} />
+      ))}
+      <ChatInput onSendMessage={sendMessage} disabled={isTyping} />
+    </div>
+  );
+}
+```
+
+### Exported Components
+
+| Component | Description |
+|-----------|-------------|
+| `RAGChat` | Complete drop-in chat interface |
+| `ChatHeader` | Header with title and clear button |
+| `ChatInput` | Input field with send button |
+| `MessageBubble` | Message display with sources |
+| `TypingIndicator` | Animated typing dots |
+| `useRAGChat` | Hook for custom implementations |
 
 ## Project Structure
 
@@ -216,10 +272,19 @@ claude-rag/
 │   ├── index.ts           # Main entry point and query function
 │   ├── embeddings.ts      # Google Gemini embedding generation
 │   ├── database.ts        # LanceDB vector storage
-│   ├── responder.ts       # Claude CLI / Gemini response generation
+│   ├── responder.ts       # Claude CLI response generation
+│   ├── responder-gemini.ts # Gemini fallback response generation
+│   ├── server.ts          # Bun HTTP server
 │   ├── cli.ts             # Command-line interface
 │   ├── config.ts          # Configuration and defaults
 │   ├── types.ts           # TypeScript type definitions
+│   ├── react/             # React UI components
+│   │   ├── index.ts       # React exports
+│   │   ├── RAGChat.tsx    # Drop-in chat component
+│   │   ├── styles.css     # Standalone styles
+│   │   ├── types.ts       # React-specific types
+│   │   ├── components/    # Individual UI components
+│   │   └── hooks/         # React hooks
 │   └── utils/
 │       └── logger.ts      # Logging utility
 ├── data/

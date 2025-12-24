@@ -28,6 +28,7 @@ export interface VectorDocument {
   vector: number[];
   text: string;
   metadata: DocumentMetadata;
+  [key: string]: string | number | number[] | DocumentMetadata | undefined;
 }
 
 /**

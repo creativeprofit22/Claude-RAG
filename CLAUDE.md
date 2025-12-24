@@ -13,38 +13,44 @@ Query → Gemini Embeddings → LanceDB → Chunks → Claude Code CLI → Respo
 ```
 
 ## Current Focus
-Section: Ready for new features
-Files: Core system complete
+Section: npm package ready
+Files: All complete with React UI
 
 ## Pipeline State
-Phase: build
-Feature: CLI Migration
-Status: Complete
-Reports:
-  - bugs: reports/bugs-cli-migration.md
-  - refactors: reports/refactors-cli-migration.md
+Phase: complete
+Feature: npm Package Setup
+Status: Complete - ready for publishing
 
 ## Last Session (2025-12-23)
-Low priority refactors complete (commit 089442a):
-- Removed unused AbortController in responder-gemini.ts
-- Created shared ResponderError class (src/utils/responder-errors.ts)
-- Created withTiming() utility (src/utils/timing.ts)
-- Defined routes as constants with metadata (server.ts ROUTES object)
-- Consolidated type definitions: Source→ChunkSource, RetrievedChunk→Chunk
-- All 17 refactors complete, pushed to origin
+npm Package Setup complete:
+- Added React chat UI components (from Agent-Girl archetypal-os)
+- Created RAGChat drop-in component with useRAGChat hook
+- Added standalone CSS styles (rag-chat-* classes)
+- Updated package.json with exports for ./react subpath
+- Updated tsconfig for JSX and DOM types
+- Build passes, all files in dist/
+
+## Package Usage
+```tsx
+// Backend API
+import { query, addDocument } from 'claude-rag';
+
+// React UI
+import { RAGChat } from 'claude-rag/react';
+import 'claude-rag/react/styles.css';
+
+<RAGChat endpoint="/api/rag/query" />
+```
 
 ## Key Files
-- `src/responder.ts` - Claude Code CLI integration
-- `src/responder-gemini.ts` - Gemini fallback
-- `src/index.ts` - Main API (query, search)
+- `src/index.ts` - Main API exports
 - `src/server.ts` - Bun HTTP server
-- `src/subagents/retriever.ts` - Chunk retrieval
+- `src/react/RAGChat.tsx` - Drop-in chat component
+- `src/react/hooks/useRAGChat.ts` - React hook
+- `src/react/styles.css` - Standalone styles
 
 ## Environment
 ```
 GOOGLE_AI_API_KEY=xxx          # Required
 RAG_RESPONDER=claude|gemini    # Optional, default: claude
 ```
-
-## Note
-102 pre-existing TypeScript errors in React components (TSX/DOM config) - not from this migration.
