@@ -186,7 +186,8 @@ body {
   width: 150px;
 }
 
-.upload-form button {
+/* Primary button base class */
+.btn-primary {
   padding: 0.75rem 1.5rem;
   background: linear-gradient(135deg, #6366f1, #8b5cf6);
   border: none;
@@ -195,6 +196,20 @@ body {
   font-weight: 600;
   cursor: pointer;
   transition: transform 0.2s, opacity 0.2s;
+}
+
+.btn-primary:hover:not(:disabled) {
+  transform: scale(1.02);
+}
+
+.btn-primary:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.upload-form button {
+  padding: 0.75rem 1.5rem;
 }
 
 .upload-form button:hover {
@@ -304,23 +319,6 @@ body {
 
 .upload-actions button {
   padding: 0.625rem 1.25rem;
-  background: linear-gradient(135deg, #6366f1, #8b5cf6);
-  border: none;
-  border-radius: 0.5rem;
-  color: #fff;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.2s;
-}
-
-.upload-actions button:hover:not(:disabled) {
-  transform: scale(1.02);
-}
-
-.upload-actions button:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-  transform: none;
 }
 
 /* Sample questions */

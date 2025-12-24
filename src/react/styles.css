@@ -3,6 +3,23 @@
  * Import this file to style the RAGChat component
  */
 
+/* CSS Custom Properties */
+:root {
+  --rag-bg-primary: #0a0a0f;
+  --rag-text-primary: #ffffff;
+  --rag-text-secondary: #9ca3af;
+  --rag-text-muted: #6b7280;
+  --rag-border-light: rgba(255, 255, 255, 0.1);
+  --rag-border-lighter: rgba(255, 255, 255, 0.05);
+  --rag-surface-light: rgba(255, 255, 255, 0.05);
+  --rag-surface-hover: rgba(255, 255, 255, 0.1);
+  --rag-surface-subtle: rgba(255, 255, 255, 0.03);
+  --rag-error: #ef4444;
+  --rag-error-light: #fca5a5;
+  --rag-error-bg: rgba(239, 68, 68, 0.1);
+  --rag-error-border: rgba(239, 68, 68, 0.2);
+}
+
 /* Base container */
 .rag-chat {
   display: flex;
