@@ -1,13 +1,14 @@
 'use client';
 
-import { useState, useCallback, useRef } from 'react';
-import { Library, AlertCircle, X, FileText } from 'lucide-react';
+import { Library, AlertCircle, X } from 'lucide-react';
 import { DocumentSearch } from './DocumentSearch.js';
 import { DocumentList } from './DocumentList.js';
 import { DocumentPreview } from './DocumentPreview.js';
 import { ConfirmDialog } from '../shared/ConfirmDialog.js';
+import { EmptyState } from '../shared/EmptyState.js';
 import { useDocuments } from '../../hooks/useDocuments.js';
-import { DEFAULT_ACCENT_COLOR, type DocumentSummary, type DocumentDetails } from '../../types.js';
+import { useDocumentLibraryState } from '../../hooks/useDocumentLibraryState.js';
+import { DEFAULT_ACCENT_COLOR, type DocumentSummary } from '../../types.js';
 
 export interface DocumentLibraryProps {
   /** API endpoint base URL (default: /api/rag) */
@@ -73,125 +74,40 @@ export function DocumentLibrary({
     setSortOrder,
   } = useDocuments({ endpoint, headers });
 
-  // Keep refetch ref for error recovery
-  const refetchRef = useRef(refetch);
-  refetchRef.current = refetch;
-
-  // Local UI state
-  const [previewDoc, setPreviewDoc] = useState<DocumentDetails | null>(null);
-  const [previewLoading, setPreviewLoading] = useState(false);
-  const [deleteDoc, setDeleteDoc] = useState<DocumentSummary | null>(null);
-  const [isDeleting, setIsDeleting] = useState(false);
-  const [localError, setLocalError] = useState<string | null>(null);
+  // UI state management
+  const {
+    previewDoc,
+    previewLoading,
+    handlePreview,
+    handleClosePreview,
+    handleQueryDocument,
+    deleteDoc,
+    isDeleting,
+    handleDeleteRequest,
+    handleConfirmDelete,
+    handleCancelDelete,
+    localError,
+    dismissError,
+    handleDocumentSelect,
+  } = useDocumentLibraryState({
+    getDocumentDetails,
+    deleteDocument,
+    refetch,
+    onDocumentSelect,
+  });
 
   // Combined error state
   const displayError = localError || error;
 
-  // Handle document preview
-  const handlePreview = useCallback(
-    async (doc: DocumentSummary) => {
-      setPreviewLoading(true);
-      setLocalError(null);
-
-      try {
-        const details = await getDocumentDetails(doc.documentId);
-        if (details) {
-          setPreviewDoc(details);
-        } else {
-          // Fallback to summary if details fetch fails
-          setPreviewDoc({
-            ...doc,
-            chunks: [],
-          });
-        }
-      } catch (err) {
-        setLocalError('Failed to load document details');
-      } finally {
-        setPreviewLoading(false);
-      }
-    },
-    [getDocumentDetails]
-  );
-
-  // Handle document deletion request
-  const handleDeleteRequest = useCallback((doc: DocumentSummary) => {
-    setDeleteDoc(doc);
-  }, []);
-
-  // Handle confirmed deletion
-  const handleConfirmDelete = useCallback(async () => {
-    if (!deleteDoc) return;
-
-    setIsDeleting(true);
-    setLocalError(null);
-
-    try {
-      const success = await deleteDocument(deleteDoc.documentId);
-      if (success) {
-        setDeleteDoc(null);
-        // Close preview if we deleted the previewed document
-        if (previewDoc?.documentId === deleteDoc.documentId) {
-          setPreviewDoc(null);
-        }
-      } else {
-        // Refetch to ensure state is synced after failed delete
-        refetchRef.current();
-      }
-    } catch (err) {
-      setLocalError('Failed to delete document');
-      // Refetch to ensure state is synced after error
-      refetchRef.current();
-    } finally {
-      setIsDeleting(false);
-    }
-  }, [deleteDoc, deleteDocument, previewDoc?.documentId]);
-
-  // Handle cancel deletion
-  const handleCancelDelete = useCallback(() => {
-    setDeleteDoc(null);
-  }, []);
-
-  // Handle close preview
-  const handleClosePreview = useCallback(() => {
-    setPreviewDoc(null);
-  }, []);
-
-  // Handle query document from preview
-  const handleQueryDocument = useCallback(
-    (doc: DocumentDetails) => {
-      setPreviewDoc(null);
-      onDocumentSelect?.(doc);
-    },
-    [onDocumentSelect]
-  );
-
-  // Handle document selection from list
-  const handleDocumentSelect = useCallback(
-    (doc: DocumentSummary) => {
-      onDocumentSelect?.(doc);
-    },
-    [onDocumentSelect]
-  );
-
-  // Dismiss error
-  const dismissError = useCallback(() => {
-    setLocalError(null);
-  }, []);
-
   // Default empty state
   const defaultEmptyState = (
-    <div className="rag-library-empty">
-      <div
-        className="rag-library-empty-icon"
-        style={{ boxShadow: `0 0 30px ${accentColor}15` }}
-      >
-        <FileText size={48} style={{ color: accentColor }} aria-hidden="true" />
-      </div>
-      <h3 className="rag-library-empty-title">No documents yet</h3>
-      <p className="rag-library-empty-description">
-        Upload documents to start building your knowledge base.
-      </p>
-    </div>
+    <EmptyState
+      title="No documents yet"
+      description="Upload documents to start building your knowledge base."
+      iconColor={accentColor}
+      iconShadow={`0 0 30px ${accentColor}15`}
+      className="rag-library-empty"
+    />
   );
 
   return (

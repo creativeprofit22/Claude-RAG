@@ -1,7 +1,7 @@
 'use client';
 
-import { FileText } from 'lucide-react';
 import { DocumentCard } from './DocumentCard.js';
+import { EmptyState } from '../shared/EmptyState.js';
 import type { DocumentSummary } from '../../types.js';
 
 export interface DocumentListProps {
@@ -35,15 +35,11 @@ function DocumentCardSkeleton() {
  */
 function DefaultEmptyState() {
   return (
-    <div className="rag-doc-list-empty">
-      <div className="rag-doc-list-empty-icon">
-        <FileText size={48} aria-hidden="true" />
-      </div>
-      <h3 className="rag-doc-list-empty-title">No documents found</h3>
-      <p className="rag-doc-list-empty-description">
-        Upload documents to start building your knowledge base.
-      </p>
-    </div>
+    <EmptyState
+      title="No documents found"
+      description="Upload documents to start building your knowledge base."
+      className="rag-doc-list-empty"
+    />
   );
 }
 

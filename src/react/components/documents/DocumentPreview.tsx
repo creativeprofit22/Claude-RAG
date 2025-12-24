@@ -4,6 +4,7 @@ import { X, FileText, Calendar, Layers, MessageSquare, ExternalLink } from 'luci
 import type { DocumentDetails } from '../../types.js';
 import { DEFAULT_ACCENT_COLOR } from '../../types.js';
 import { useModal } from '../../hooks/useModal.js';
+import { formatDate } from '../../utils/formatDate.js';
 
 export interface DocumentPreviewProps {
   document: DocumentDetails;
@@ -24,17 +25,6 @@ export function DocumentPreview({
   accentColor = DEFAULT_ACCENT_COLOR,
 }: DocumentPreviewProps) {
   const { handleBackdropClick } = useModal({ onClose });
-
-  // Format timestamp to readable date
-  const formatDate = (timestamp: number) => {
-    return new Date(timestamp).toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit',
-    });
-  };
 
   // Get file type from document name or type field
   const getFileType = () => {
@@ -87,7 +77,7 @@ export function DocumentPreview({
         <div className="rag-preview-metadata">
           <div className="rag-preview-meta-item">
             <Calendar size={14} aria-hidden="true" />
-            <span>{formatDate(docDetails.timestamp)}</span>
+            <span>{formatDate(docDetails.timestamp, 'datetime')}</span>
           </div>
           <div className="rag-preview-meta-item">
             <Layers size={14} aria-hidden="true" />

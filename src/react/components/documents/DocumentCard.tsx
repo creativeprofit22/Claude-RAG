@@ -2,6 +2,7 @@
 
 import { FileText, FileCode, FileJson, File, Eye, Trash2, Layers } from 'lucide-react';
 import type { DocumentSummary } from '../../types.js';
+import { formatDate } from '../../utils/formatDate.js';
 
 export interface DocumentCardProps {
   document: DocumentSummary;
@@ -34,18 +35,6 @@ function getDocumentIcon(type?: string) {
     default:
       return File;
   }
-}
-
-/**
- * Format a timestamp to a readable date string
- */
-function formatDate(timestamp: number): string {
-  const date = new Date(timestamp);
-  return date.toLocaleDateString('en-US', {
-    month: 'short',
-    day: 'numeric',
-    year: 'numeric',
-  });
 }
 
 /**

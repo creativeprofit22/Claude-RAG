@@ -57,41 +57,56 @@ function ensureDataDir(): void {
   }
 }
 
-function readCategoryStore(): CategoryStore {
+/**
+ * Generic JSON file reader with fallback
+ */
+function readJsonStore<T>(
+  path: string,
+  fallback: T,
+  errorMessage?: string
+): T {
   try {
-    if (existsSync(CATEGORIES_FILE)) {
-      const data = readFileSync(CATEGORIES_FILE, 'utf-8');
-      return JSON.parse(data) as CategoryStore;
+    if (existsSync(path)) {
+      const data = readFileSync(path, 'utf-8');
+      return JSON.parse(data) as T;
     }
   } catch (error) {
-    console.warn(
-      'Failed to parse categories file, using defaults. Custom categories may have been lost:',
-      error instanceof Error ? error.message : error
-    );
+    const msg = errorMessage || `Error reading ${path}`;
+    console.warn(msg, error instanceof Error ? error.message : error);
   }
-  return { categories: [...DEFAULT_CATEGORIES], tags: [] };
+  return fallback;
+}
+
+/**
+ * Generic JSON file writer
+ */
+function writeJsonStore<T>(path: string, data: T): void {
+  ensureDataDir();
+  writeFileSync(path, JSON.stringify(data, null, 2), 'utf-8');
+}
+
+function readCategoryStore(): CategoryStore {
+  return readJsonStore<CategoryStore>(
+    CATEGORIES_FILE,
+    { categories: [...DEFAULT_CATEGORIES], tags: [] },
+    'Failed to parse categories file, using defaults. Custom categories may have been lost:'
+  );
 }
 
 function writeCategoryStore(store: CategoryStore): void {
-  ensureDataDir();
-  writeFileSync(CATEGORIES_FILE, JSON.stringify(store, null, 2), 'utf-8');
+  writeJsonStore(CATEGORIES_FILE, store);
 }
 
 function readDocMetadataStore(): DocumentMetadataStore {
-  try {
-    if (existsSync(DOC_METADATA_FILE)) {
-      const data = readFileSync(DOC_METADATA_FILE, 'utf-8');
-      return JSON.parse(data) as DocumentMetadataStore;
-    }
-  } catch (error) {
-    console.error('Error reading document metadata file:', error);
-  }
-  return {};
+  return readJsonStore<DocumentMetadataStore>(
+    DOC_METADATA_FILE,
+    {},
+    'Error reading document metadata file:'
+  );
 }
 
 function writeDocMetadataStore(store: DocumentMetadataStore): void {
-  ensureDataDir();
-  writeFileSync(DOC_METADATA_FILE, JSON.stringify(store, null, 2), 'utf-8');
+  writeJsonStore(DOC_METADATA_FILE, store);
 }
 
 // ============================================
