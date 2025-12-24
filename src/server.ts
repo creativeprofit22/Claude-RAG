@@ -8,12 +8,29 @@ import { addDocument, listDocuments, deleteDocument, isReady, search, query, typ
 import { checkGeminiReady } from './responder-gemini.js';
 import { logger } from './utils/logger.js';
 import { checkClaudeCodeAvailable } from './utils/cli.js';
+import { readFileSync, existsSync, realpathSync } from 'fs';
+import { join, extname, resolve, normalize } from 'path';
 
 const PORT = process.env.PORT || 3000;
+
+// Static file MIME types
+const MIME_TYPES: Record<string, string> = {
+  '.html': 'text/html',
+  '.js': 'application/javascript',
+  '.css': 'text/css',
+  '.json': 'application/json',
+  '.png': 'image/png',
+  '.jpg': 'image/jpeg',
+  '.svg': 'image/svg+xml',
+  '.ico': 'image/x-icon',
+};
+
+// Demo directory path - use process.cwd() for reliability
+const DEMO_DIR = join(process.cwd(), 'demo');
 const MAX_PAYLOAD_SIZE = 10 * 1024 * 1024; // 10MB limit
 
-// CORS origin configuration - defaults to localhost for security
-const CORS_ORIGIN = process.env.CORS_ORIGIN || 'http://localhost:3000';
+// CORS origin configuration - allow all localhost ports for development
+const CORS_ORIGIN = process.env.CORS_ORIGIN || '*';
 
 /**
  * Validate optional string field from request body
@@ -436,6 +453,35 @@ async function handleRequest(req: Request): Promise<Response> {
       return handleDeleteDocument(params.id);
     }
 
+    // Serve static files from /demo
+    if (req.method === 'GET' && (url.pathname === '/demo' || url.pathname.startsWith('/demo/'))) {
+      let filePath = url.pathname === '/demo' || url.pathname === '/demo/'
+        ? join(DEMO_DIR, 'index.html')
+        : join(DEMO_DIR, url.pathname.replace('/demo/', ''));
+
+      // Sanitize path to prevent directory traversal attacks
+      const normalizedPath = normalize(resolve(filePath));
+      const normalizedDemoDir = normalize(resolve(DEMO_DIR));
+      if (!normalizedPath.startsWith(normalizedDemoDir + '/') && normalizedPath !== normalizedDemoDir) {
+        return errorResponse('Access denied', 403);
+      }
+      filePath = normalizedPath;
+
+      if (existsSync(filePath)) {
+        const ext = extname(filePath);
+        const mimeType = MIME_TYPES[ext] || 'application/octet-stream';
+        const content = readFileSync(filePath);
+        return new Response(content, {
+          status: 200,
+          headers: {
+            'Content-Type': mimeType,
+            'Cache-Control': 'no-cache',
+            ...corsHeaders,
+          },
+        });
+      }
+    }
+
     return errorResponse('Not found', 404);
 
   } catch (error) {
@@ -458,6 +504,8 @@ Bun.serve({
 });
 
 console.log(`Server running at http://localhost:${PORT}`);
+console.log('');
+console.log(`Demo UI: http://localhost:${PORT}/demo`);
 console.log('');
 console.log('Available endpoints:');
 // Generate endpoint list from ROUTES metadata

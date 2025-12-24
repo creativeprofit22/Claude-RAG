@@ -13,24 +13,23 @@ Query → Gemini Embeddings → LanceDB → Chunks → Claude Code CLI → Respo
 ```
 
 ## Current Focus
-Section: React Chat UI
-Files: src/react/RAGChat.tsx, src/react/hooks/useRAGChat.ts, src/react/components/ChatHeader.tsx, src/react/components/ChatInput.tsx, src/react/components/MessageBubble.tsx, src/react/components/TypingIndicator.tsx, src/react/components/LoadingDots.tsx, src/react/types.ts
+Section: Demo UI Page
+Files: demo/index.html, demo/ragchat-bundle.js, src/server.ts
 
 ## Pipeline State
-Phase: refactoring
-Feature: React Chat UI
-Tier: medium
+Phase: debugging
+Feature: Demo UI Page
+Tier: high
 Tier-Status: pending
 Reports:
-  - bugs: reports/bugs-react-chat-ui.md
-  - refactors: reports/refactors-react-chat-ui.md
+  - bugs: reports/bugs-demo-ui.md
 
-## Last Session (2025-12-23)
-Completed high-tier refactoring (also completed low-tier via LoadingDots extraction):
-- Created `DEFAULT_ACCENT_COLOR` constant in types.ts:6, imported in all 5 components
-- Extracted shared `LoadingDots.tsx` component with `DOT_DELAYS` array pattern
-- Updated MessageBubble and TypingIndicator to use LoadingDots
-- TypeScript compilation verified
+## Last Session (2025-12-24)
+Created Demo UI Page with file upload:
+- Built demo/index.html with drag & drop file upload, controls, status bar
+- Created demo/ragchat-bundle.js - browser-compatible RAGChat component
+- Added static file serving to src/server.ts
+- Bug hunt found 11 bugs (3 high, 4 medium, 4 low)
 
 ## Package Usage
 ```tsx
