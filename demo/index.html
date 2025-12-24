@@ -4,410 +4,8 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Claude RAG - Demo</title>
-  <style>
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-    }
-
-    body {
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-      background: linear-gradient(135deg, #0a0a0f 0%, #1a1a2e 50%, #0a0a0f 100%);
-      min-height: 100vh;
-      color: #fff;
-    }
-
-    .demo-container {
-      max-width: 1200px;
-      margin: 0 auto;
-      padding: 2rem;
-      min-height: 100vh;
-      display: flex;
-      flex-direction: column;
-    }
-
-    /* Header */
-    .demo-header {
-      text-align: center;
-      margin-bottom: 2rem;
-    }
-
-    .demo-header h1 {
-      font-size: 2.5rem;
-      font-weight: 700;
-      background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 50%, #a855f7 100%);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      background-clip: text;
-      margin-bottom: 0.5rem;
-    }
-
-    .demo-header p {
-      color: #9ca3af;
-      font-size: 1.1rem;
-    }
-
-    /* Controls */
-    .demo-controls {
-      display: flex;
-      gap: 1rem;
-      flex-wrap: wrap;
-      justify-content: center;
-      margin-bottom: 1.5rem;
-      padding: 1rem;
-      background: rgba(255, 255, 255, 0.03);
-      border: 1px solid rgba(255, 255, 255, 0.1);
-      border-radius: 1rem;
-    }
-
-    .control-group {
-      display: flex;
-      flex-direction: column;
-      gap: 0.25rem;
-    }
-
-    .control-group label {
-      font-size: 0.75rem;
-      color: #6b7280;
-      text-transform: uppercase;
-      letter-spacing: 0.05em;
-    }
-
-    .control-group input,
-    .control-group select {
-      padding: 0.5rem 0.75rem;
-      background: rgba(255, 255, 255, 0.05);
-      border: 1px solid rgba(255, 255, 255, 0.1);
-      border-radius: 0.5rem;
-      color: #fff;
-      font-size: 0.875rem;
-      min-width: 140px;
-    }
-
-    .control-group input:focus,
-    .control-group select:focus {
-      outline: none;
-      border-color: #6366f1;
-    }
-
-    .control-group input[type="color"] {
-      width: 60px;
-      height: 36px;
-      cursor: pointer;
-    }
-
-    /* Status bar */
-    .status-bar {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 1.5rem;
-      padding: 0.75rem 1rem;
-      background: rgba(255, 255, 255, 0.03);
-      border: 1px solid rgba(255, 255, 255, 0.1);
-      border-radius: 0.75rem;
-      margin-bottom: 1.5rem;
-      font-size: 0.875rem;
-    }
-
-    .status-item {
-      display: flex;
-      align-items: center;
-      gap: 0.5rem;
-    }
-
-    .status-dot {
-      width: 8px;
-      height: 8px;
-      border-radius: 50%;
-      animation: pulse 2s infinite;
-    }
-
-    .status-dot.healthy { background: #22c55e; }
-    .status-dot.unhealthy { background: #ef4444; }
-    .status-dot.checking { background: #f59e0b; }
-
-    @keyframes pulse {
-      0%, 100% { opacity: 1; }
-      50% { opacity: 0.5; }
-    }
-
-    /* Chat container */
-    .chat-wrapper {
-      flex: 1;
-      display: flex;
-      flex-direction: column;
-      background: rgba(10, 10, 15, 0.8);
-      border: 1px solid rgba(255, 255, 255, 0.1);
-      border-radius: 1rem;
-      overflow: hidden;
-      min-height: 500px;
-      max-height: calc(100vh - 320px);
-    }
-
-    /* Document upload section */
-    .upload-section {
-      padding: 1rem;
-      background: rgba(255, 255, 255, 0.02);
-      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-    }
-
-    .upload-section h3 {
-      font-size: 0.875rem;
-      margin-bottom: 0.75rem;
-      color: #9ca3af;
-    }
-
-    .upload-form {
-      display: flex;
-      gap: 0.75rem;
-      flex-wrap: wrap;
-    }
-
-    .upload-form textarea {
-      flex: 1;
-      min-width: 200px;
-      padding: 0.75rem;
-      background: rgba(255, 255, 255, 0.05);
-      border: 1px solid rgba(255, 255, 255, 0.1);
-      border-radius: 0.5rem;
-      color: #fff;
-      font-size: 0.875rem;
-      resize: vertical;
-      min-height: 60px;
-    }
-
-    .upload-form textarea:focus {
-      outline: none;
-      border-color: #6366f1;
-    }
-
-    .upload-form input {
-      padding: 0.75rem;
-      background: rgba(255, 255, 255, 0.05);
-      border: 1px solid rgba(255, 255, 255, 0.1);
-      border-radius: 0.5rem;
-      color: #fff;
-      font-size: 0.875rem;
-      width: 150px;
-    }
-
-    .upload-form button {
-      padding: 0.75rem 1.5rem;
-      background: linear-gradient(135deg, #6366f1, #8b5cf6);
-      border: none;
-      border-radius: 0.5rem;
-      color: #fff;
-      font-weight: 600;
-      cursor: pointer;
-      transition: transform 0.2s, opacity 0.2s;
-    }
-
-    .upload-form button:hover {
-      transform: scale(1.02);
-    }
-
-    .upload-form button:disabled {
-      opacity: 0.5;
-      cursor: not-allowed;
-      transform: none;
-    }
-
-    .upload-status {
-      margin-top: 0.5rem;
-      font-size: 0.75rem;
-      color: #9ca3af;
-    }
-
-    .upload-status.success { color: #22c55e; }
-    .upload-status.error { color: #ef4444; }
-
-    /* File upload area */
-    .file-upload-area {
-      border: 2px dashed rgba(99, 102, 241, 0.3);
-      border-radius: 0.75rem;
-      padding: 1.5rem;
-      text-align: center;
-      cursor: pointer;
-      transition: all 0.2s;
-      background: rgba(99, 102, 241, 0.05);
-    }
-
-    .file-upload-area:hover,
-    .file-upload-area.drag-over {
-      border-color: #6366f1;
-      background: rgba(99, 102, 241, 0.1);
-    }
-
-    .drop-content p {
-      margin: 0.75rem 0 0.25rem;
-      color: #9ca3af;
-    }
-
-    .browse-btn {
-      background: none;
-      border: none;
-      color: #6366f1;
-      cursor: pointer;
-      text-decoration: underline;
-      font-size: inherit;
-    }
-
-    .file-types {
-      font-size: 0.75rem;
-      color: #6b7280;
-    }
-
-    .selected-files {
-      margin-top: 0.75rem;
-      display: flex;
-      flex-direction: column;
-      gap: 0.5rem;
-    }
-
-    .file-item {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding: 0.5rem 0.75rem;
-      background: rgba(255, 255, 255, 0.05);
-      border: 1px solid rgba(255, 255, 255, 0.1);
-      border-radius: 0.5rem;
-      font-size: 0.875rem;
-    }
-
-    .file-item .file-name {
-      display: flex;
-      align-items: center;
-      gap: 0.5rem;
-      color: #fff;
-    }
-
-    .file-item .file-size {
-      color: #6b7280;
-      font-size: 0.75rem;
-    }
-
-    .file-item .remove-file {
-      background: none;
-      border: none;
-      color: #ef4444;
-      cursor: pointer;
-      padding: 0.25rem;
-      opacity: 0.7;
-    }
-
-    .file-item .remove-file:hover {
-      opacity: 1;
-    }
-
-    .upload-actions {
-      display: flex;
-      align-items: center;
-      gap: 1rem;
-      margin-top: 0.75rem;
-    }
-
-    .upload-actions button {
-      padding: 0.625rem 1.25rem;
-      background: linear-gradient(135deg, #6366f1, #8b5cf6);
-      border: none;
-      border-radius: 0.5rem;
-      color: #fff;
-      font-weight: 600;
-      cursor: pointer;
-      transition: all 0.2s;
-    }
-
-    .upload-actions button:hover:not(:disabled) {
-      transform: scale(1.02);
-    }
-
-    .upload-actions button:disabled {
-      opacity: 0.5;
-      cursor: not-allowed;
-      transform: none;
-    }
-
-    /* Sample questions */
-    .sample-questions {
-      padding: 0.75rem 1rem;
-      background: rgba(255, 255, 255, 0.02);
-      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-    }
-
-    .sample-questions h4 {
-      font-size: 0.75rem;
-      color: #6b7280;
-      margin-bottom: 0.5rem;
-    }
-
-    .sample-buttons {
-      display: flex;
-      gap: 0.5rem;
-      flex-wrap: wrap;
-    }
-
-    .sample-btn {
-      padding: 0.375rem 0.75rem;
-      background: rgba(99, 102, 241, 0.1);
-      border: 1px solid rgba(99, 102, 241, 0.3);
-      border-radius: 1rem;
-      color: #a5b4fc;
-      font-size: 0.75rem;
-      cursor: pointer;
-      transition: all 0.2s;
-    }
-
-    .sample-btn:hover {
-      background: rgba(99, 102, 241, 0.2);
-      border-color: rgba(99, 102, 241, 0.5);
-    }
-
-    /* Footer */
-    .demo-footer {
-      text-align: center;
-      padding: 1.5rem;
-      color: #6b7280;
-      font-size: 0.875rem;
-    }
-
-    .demo-footer a {
-      color: #6366f1;
-      text-decoration: none;
-    }
-
-    /* Responsive */
-    @media (max-width: 768px) {
-      .demo-container {
-        padding: 1rem;
-      }
-
-      .demo-header h1 {
-        font-size: 1.75rem;
-      }
-
-      .demo-controls {
-        flex-direction: column;
-        align-items: stretch;
-      }
-
-      .control-group input,
-      .control-group select {
-        width: 100%;
-      }
-
-      .status-bar {
-        flex-direction: column;
-        gap: 0.5rem;
-      }
-
-      .chat-wrapper {
-        max-height: calc(100vh - 400px);
-      }
-    }
-  </style>
+  <link rel="stylesheet" href="/demo/styles.css">
+  <link rel="stylesheet" href="/demo/ragchat.css">
 </head>
 <body>
   <div class="demo-container">
@@ -505,8 +103,17 @@
   <script type="module">
     // Load the compiled RAGChat component
     import { RAGChat } from '/demo/ragchat-bundle.js';
-    const API_BASE = 'http://localhost:3000';
+    // Derive API base from current location (works in dev and production)
+    const API_BASE = window.location.origin;
     let selectedFiles = [];
+
+    // Cache DOM references for status elements (queried once, used repeatedly)
+    const statusDom = {
+      dot: document.getElementById('serverStatus'),
+      text: document.getElementById('serverStatusText'),
+      docCount: document.getElementById('documentCount'),
+      responder: document.getElementById('responderInfo'),
+    };
 
     // File upload handling
     const dropZone = document.getElementById('dropZone');
@@ -636,24 +243,19 @@
 
     // Check server health
     async function checkHealth() {
-      const statusDot = document.getElementById('serverStatus');
-      const statusText = document.getElementById('serverStatusText');
-      const docCount = document.getElementById('documentCount');
-      const responderInfo = document.getElementById('responderInfo');
-
       try {
         const res = await fetch(`${API_BASE}/api/health`);
         const data = await res.json();
 
         if (data.status === 'healthy') {
-          statusDot.className = 'status-dot healthy';
-          statusText.textContent = 'Server healthy';
+          statusDom.dot.className = 'status-dot healthy';
+          statusDom.text.textContent = 'Server healthy';
         } else {
-          statusDot.className = 'status-dot unhealthy';
-          statusText.textContent = 'Server unhealthy';
+          statusDom.dot.className = 'status-dot unhealthy';
+          statusDom.text.textContent = 'Server unhealthy';
         }
 
-        responderInfo.textContent = `Default: ${data.responders?.default || 'none'}`;
+        statusDom.responder.textContent = `Default: ${data.responders?.default || 'none'}`;
 
         // Get document count (separate try-catch so health status isn't affected)
         try {
@@ -662,17 +264,17 @@
             throw new Error(`HTTP ${docsRes.status}`);
           }
           const docsData = await docsRes.json();
-          docCount.textContent = `${docsData.count || 0} documents`;
+          statusDom.docCount.textContent = `${docsData.count || 0} documents`;
         } catch (docErr) {
           console.warn('Failed to fetch document count:', docErr);
-          docCount.textContent = '? documents';
+          statusDom.docCount.textContent = '? documents';
         }
 
       } catch (err) {
-        statusDot.className = 'status-dot unhealthy';
-        statusText.textContent = 'Server offline';
-        responderInfo.textContent = '-';
-        docCount.textContent = '- documents';
+        statusDom.dot.className = 'status-dot unhealthy';
+        statusDom.text.textContent = 'Server offline';
+        statusDom.responder.textContent = '-';
+        statusDom.docCount.textContent = '- documents';
       }
     }
 

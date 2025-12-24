@@ -17,14 +17,20 @@ Section: Demo UI Page
 Files: demo/index.html, demo/ragchat-bundle.js, src/server.ts
 
 ## Pipeline State
-Phase: complete
+Phase: build
 Feature: Demo UI Page
+Reports:
+  - bugs: reports/bugs-demo-ui.md
+  - refactors: reports/refactors-demo-ui.md
 
 ## Last Session (2025-12-23)
-All 11 bugs fixed in Demo UI:
-- 3 High: XSS protection, memory leak fix, path traversal prevention
-- 4 Medium: Form submit timing, error parsing, PDF removal, upload try-catch
-- 4 Low: SVG icon rendering, error states, CORS hardening (unused var bug was false positive)
+Completed all 5 low-priority refactors:
+- Changed `Date.now()` to `crypto.randomUUID()` for message IDs in ragchat-bundle.js
+- Consolidated 10+ startup console.log calls into single `printStartupBanner()` function in server.ts
+- Moved `formatTime()` from inside MessageBubble to module-level utility
+- Low #1 (SVG duplication) and #5 (magic number) were already resolved
+
+Pipeline complete: All high, medium, and low priority refactors done for Demo UI Page.
 
 ## Package Usage
 ```tsx

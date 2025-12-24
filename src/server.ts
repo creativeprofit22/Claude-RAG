@@ -35,37 +35,43 @@ const MAX_PAYLOAD_SIZE = 10 * 1024 * 1024; // 10MB limit
 //       e.g., CORS_ORIGIN=https://your-app.com or CORS_ORIGIN=https://app1.com,https://app2.com
 const CORS_ORIGIN = process.env.CORS_ORIGIN || '*';
 
+// Type guards for validation
+const isString = (v: unknown): v is string => typeof v === 'string';
+const isNumber = (v: unknown): v is number => typeof v === 'number' && Number.isFinite(v);
+const isBoolean = (v: unknown): v is boolean => typeof v === 'boolean';
+
 /**
- * Validate optional string field from request body
+ * Generic validator for optional request body fields
  */
-function validateOptionalString(value: unknown, fieldName: string): string | undefined {
+function validateOptional<T>(
+  value: unknown,
+  fieldName: string,
+  typeGuard: (v: unknown) => v is T,
+  typeName: string
+): T | undefined {
   if (value === undefined || value === null) return undefined;
-  if (typeof value !== 'string') {
-    throw new Error(`Field '${fieldName}' must be a string`);
+  if (!typeGuard(value)) {
+    throw new Error(`Field '${fieldName}' must be a ${typeName}`);
   }
   return value;
 }
 
-/**
- * Validate optional number field from request body
- */
-function validateOptionalNumber(value: unknown, fieldName: string): number | undefined {
-  if (value === undefined || value === null) return undefined;
-  if (typeof value !== 'number' || !Number.isFinite(value)) {
-    throw new Error(`Field '${fieldName}' must be a number`);
-  }
-  return value;
-}
+// Convenience wrappers for common types
+const validateOptionalString = (v: unknown, f: string) => validateOptional(v, f, isString, 'string');
+const validateOptionalNumber = (v: unknown, f: string) => validateOptional(v, f, isNumber, 'number');
+const validateOptionalBoolean = (v: unknown, f: string) => validateOptional(v, f, isBoolean, 'boolean');
 
 /**
- * Validate optional boolean field from request body
+ * Parse JSON body from request with error handling
+ * Returns Result-like object to avoid try-catch duplication
  */
-function validateOptionalBoolean(value: unknown, fieldName: string): boolean | undefined {
-  if (value === undefined || value === null) return undefined;
-  if (typeof value !== 'boolean') {
-    throw new Error(`Field '${fieldName}' must be a boolean`);
+async function parseJsonBody(req: Request): Promise<{ ok: true; data: Record<string, unknown> } | { ok: false; error: Response }> {
+  try {
+    const data = await req.json() as Record<string, unknown>;
+    return { ok: true, data };
+  } catch {
+    return { ok: false, error: errorResponse('Invalid JSON in request body', 400) };
   }
-  return value;
 }
 
 /**
@@ -170,6 +176,27 @@ const VALID_ROUTES = Object.values(ROUTES)
   .filter(r => !r.path.includes(':'))
   .map(r => r.path);
 
+// Handler context passed to route handlers
+interface HandlerContext {
+  req: Request;
+  url: URL;
+  params: Record<string, string>;
+}
+
+// Route handler type
+type RouteHandler = (ctx: HandlerContext) => Promise<Response>;
+
+// Route-to-handler mapping
+const ROUTE_HANDLERS: Record<string, RouteHandler> = {
+  [`GET:${ROUTES.health.path}`]: () => handleHealthCheck(),
+  [`GET:${ROUTES.responders.path}`]: () => handleRespondersCheck(),
+  [`POST:${ROUTES.upload.path}`]: ({ req }) => handleUpload(req),
+  [`POST:${ROUTES.query.path}`]: ({ req, url }) => handleQuery(req, url),
+  [`POST:${ROUTES.search.path}`]: ({ req }) => handleSearch(req),
+  [`GET:${ROUTES.documents.path}`]: () => handleListDocuments(),
+  [`DELETE:${ROUTES.deleteDocument.path}`]: ({ params }) => handleDeleteDocument(params.id),
+};
+
 /**
  * GET /api/health - Health check
  */
@@ -184,7 +211,7 @@ async function handleHealthCheck(): Promise<Response> {
     responders: {
       claude: claudeAvailable,
       gemini: geminiAvailable,
-      default: claudeAvailable ? 'claude' : (geminiAvailable ? 'gemini' : 'none')
+      default: getDefaultResponder(claudeAvailable, geminiAvailable)
     },
     timestamp: new Date().toISOString(),
   });
@@ -232,12 +259,9 @@ async function handleRespondersCheck(): Promise<Response> {
 async function handleUpload(req: Request): Promise<Response> {
   validateContentLength(req);
 
-  let body: Record<string, unknown>;
-  try {
-    body = await req.json() as Record<string, unknown>;
-  } catch {
-    return errorResponse('Invalid JSON in request body', 400);
-  }
+  const parsed = await parseJsonBody(req);
+  if (!parsed.ok) return parsed.error;
+  const body = parsed.data;
 
   if (!body.text || typeof body.text !== 'string') {
     return errorResponse('Missing required field: text');
@@ -275,12 +299,9 @@ async function handleUpload(req: Request): Promise<Response> {
 async function handleQuery(req: Request, url: URL): Promise<Response> {
   validateContentLength(req);
 
-  let body: Record<string, unknown>;
-  try {
-    body = await req.json() as Record<string, unknown>;
-  } catch {
-    return errorResponse('Invalid JSON in request body', 400);
-  }
+  const parsed = await parseJsonBody(req);
+  if (!parsed.ok) return parsed.error;
+  const body = parsed.data;
 
   if (!body.query || typeof body.query !== 'string' || (body.query as string).trim().length === 0) {
     return errorResponse('Missing required field: query (must be non-empty string)');
@@ -325,12 +346,9 @@ async function handleQuery(req: Request, url: URL): Promise<Response> {
 async function handleSearch(req: Request): Promise<Response> {
   validateContentLength(req);
 
-  let body: Record<string, unknown>;
-  try {
-    body = await req.json() as Record<string, unknown>;
-  } catch {
-    return errorResponse('Invalid JSON in request body', 400);
-  }
+  const parsed = await parseJsonBody(req);
+  if (!parsed.ok) return parsed.error;
+  const body = parsed.data;
 
   if (!body.query || typeof body.query !== 'string' || (body.query as string).trim().length === 0) {
     return errorResponse('Missing required field: query (must be non-empty string)');
@@ -378,6 +396,13 @@ async function handleDeleteDocument(documentId: string): Promise<Response> {
 }
 
 
+
+/**
+ * Get the default responder based on availability (prefers Claude)
+ */
+function getDefaultResponder(claudeAvailable: boolean, geminiAvailable: boolean): 'claude' | 'gemini' | 'none' {
+  return claudeAvailable ? 'claude' : (geminiAvailable ? 'gemini' : 'none');
+}
 
 /**
  * Get responder preference from request (query param or header)
@@ -439,27 +464,11 @@ async function handleRequest(req: Request): Promise<Response> {
   }
 
   try {
-    // Route dispatch using ROUTES metadata
-    if (route === ROUTES.health.path && req.method === ROUTES.health.method) {
-      return handleHealthCheck();
-    }
-    if (route === ROUTES.responders.path && req.method === ROUTES.responders.method) {
-      return handleRespondersCheck();
-    }
-    if (route === ROUTES.upload.path && req.method === ROUTES.upload.method) {
-      return handleUpload(req);
-    }
-    if (route === ROUTES.query.path && req.method === ROUTES.query.method) {
-      return handleQuery(req, url);
-    }
-    if (route === ROUTES.search.path && req.method === ROUTES.search.method) {
-      return handleSearch(req);
-    }
-    if (route === ROUTES.documents.path && req.method === ROUTES.documents.method) {
-      return handleListDocuments();
-    }
-    if (route === ROUTES.deleteDocument.path && req.method === ROUTES.deleteDocument.method) {
-      return handleDeleteDocument(params.id);
+    // Route dispatch using handler map
+    const routeKey = `${req.method}:${route}`;
+    const handler = ROUTE_HANDLERS[routeKey];
+    if (handler) {
+      return handler({ req, url, params });
     }
 
     // Serve static files from /demo
@@ -499,40 +508,42 @@ async function handleRequest(req: Request): Promise<Response> {
   }
 }
 
-// Start server
-console.log(`Claude RAG Server starting on port ${PORT}...`);
-
 // Bun.serve - requires Bun runtime
 declare const Bun: {
   serve: (options: { port: number; fetch: (req: Request) => Promise<Response> }) => void;
 };
 
+/**
+ * Generate startup banner as a single structured log
+ */
+function printStartupBanner(): void {
+  const endpoints = Object.values(ROUTES)
+    .map(r => `  ${r.method.padEnd(6)} ${r.path.padEnd(25)} - ${r.description}`)
+    .join('\n');
+
+  const corsWarning = process.env.NODE_ENV === 'production' && CORS_ORIGIN === '*'
+    ? `\n⚠️  WARNING: CORS allows all origins (*) in production. Set CORS_ORIGIN to your domain.\n`
+    : '';
+
+  console.log(`Claude RAG Server running at http://localhost:${PORT}
+${corsWarning}
+Demo UI: http://localhost:${PORT}/demo
+
+Available endpoints:
+${endpoints}
+
+Responder selection:
+  Query param: ?responder=claude or ?responder=gemini
+  Header: X-Responder: claude or X-Responder: gemini
+  Body: { "responder": "claude" } or { "responder": "gemini" }
+  Default: auto (prefers Claude, falls back to Gemini)
+`);
+}
+
+// Start server
 Bun.serve({
   port: Number(PORT),
   fetch: handleRequest,
 });
 
-console.log(`Server running at http://localhost:${PORT}`);
-
-// Warn if CORS is permissive in production
-if (process.env.NODE_ENV === 'production' && CORS_ORIGIN === '*') {
-  console.warn('\n⚠️  WARNING: CORS is set to allow all origins (*) in production.');
-  console.warn('   This is a security risk. Set CORS_ORIGIN to your specific frontend domain(s).');
-  console.warn('   Example: CORS_ORIGIN=https://your-app.com\n');
-}
-console.log('');
-console.log(`Demo UI: http://localhost:${PORT}/demo`);
-console.log('');
-console.log('Available endpoints:');
-// Generate endpoint list from ROUTES metadata
-for (const route of Object.values(ROUTES)) {
-  const method = route.method.padEnd(6);
-  const path = route.path.padEnd(25);
-  console.log(`  ${method} ${path} - ${route.description}`);
-}
-console.log('');
-console.log('Responder selection:');
-console.log('  Query param: ?responder=claude or ?responder=gemini');
-console.log('  Header: X-Responder: claude or X-Responder: gemini');
-console.log('  Body: { "responder": "claude" } or { "responder": "gemini" }');
-console.log('  Default: auto (prefers Claude, falls back to Gemini)');
+printStartupBanner();
