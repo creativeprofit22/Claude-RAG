@@ -1,7 +1,7 @@
 'use client';
 
-import { useEffect, useCallback } from 'react';
 import { AlertTriangle, X } from 'lucide-react';
+import { useModal } from '../../hooks/useModal.js';
 
 export interface ConfirmDialogProps {
   title: string;
@@ -25,33 +25,7 @@ export function ConfirmDialog({
   onCancel,
   isDestructive = false,
 }: ConfirmDialogProps) {
-  // Handle ESC key to close
-  const handleKeyDown = useCallback(
-    (e: KeyboardEvent) => {
-      if (e.key === 'Escape') {
-        onCancel();
-      }
-    },
-    [onCancel]
-  );
-
-  useEffect(() => {
-    document.addEventListener('keydown', handleKeyDown, { passive: true });
-    // Prevent body scroll when modal is open
-    document.body.style.overflow = 'hidden';
-
-    return () => {
-      document.removeEventListener('keydown', handleKeyDown);
-      document.body.style.overflow = '';
-    };
-  }, [handleKeyDown]);
-
-  // Handle backdrop click
-  const handleBackdropClick = (e: React.MouseEvent) => {
-    if (e.target === e.currentTarget) {
-      onCancel();
-    }
-  };
+  const { handleBackdropClick } = useModal({ onClose: onCancel });
 
   return (
     <div

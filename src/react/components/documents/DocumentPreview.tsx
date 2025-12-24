@@ -1,9 +1,9 @@
 'use client';
 
-import { useEffect, useCallback } from 'react';
 import { X, FileText, Calendar, Layers, MessageSquare, ExternalLink } from 'lucide-react';
 import type { DocumentDetails } from '../../types.js';
 import { DEFAULT_ACCENT_COLOR } from '../../types.js';
+import { useModal } from '../../hooks/useModal.js';
 
 export interface DocumentPreviewProps {
   document: DocumentDetails;
@@ -23,33 +23,7 @@ export function DocumentPreview({
   onQueryDocument,
   accentColor = DEFAULT_ACCENT_COLOR,
 }: DocumentPreviewProps) {
-  // Handle ESC key to close
-  const handleKeyDown = useCallback(
-    (e: KeyboardEvent) => {
-      if (e.key === 'Escape') {
-        onClose();
-      }
-    },
-    [onClose]
-  );
-
-  useEffect(() => {
-    window.addEventListener('keydown', handleKeyDown);
-    // Prevent body scroll when modal is open
-    document.body.style.overflow = 'hidden';
-
-    return () => {
-      window.removeEventListener('keydown', handleKeyDown);
-      document.body.style.overflow = '';
-    };
-  }, [handleKeyDown]);
-
-  // Handle backdrop click
-  const handleBackdropClick = (e: React.MouseEvent) => {
-    if (e.target === e.currentTarget) {
-      onClose();
-    }
-  };
+  const { handleBackdropClick } = useModal({ onClose });
 
   // Format timestamp to readable date
   const formatDate = (timestamp: number) => {

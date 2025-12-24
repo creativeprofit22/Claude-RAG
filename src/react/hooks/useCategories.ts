@@ -1,7 +1,8 @@
 'use client';
 
-import { useState, useEffect, useCallback, useMemo, useRef, type MutableRefObject } from 'react';
+import { useCallback } from 'react';
 import type { Category } from '../types.js';
+import { useAPIResource } from './useAPIResource.js';
 
 interface UseCategoriesOptions {
   /** API endpoint base URL (default: /api/rag) */
@@ -31,6 +32,11 @@ interface UseCategoriesReturn {
   getCategoryById: (id: string) => Category | undefined;
 }
 
+// Transform API response to extract categories array
+const transformCategoriesResponse = (data: unknown): Category[] => {
+  return (data as { categories?: Category[] })?.categories || [];
+};
+
 /**
  * Hook for managing categories through the API.
  * Provides CRUD operations and local state management.
@@ -42,70 +48,21 @@ export function useCategories(options: UseCategoriesOptions = {}): UseCategories
     autoFetch = true,
   } = options;
 
-  // Core state
-  const [categories, setCategories] = useState<Category[]>([]);
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-
-  // Stabilize headers to prevent infinite rerenders from inline objects
-  const headersJson = JSON.stringify(headers);
-  const stableHeaders = useMemo(() => headers, [headersJson]);
-
-  // AbortController ref to cancel in-flight requests
-  const abortControllerRef = useRef<AbortController | null>(null);
-
-  // Ref to store latest refetch to avoid infinite loop in auto-fetch effect
-  const refetchRef = useRef<(() => Promise<void>) | null>(null);
-
-  // Cleanup on unmount
-  useEffect(() => {
-    return () => {
-      abortControllerRef.current?.abort();
-    };
-  }, []);
-
-  // Fetch all categories
-  const refetch = useCallback(async () => {
-    // Abort any in-flight request
-    abortControllerRef.current?.abort();
-    abortControllerRef.current = new AbortController();
-
-    setIsLoading(true);
-    setError(null);
-
-    try {
-      const response = await fetch(`${endpoint}/categories`, {
-        method: 'GET',
-        headers: {
-          'Content-Type': 'application/json',
-          ...stableHeaders,
-        },
-        signal: abortControllerRef.current.signal,
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}));
-        throw new Error(errorData.error || `Request failed: ${response.status}`);
-      }
-
-      const data = await response.json();
-      // API returns { categories: Category[], count: number }
-      setCategories(data.categories || []);
-    } catch (err) {
-      // Ignore abort errors - they're intentional
-      if (err instanceof Error && err.name === 'AbortError') {
-        return;
-      }
-
-      const errorMessage = err instanceof Error ? err.message : 'Failed to fetch categories';
-      setError(errorMessage);
-    } finally {
-      setIsLoading(false);
-    }
-  }, [endpoint, stableHeaders]);
-
-  // Keep refetchRef updated
-  refetchRef.current = refetch;
+  // Use base API resource hook for core fetching logic
+  const {
+    data: categories,
+    isLoading,
+    error,
+    refetch,
+    setData: setCategories,
+    setError,
+    stableHeaders,
+  } = useAPIResource<Category>({
+    fetchUrl: `${endpoint}/categories`,
+    headers,
+    autoFetch,
+    transformResponse: transformCategoriesResponse,
+  });
 
   // Create a new category
   const createCategory = useCallback(async (
@@ -142,7 +99,7 @@ export function useCategories(options: UseCategoriesOptions = {}): UseCategories
       setError(errorMessage);
       return null;
     }
-  }, [endpoint, stableHeaders]);
+  }, [endpoint, stableHeaders, setCategories, setError]);
 
   // Update an existing category
   const updateCategory = useCallback(async (
@@ -180,7 +137,7 @@ export function useCategories(options: UseCategoriesOptions = {}): UseCategories
       setError(errorMessage);
       return null;
     }
-  }, [endpoint, stableHeaders]);
+  }, [endpoint, stableHeaders, setCategories, setError]);
 
   // Delete a category
   const deleteCategory = useCallback(async (id: string): Promise<boolean> => {
@@ -209,19 +166,12 @@ export function useCategories(options: UseCategoriesOptions = {}): UseCategories
       setError(errorMessage);
       return false;
     }
-  }, [endpoint, stableHeaders]);
+  }, [endpoint, stableHeaders, setCategories, setError]);
 
   // Get a category by ID (from local state)
   const getCategoryById = useCallback((id: string): Category | undefined => {
     return categories.find((cat) => cat.id === id);
   }, [categories]);
-
-  // Auto-fetch on mount (use ref to avoid infinite loop)
-  useEffect(() => {
-    if (autoFetch) {
-      refetchRef.current?.();
-    }
-  }, [autoFetch]);
 
   return {
     categories,
