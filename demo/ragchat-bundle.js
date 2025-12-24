@@ -306,8 +306,16 @@ function useRAGChat({ endpoint, headers, systemPrompt, topK, documentId }) {
       });
 
       if (!res.ok) {
-        const errData = await res.json().catch(() => ({}));
-        throw new Error(errData.error || `Request failed: ${res.status}`);
+        let errorMessage = `Request failed: ${res.status}`;
+        try {
+          const errData = await res.json();
+          if (errData.error) {
+            errorMessage = errData.error;
+          }
+        } catch {
+          // Server returned non-JSON error response, use generic message
+        }
+        throw new Error(errorMessage);
       }
 
       const data = await res.json();

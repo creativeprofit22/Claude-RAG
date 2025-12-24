@@ -467,7 +467,7 @@
               <line x1="12" y1="3" x2="12" y2="15"/>
             </svg>
             <p>Drag & drop files here or <button type="button" class="browse-btn" onclick="document.getElementById('fileInput').click()">browse</button></p>
-            <span class="file-types">Supports: .md, .txt, .json, .pdf</span>
+            <span class="file-types">Supports: .md, .txt, .json</span>
           </div>
         </div>
         <div class="selected-files" id="selectedFiles"></div>
@@ -675,11 +675,14 @@
         const nativeInputValueSetter = Object.getOwnPropertyDescriptor(window.HTMLInputElement.prototype, 'value').set;
         nativeInputValueSetter.call(input, question);
         input.dispatchEvent(new Event('input', { bubbles: true }));
-        // Click submit button (form.dispatchEvent doesn't trigger React's onSubmit)
-        const submitBtn = document.querySelector('.rag-chat-send-button');
-        if (submitBtn) {
-          submitBtn.click();
-        }
+        // Wait for React to process state update, then click submit button
+        // (form.dispatchEvent doesn't trigger React's onSubmit)
+        setTimeout(() => {
+          const submitBtn = document.querySelector('.rag-chat-send-button');
+          if (submitBtn) {
+            submitBtn.click();
+          }
+        }, 0);
       }
     };
 

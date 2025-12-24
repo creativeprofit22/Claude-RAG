@@ -246,18 +246,24 @@ async function handleUpload(req: Request): Promise<Response> {
   const source = validateOptionalString(body.source, 'source');
   const type = validateOptionalString(body.type, 'type');
 
-  const result = await addDocument(body.text, {
-    name: body.name,
-    source,
-    type,
-  });
+  try {
+    const result = await addDocument(body.text, {
+      name: body.name,
+      source,
+      type,
+    });
 
-  return jsonResponse({
-    success: true,
-    documentId: result.documentId,
-    chunks: result.chunks,
-    message: `Document "${body.name}" uploaded and processed into ${result.chunks} chunks`,
-  }, 201);
+    return jsonResponse({
+      success: true,
+      documentId: result.documentId,
+      chunks: result.chunks,
+      message: `Document "${body.name}" uploaded and processed into ${result.chunks} chunks`,
+    }, 201);
+  } catch (error) {
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+    logger.error('Document upload failed:', { name: body.name, error: errorMessage });
+    return errorResponse(`Failed to process document: ${errorMessage}`, 500);
+  }
 }
 
 /**
