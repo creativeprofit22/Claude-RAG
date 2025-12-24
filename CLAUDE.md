@@ -17,18 +17,14 @@ Section: Demo UI Page
 Files: demo/index.html, demo/ragchat-bundle.js, src/server.ts
 
 ## Pipeline State
-Phase: debugging
+Phase: complete
 Feature: Demo UI Page
-Tier: low
-Tier-Status: pending
-Reports:
-  - bugs: reports/bugs-demo-ui.md
 
 ## Last Session (2025-12-23)
-Fixed high and medium priority bugs in Demo UI:
-- 3 High: XSS protection, memory leak fix, path traversal prevention (already in code)
+All 11 bugs fixed in Demo UI:
+- 3 High: XSS protection, memory leak fix, path traversal prevention
 - 4 Medium: Form submit timing, error parsing, PDF removal, upload try-catch
-- Remaining: 4 low priority (unused vars, SVG icons, error states, CORS hardening)
+- 4 Low: SVG icon rendering, error states, CORS hardening (unused var bug was false positive)
 
 ## Package Usage
 ```tsx
