@@ -84,11 +84,11 @@
         </div>
       </div>
 
-      <div id="chat-root" style="flex: 1; display: flex; flex-direction: column;"></div>
+      <div id="chat-root" style="flex: 1; display: flex; flex-direction: column; min-height: 0;"></div>
     </div>
 
     <footer class="demo-footer">
-      <p>Server: <a href="http://localhost:3000/api/health" target="_blank">localhost:3000</a> |
+      <p>Server: <a id="serverLink" href="/api/health" target="_blank">-</a> |
          API: <code>/api/rag/query</code></p>
     </footer>
   </div>
@@ -98,7 +98,7 @@
   <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
 
   <!-- Lucide Icons (used by RAGChat) -->
-  <script src="https://unpkg.com/lucide@latest"></script>
+  <script src="https://unpkg.com/lucide@0.468.0"></script>
 
   <script type="module">
     // Load the compiled RAGChat component
@@ -114,6 +114,11 @@
       docCount: document.getElementById('documentCount'),
       responder: document.getElementById('responderInfo'),
     };
+
+    // Set footer server link dynamically
+    const serverLink = document.getElementById('serverLink');
+    serverLink.href = `${API_BASE}/api/health`;
+    serverLink.textContent = new URL(API_BASE).host;
 
     // File upload handling
     const dropZone = document.getElementById('dropZone');
@@ -150,7 +155,8 @@
 
     function handleFiles(files) {
       for (const file of files) {
-        if (!selectedFiles.some(f => f.name === file.name)) {
+        // Dedupe by name + size + lastModified to allow same-named files from different directories
+        if (!selectedFiles.some(f => f.name === file.name && f.size === file.size && f.lastModified === file.lastModified)) {
           selectedFiles.push(file);
         }
       }
