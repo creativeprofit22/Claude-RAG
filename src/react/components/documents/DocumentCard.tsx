@@ -1,8 +1,9 @@
 'use client';
 
-import { FileText, FileCode, FileJson, File, Eye, Trash2, Layers } from 'lucide-react';
+import { Eye, Trash2, Layers } from 'lucide-react';
 import type { DocumentSummary } from '../../types.js';
 import { formatDate } from '../../utils/formatDate.js';
+import { getDocumentIcon } from '../../utils/documentIcons.js';
 
 export interface DocumentCardProps {
   document: DocumentSummary;
@@ -10,31 +11,6 @@ export interface DocumentCardProps {
   onSelect?: (doc: DocumentSummary) => void;
   onDelete?: (doc: DocumentSummary) => void;
   onPreview?: (doc: DocumentSummary) => void;
-}
-
-/**
- * Get the appropriate icon for a document type
- */
-function getDocumentIcon(type?: string) {
-  switch (type?.toLowerCase()) {
-    case 'markdown':
-    case 'md':
-      return FileText;
-    case 'code':
-    case 'typescript':
-    case 'javascript':
-    case 'python':
-    case 'ts':
-    case 'tsx':
-    case 'js':
-    case 'jsx':
-    case 'py':
-      return FileCode;
-    case 'json':
-      return FileJson;
-    default:
-      return File;
-  }
 }
 
 /**

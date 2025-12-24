@@ -87,6 +87,21 @@ class RAGDatabase {
   }
 
   /**
+   * Execute a callback with the table, returning fallback if table doesn't exist
+   */
+  private async withTable<T>(fallback: T, callback: (table: Table) => Promise<T>): Promise<T> {
+    const table = await this.ensureTable();
+    if (!table) {
+      return fallback;
+    }
+    try {
+      return await callback(table);
+    } catch {
+      return fallback;
+    }
+  }
+
+  /**
    * Connect to the LanceDB database
    */
   async connect(): Promise<void> {
@@ -173,12 +188,7 @@ class RAGDatabase {
    * List all unique document IDs in the database
    */
   async listDocuments(): Promise<string[]> {
-    const table = await this.ensureTable();
-    if (!table) {
-      return [];
-    }
-
-    try {
+    return this.withTable([], async (table) => {
       const all = await table.query().limit(10000).toArray();
       const docIds = new Set<string>();
 
@@ -190,21 +200,14 @@ class RAGDatabase {
       }
 
       return Array.from(docIds);
-    } catch {
-      return [];
-    }
+    });
   }
 
   /**
    * Get all chunks for a specific document
    */
   async getDocumentChunks(documentId: string): Promise<VectorDocument[]> {
-    const table = await this.ensureTable();
-    if (!table) {
-      return [];
-    }
-
-    try {
+    return this.withTable([], async (table) => {
       const results = await table
         .query()
         .where(`metadata.documentId = "${escapeFilterValue(documentId)}"`)
@@ -212,9 +215,7 @@ class RAGDatabase {
         .toArray();
 
       return results as unknown as VectorDocument[];
-    } catch {
-      return [];
-    }
+    });
   }
 
   /**
@@ -250,17 +251,9 @@ class RAGDatabase {
    * Get the total number of chunks in the database
    */
   async getChunkCount(): Promise<number> {
-    const table = await this.ensureTable();
-    if (!table) {
-      return 0;
-    }
-
-    try {
-      const count = await table.countRows();
-      return count;
-    } catch {
-      return 0;
-    }
+    return this.withTable(0, async (table) => {
+      return await table.countRows();
+    });
   }
 
   /**
@@ -302,12 +295,7 @@ class RAGDatabase {
    * Get summary of all documents (aggregated by documentId)
    */
   async getDocumentSummaries(): Promise<DocumentSummary[]> {
-    const table = await this.ensureTable();
-    if (!table) {
-      return [];
-    }
-
-    try {
+    return this.withTable([], async (table) => {
       const all = await table.query().limit(10000).toArray();
       const docMap = new Map<string, {
         documentName: string;
@@ -339,21 +327,14 @@ class RAGDatabase {
         documentId,
         ...data,
       }));
-    } catch {
-      return [];
-    }
+    });
   }
 
   /**
    * Get detailed info for a single document including chunk previews
    */
   async getDocumentDetails(documentId: string): Promise<DocumentDetails | null> {
-    const table = await this.ensureTable();
-    if (!table) {
-      return null;
-    }
-
-    try {
+    return this.withTable(null, async (table) => {
       const results = await table
         .query()
         .where(`metadata.documentId = "${escapeFilterValue(documentId)}"`)
@@ -382,9 +363,7 @@ class RAGDatabase {
           snippet: doc.text.slice(0, 200),
         })),
       };
-    } catch {
-      return null;
-    }
+    });
   }
 }
 
