@@ -12,40 +12,60 @@ Reusable RAG component for embedding into projects. Uses Claude Code CLI (user's
 Query → Gemini Embeddings → LanceDB → Chunks → Claude Code CLI → Response
 ```
 
+## Current Focus
+Section: Document Library Module
+Files: src/react/components/documents/*, src/react/hooks/useDocuments.ts, src/react/hooks/useCategories.ts, src/categories.ts, src/database.ts
+
 ## Pipeline State
-Phase: idle
-Feature: None
+Phase: build
+Feature: Document Library & Categorization
+Status: Pipeline complete
+Reports:
+  - bugs: reports/bugs-document-library.md
+  - refactors: reports/refactors-document-library.md
 
 ## Last Session (2025-12-24)
-- Committed and pushed Demo UI security fixes and refactors
-- Verified server health endpoint on port 3001
-- Tested RAG query via curl - both responders working
-- Marked Demo UI Page feature complete
+Completed low priority refactors (final tier):
+- Extracted reusable `Dropdown` component from DocumentSearch
+- Moved `getDocumentIcon` to `src/react/utils/documentIcons.ts`
+- Added `withTable<T>` wrapper in database.ts (refactored 5 methods)
+- All 10 refactors complete (2 high, 4 medium, 4 low)
+- Tested: API endpoints, TypeScript compilation pass
+- Committed: 622e55d
 
 ## Completed Features
-- **Demo UI Page** (2025-12-24): Security fixes (XSS, memory leak, path traversal), refactors (CSS extraction, DRY helpers), tested and verified
-
-## Next Steps
-1. Pick next feature to work on (user decision)
+- **Document Library** (2025-12-24): Phase 1 complete, all 14 bugs fixed
+- **Category System** (2025-12-24): JSON-based storage, CRUD API, React components
+- **Chat Scroll Fix** (2025-12-24): Bug fixes + refactoring complete
+- **Demo UI Page** (2025-12-24): Security fixes, refactors complete
 
 ## Package Usage
 ```tsx
 // Backend API
-import { query, addDocument } from 'claude-rag';
+import { query, addDocument, getDocumentSummaries, getDocumentDetails } from 'claude-rag';
 
-// React UI
+// React Chat UI
 import { RAGChat } from 'claude-rag/react';
 import 'claude-rag/react/styles.css';
 
 <RAGChat endpoint="/api/rag/query" />
+
+// React Document Library
+import { DocumentLibrary } from 'claude-rag/react';
+
+<DocumentLibrary
+  endpoint="/api/rag"
+  onDocumentSelect={(doc) => console.log('Query:', doc.documentId)}
+/>
 ```
 
 ## Key Files
 - `src/index.ts` - Main API exports
 - `src/server.ts` - Bun HTTP server
-- `src/react/RAGChat.tsx` - Drop-in chat component
-- `src/react/hooks/useRAGChat.ts` - React hook
-- `src/react/styles.css` - Standalone styles
+- `src/database.ts` - LanceDB wrapper with document queries
+- `src/categories.ts` - Category storage helpers
+- `src/react/components/documents/DocumentLibrary.tsx` - Document browser
+- `src/react/hooks/useDocuments.ts` - Document management hook
 
 ## Environment
 ```
