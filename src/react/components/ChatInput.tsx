@@ -55,6 +55,7 @@ export function ChatInput({
           }}
         />
         <button
+          type="button"
           onClick={handleSend}
           disabled={!hasInput || disabled}
           className="rag-chat-send-button"

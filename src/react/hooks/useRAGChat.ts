@@ -1,10 +1,11 @@
 'use client';
 
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useRef, useMemo, useEffect } from 'react';
 import type { ChatMessage, RAGChatConfig, RAGQueryResponse, RAGChatState, RAGChatActions } from '../types.js';
 
+let idCounter = 0;
 function generateId(): string {
-  return `msg_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
+  return `msg_${Date.now()}_${++idCounter}_${Math.random().toString(36).slice(2, 8)}`;
 }
 
 export function useRAGChat(config: RAGChatConfig = {}): RAGChatState & RAGChatActions {
@@ -20,8 +21,26 @@ export function useRAGChat(config: RAGChatConfig = {}): RAGChatState & RAGChatAc
   const [isTyping, setIsTyping] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  // Stabilize headers to prevent infinite rerenders from inline objects
+  const headersJson = JSON.stringify(headers);
+  const stableHeaders = useMemo(() => headers, [headersJson]);
+
+  // AbortController ref to cancel in-flight requests
+  const abortControllerRef = useRef<AbortController | null>(null);
+
+  // Cleanup on unmount
+  useEffect(() => {
+    return () => {
+      abortControllerRef.current?.abort();
+    };
+  }, []);
+
   const sendMessage = useCallback(async (content: string) => {
     if (!content.trim()) return;
+
+    // Abort any in-flight request
+    abortControllerRef.current?.abort();
+    abortControllerRef.current = new AbortController();
 
     // Add user message
     const userMessage: ChatMessage = {
@@ -49,7 +68,7 @@ export function useRAGChat(config: RAGChatConfig = {}): RAGChatState & RAGChatAc
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          ...headers,
+          ...stableHeaders,
         },
         body: JSON.stringify({
           query: content.trim(),
@@ -57,6 +76,7 @@ export function useRAGChat(config: RAGChatConfig = {}): RAGChatState & RAGChatAc
           ...(topK && { topK }),
           ...(documentId && { documentId }),
         }),
+        signal: abortControllerRef.current.signal,
       });
 
       if (!response.ok) {
@@ -79,6 +99,11 @@ export function useRAGChat(config: RAGChatConfig = {}): RAGChatState & RAGChatAc
         prev.map((msg) => (msg.id === loadingMessage.id ? assistantMessage : msg))
       );
     } catch (err) {
+      // Ignore abort errors - they're intentional
+      if (err instanceof Error && err.name === 'AbortError') {
+        return;
+      }
+
       const errorMessage = err instanceof Error ? err.message : 'An error occurred';
       setError(errorMessage);
 
@@ -96,7 +121,7 @@ export function useRAGChat(config: RAGChatConfig = {}): RAGChatState & RAGChatAc
     } finally {
       setIsTyping(false);
     }
-  }, [endpoint, headers, systemPrompt, topK, documentId]);
+  }, [endpoint, stableHeaders, systemPrompt, topK, documentId]);
 
   const clearChat = useCallback(() => {
     setMessages([]);

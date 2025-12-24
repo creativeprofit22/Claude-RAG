@@ -23,7 +23,8 @@ export function MessageBubble({
     minute: '2-digit',
   });
 
-  const hasSources = showSources && message.sources && message.sources.length > 0;
+  const sources = message.sources ?? [];
+  const hasSources = showSources && sources.length > 0;
 
   return (
     <div className={`rag-message ${isUser ? 'rag-message-user' : 'rag-message-assistant'}`}>
@@ -61,14 +62,14 @@ export function MessageBubble({
               className="rag-sources-toggle"
             >
               <FileText size={14} />
-              <span>{message.sources!.length} source{message.sources!.length > 1 ? 's' : ''}</span>
+              <span>{sources.length} source{sources.length > 1 ? 's' : ''}</span>
               {sourcesExpanded ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
             </button>
 
             {sourcesExpanded && (
               <div className="rag-sources-list">
-                {message.sources!.map((source, i) => (
-                  <div key={i} className="rag-source-item">
+                {sources.map((source, i) => (
+                  <div key={`${source.documentId}-${source.chunkIndex}`} className="rag-source-item">
                     <div className="rag-source-header">
                       <span className="rag-source-badge" style={{ backgroundColor: `${accentColor}20`, color: accentColor }}>
                         [{i + 1}]

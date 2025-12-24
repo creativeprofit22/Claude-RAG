@@ -1,7 +1,7 @@
 'use client';
 
 import { useRef, useEffect } from 'react';
-import { Database } from 'lucide-react';
+import { Database, X, AlertCircle } from 'lucide-react';
 import { ChatHeader } from './components/ChatHeader.js';
 import { ChatInput } from './components/ChatInput.js';
 import { MessageBubble } from './components/MessageBubble.js';
@@ -54,8 +54,10 @@ export function RAGChat({
   const {
     messages,
     isTyping,
+    error,
     sendMessage,
     clearChat,
+    setError,
   } = useRAGChat({
     endpoint,
     headers,
@@ -94,6 +96,22 @@ export function RAGChat({
         messageCount={messages.length}
         onClearChat={clearChat}
       />
+
+      {/* Error Banner */}
+      {error && (
+        <div className="rag-error-banner" role="alert">
+          <AlertCircle size={16} aria-hidden="true" />
+          <span>{error}</span>
+          <button
+            type="button"
+            onClick={() => setError(null)}
+            className="rag-error-dismiss"
+            aria-label="Dismiss error"
+          >
+            <X size={14} />
+          </button>
+        </div>
+      )}
 
       {/* Messages Area */}
       <div className="rag-chat-messages">
