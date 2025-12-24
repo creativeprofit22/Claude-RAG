@@ -17,7 +17,7 @@ export interface DocumentPreviewProps {
  * DocumentPreview - Modal overlay showing document details and chunk snippets
  */
 export function DocumentPreview({
-  document: doc,
+  document: docDetails,
   isLoading = false,
   onClose,
   onQueryDocument,
@@ -64,8 +64,8 @@ export function DocumentPreview({
 
   // Get file type from document name or type field
   const getFileType = () => {
-    if (doc.type) return doc.type.toUpperCase();
-    const ext = doc.documentName.split('.').pop();
+    if (docDetails.type) return docDetails.type.toUpperCase();
+    const ext = docDetails.documentName.split('.').pop();
     return ext ? ext.toUpperCase() : 'DOC';
   };
 
@@ -89,7 +89,7 @@ export function DocumentPreview({
             </div>
             <div className="rag-preview-title-info">
               <h2 id="preview-dialog-title" className="rag-preview-title">
-                {doc.documentName}
+                {docDetails.documentName}
               </h2>
               <span
                 className="rag-preview-type-badge"
@@ -113,16 +113,16 @@ export function DocumentPreview({
         <div className="rag-preview-metadata">
           <div className="rag-preview-meta-item">
             <Calendar size={14} aria-hidden="true" />
-            <span>{formatDate(doc.timestamp)}</span>
+            <span>{formatDate(docDetails.timestamp)}</span>
           </div>
           <div className="rag-preview-meta-item">
             <Layers size={14} aria-hidden="true" />
-            <span>{doc.chunkCount} chunks</span>
+            <span>{docDetails.chunkCount} chunks</span>
           </div>
-          {doc.source && (
+          {docDetails.source && (
             <div className="rag-preview-meta-item">
               <ExternalLink size={14} aria-hidden="true" />
-              <span>{doc.source}</span>
+              <span>{docDetails.source}</span>
             </div>
           )}
         </div>
@@ -137,9 +137,9 @@ export function DocumentPreview({
               <div className="rag-preview-skeleton" />
               <div className="rag-preview-skeleton" />
             </div>
-          ) : doc.chunks && doc.chunks.length > 0 ? (
+          ) : docDetails.chunks && docDetails.chunks.length > 0 ? (
             <div className="rag-preview-chunks-list">
-              {doc.chunks.map((chunk) => (
+              {docDetails.chunks.map((chunk) => (
                 <div key={chunk.chunkIndex} className="rag-preview-chunk">
                   <div className="rag-preview-chunk-header">
                     <span className="rag-preview-chunk-index">
@@ -169,7 +169,7 @@ export function DocumentPreview({
           {onQueryDocument && (
             <button
               type="button"
-              onClick={() => onQueryDocument(doc)}
+              onClick={() => onQueryDocument(docDetails)}
               className="rag-preview-btn rag-preview-btn-primary"
               style={{ backgroundColor: accentColor }}
             >

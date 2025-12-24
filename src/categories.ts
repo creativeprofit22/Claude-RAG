@@ -64,7 +64,10 @@ function readCategoryStore(): CategoryStore {
       return JSON.parse(data) as CategoryStore;
     }
   } catch (error) {
-    console.error('Error reading categories file:', error);
+    console.warn(
+      'Failed to parse categories file, using defaults. Custom categories may have been lost:',
+      error instanceof Error ? error.message : error
+    );
   }
   return { categories: [...DEFAULT_CATEGORIES], tags: [] };
 }

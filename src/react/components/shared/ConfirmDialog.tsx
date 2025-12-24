@@ -36,7 +36,7 @@ export function ConfirmDialog({
   );
 
   useEffect(() => {
-    document.addEventListener('keydown', handleKeyDown);
+    document.addEventListener('keydown', handleKeyDown, { passive: true });
     // Prevent body scroll when modal is open
     document.body.style.overflow = 'hidden';
 

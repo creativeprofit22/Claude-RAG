@@ -119,6 +119,7 @@ export function DocumentCard({
             type="button"
             className="rag-doc-card-action"
             onClick={handlePreviewClick}
+            onKeyDown={(e) => e.stopPropagation()}
             title="Preview document"
             aria-label="Preview document"
           >
@@ -130,6 +131,7 @@ export function DocumentCard({
             type="button"
             className="rag-doc-card-action rag-doc-card-action-delete"
             onClick={handleDeleteClick}
+            onKeyDown={(e) => e.stopPropagation()}
             title="Delete document"
             aria-label="Delete document"
           >

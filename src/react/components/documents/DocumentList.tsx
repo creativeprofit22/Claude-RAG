@@ -64,7 +64,7 @@ export function DocumentList({
     return (
       <div className="rag-doc-list" aria-busy="true" aria-label="Loading documents">
         {Array.from({ length: 6 }).map((_, index) => (
-          <DocumentCardSkeleton key={index} />
+          <DocumentCardSkeleton key={`skeleton-${index}`} />
         ))}
       </div>
     );
