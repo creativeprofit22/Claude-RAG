@@ -42,5 +42,4 @@ export type {
   RAGChatConfig,
   RAGChatState,
   RAGChatActions,
-  RAGChatContextValue,
 } from './types.js';

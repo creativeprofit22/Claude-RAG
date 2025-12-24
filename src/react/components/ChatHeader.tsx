@@ -1,6 +1,7 @@
 'use client';
 
 import { Trash2, Database } from 'lucide-react';
+import { DEFAULT_ACCENT_COLOR } from '../types.js';
 
 export interface ChatHeaderProps {
   title?: string;
@@ -12,7 +13,7 @@ export interface ChatHeaderProps {
 
 export function ChatHeader({
   title = 'RAG Assistant',
-  accentColor = '#6366f1',
+  accentColor = DEFAULT_ACCENT_COLOR,
   isTyping = false,
   messageCount = 0,
   onClearChat,
@@ -43,6 +44,7 @@ export function ChatHeader({
         {/* Clear Chat Button */}
         {messageCount > 0 && onClearChat && (
           <button
+            type="button"
             onClick={onClearChat}
             className="rag-chat-header-clear"
             title="Clear chat"

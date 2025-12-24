@@ -13,22 +13,24 @@ Query → Gemini Embeddings → LanceDB → Chunks → Claude Code CLI → Respo
 ```
 
 ## Current Focus
-Section: npm package ready
-Files: All complete with React UI
+Section: React Chat UI
+Files: src/react/RAGChat.tsx, src/react/hooks/useRAGChat.ts, src/react/components/ChatHeader.tsx, src/react/components/ChatInput.tsx, src/react/components/MessageBubble.tsx, src/react/components/TypingIndicator.tsx, src/react/components/LoadingDots.tsx, src/react/types.ts
 
 ## Pipeline State
-Phase: complete
-Feature: npm Package Setup
-Status: Complete - ready for publishing
+Phase: refactoring
+Feature: React Chat UI
+Tier: medium
+Tier-Status: pending
+Reports:
+  - bugs: reports/bugs-react-chat-ui.md
+  - refactors: reports/refactors-react-chat-ui.md
 
 ## Last Session (2025-12-23)
-npm Package Setup complete:
-- Added React chat UI components (from Agent-Girl archetypal-os)
-- Created RAGChat drop-in component with useRAGChat hook
-- Added standalone CSS styles (rag-chat-* classes)
-- Updated package.json with exports for ./react subpath
-- Updated tsconfig for JSX and DOM types
-- Build passes, all files in dist/
+Completed high-tier refactoring (also completed low-tier via LoadingDots extraction):
+- Created `DEFAULT_ACCENT_COLOR` constant in types.ts:6, imported in all 5 components
+- Extracted shared `LoadingDots.tsx` component with `DOT_DELAYS` array pattern
+- Updated MessageBubble and TypingIndicator to use LoadingDots
+- TypeScript compilation verified
 
 ## Package Usage
 ```tsx

@@ -2,6 +2,7 @@
 
 import { useState, useRef, KeyboardEvent } from 'react';
 import { Send } from 'lucide-react';
+import { DEFAULT_ACCENT_COLOR } from '../types.js';
 
 export interface ChatInputProps {
   placeholder?: string;
@@ -12,7 +13,7 @@ export interface ChatInputProps {
 
 export function ChatInput({
   placeholder = 'Ask a question about your documents...',
-  accentColor = '#6366f1',
+  accentColor = DEFAULT_ACCENT_COLOR,
   onSendMessage,
   disabled = false,
 }: ChatInputProps) {

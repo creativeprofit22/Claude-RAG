@@ -7,7 +7,7 @@ import { ChatInput } from './components/ChatInput.js';
 import { MessageBubble } from './components/MessageBubble.js';
 import { TypingIndicator } from './components/TypingIndicator.js';
 import { useRAGChat } from './hooks/useRAGChat.js';
-import type { RAGChatConfig } from './types.js';
+import { DEFAULT_ACCENT_COLOR, type RAGChatConfig } from './types.js';
 
 export interface RAGChatProps extends RAGChatConfig {
   /** Additional CSS class */
@@ -41,7 +41,7 @@ export function RAGChat({
   headers,
   placeholder = 'Ask a question about your documents...',
   title = 'RAG Assistant',
-  accentColor = '#6366f1',
+  accentColor = DEFAULT_ACCENT_COLOR,
   showSources = true,
   systemPrompt,
   topK,

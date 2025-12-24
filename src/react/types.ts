@@ -2,6 +2,9 @@
  * Claude RAG - React Component Types
  */
 
+/** Default accent color used across all chat components */
+export const DEFAULT_ACCENT_COLOR = '#6366f1';
+
 export interface ChatMessage {
   id: string;
   role: 'user' | 'assistant';
@@ -63,5 +66,3 @@ export interface RAGChatActions {
   clearChat: () => void;
   setError: (error: string | null) => void;
 }
-
-export type RAGChatContextValue = RAGChatState & RAGChatActions & { config: RAGChatConfig };

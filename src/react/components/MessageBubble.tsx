@@ -2,7 +2,8 @@
 
 import { FileText, ChevronDown, ChevronUp } from 'lucide-react';
 import { useState } from 'react';
-import type { ChatMessage } from '../types.js';
+import { DEFAULT_ACCENT_COLOR, type ChatMessage } from '../types.js';
+import { LoadingDots } from './LoadingDots.js';
 
 interface MessageBubbleProps {
   message: ChatMessage;
@@ -12,7 +13,7 @@ interface MessageBubbleProps {
 
 export function MessageBubble({
   message,
-  accentColor = '#6366f1',
+  accentColor = DEFAULT_ACCENT_COLOR,
   showSources = true,
 }: MessageBubbleProps) {
   const isUser = message.role === 'user';
@@ -43,11 +44,7 @@ export function MessageBubble({
         >
           {message.isLoading ? (
             <div className="rag-message-loading">
-              <div className="rag-loading-dots">
-                <span style={{ backgroundColor: accentColor }} />
-                <span style={{ backgroundColor: accentColor }} />
-                <span style={{ backgroundColor: accentColor }} />
-              </div>
+              <LoadingDots accentColor={accentColor} />
             </div>
           ) : (
             <p className="rag-message-text">{message.content}</p>
