@@ -1320,7 +1320,9 @@ async function handleRequest(req: Request): Promise<Response> {
     ];
     const isValidRoute = VALID_ROUTES.includes(route) || parameterizedRoutes.includes(route);
     if (!isValidRoute) {
-      // CORS preflight for unknown routes should return 403 (Forbidden), not 404
+      // CORS preflight for unknown routes returns 403 with empty body.
+      // Unlike regular API errors (which return JSON), preflight responses
+      // don't need a body - browsers only inspect status and headers.
       return new Response(null, { status: 403, headers: corsHeaders });
     }
     return new Response(null, { status: 204, headers: corsHeaders });

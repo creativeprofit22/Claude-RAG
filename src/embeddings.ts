@@ -4,7 +4,7 @@
  * https://ai.google.dev/gemini-api/docs/embeddings
  */
 
-import { GoogleGenAI } from '@google/genai';
+import { getGeminiClient } from './utils/gemini-client.js';
 
 const GEMINI_MODEL = process.env.GEMINI_EMBEDDING_MODEL || 'gemini-embedding-001';
 const OUTPUT_DIMENSIONALITY = Number(process.env.GEMINI_EMBEDDING_DIM) || 1024;
@@ -19,19 +19,40 @@ export interface EmbeddingError extends Error {
   model?: string;
 }
 
-let genaiClient: GoogleGenAI | null = null;
+type TaskType = 'RETRIEVAL_DOCUMENT' | 'RETRIEVAL_QUERY';
 
-function getClient(): GoogleGenAI {
-  if (!genaiClient) {
-    const apiKey = process.env.GOOGLE_AI_API_KEY;
-    if (!apiKey) {
-      throw new Error(
-        'GOOGLE_AI_API_KEY environment variable is required. Get one at https://aistudio.google.com/apikey'
-      );
-    }
-    genaiClient = new GoogleGenAI({ apiKey });
+/**
+ * Core embedding generation with configurable task type
+ */
+async function generateEmbeddingCore(text: string, taskType: TaskType): Promise<number[]> {
+  if (!text || typeof text !== 'string') {
+    throw new Error('Text must be a non-empty string');
   }
-  return genaiClient;
+
+  const truncated = text.slice(0, MAX_TEXT_LENGTH);
+
+  try {
+    const client = getGeminiClient();
+    const response = await client.models.embedContent({
+      model: GEMINI_MODEL,
+      contents: truncated,
+      config: {
+        taskType,
+        outputDimensionality: OUTPUT_DIMENSIONALITY,
+      },
+    });
+
+    if (!response.embeddings?.[0]?.values) {
+      throw new Error('Invalid embedding response: missing embedding array');
+    }
+
+    return response.embeddings[0].values;
+  } catch (error) {
+    if (error instanceof TypeError && error.message.includes('fetch')) {
+      throw new Error('Failed to connect to Google AI API. Check your internet connection.');
+    }
+    throw error;
+  }
 }
 
 /**
@@ -41,35 +62,7 @@ function getClient(): GoogleGenAI {
  * @throws EmbeddingError if the API call fails
  */
 export async function generateEmbedding(text: string): Promise<number[]> {
-  if (!text || typeof text !== 'string') {
-    throw new Error('Text must be a non-empty string');
-  }
-
-  // Truncate to safe length
-  const truncated = text.slice(0, MAX_TEXT_LENGTH);
-
-  try {
-    const client = getClient();
-    const response = await client.models.embedContent({
-      model: GEMINI_MODEL,
-      contents: truncated,
-      config: {
-        taskType: 'RETRIEVAL_DOCUMENT',
-        outputDimensionality: OUTPUT_DIMENSIONALITY,
-      },
-    });
-
-    if (!response.embeddings?.[0]?.values) {
-      throw new Error('Invalid embedding response: missing embedding array');
-    }
-
-    return response.embeddings[0].values;
-  } catch (error) {
-    if (error instanceof TypeError && error.message.includes('fetch')) {
-      throw new Error('Failed to connect to Google AI API. Check your internet connection.');
-    }
-    throw error;
-  }
+  return generateEmbeddingCore(text, 'RETRIEVAL_DOCUMENT');
 }
 
 /**
@@ -78,34 +71,7 @@ export async function generateEmbedding(text: string): Promise<number[]> {
  * @returns Promise resolving to the embedding vector
  */
 export async function generateQueryEmbedding(text: string): Promise<number[]> {
-  if (!text || typeof text !== 'string') {
-    throw new Error('Text must be a non-empty string');
-  }
-
-  const truncated = text.slice(0, MAX_TEXT_LENGTH);
-
-  try {
-    const client = getClient();
-    const response = await client.models.embedContent({
-      model: GEMINI_MODEL,
-      contents: truncated,
-      config: {
-        taskType: 'RETRIEVAL_QUERY',
-        outputDimensionality: OUTPUT_DIMENSIONALITY,
-      },
-    });
-
-    if (!response.embeddings?.[0]?.values) {
-      throw new Error('Invalid embedding response: missing embedding array');
-    }
-
-    return response.embeddings[0].values;
-  } catch (error) {
-    if (error instanceof TypeError && error.message.includes('fetch')) {
-      throw new Error('Failed to connect to Google AI API. Check your internet connection.');
-    }
-    throw error;
-  }
+  return generateEmbeddingCore(text, 'RETRIEVAL_QUERY');
 }
 
 /**
@@ -129,7 +95,7 @@ export async function generateEmbeddingsBatch(
   }
 
   const results: number[][] = [];
-  const client = getClient();
+  const client = getGeminiClient();
 
   for (let i = 0; i < texts.length; i += batchSize) {
     const batch = texts.slice(i, i + batchSize).map((t) => t.slice(0, MAX_TEXT_LENGTH));
