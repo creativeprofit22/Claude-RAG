@@ -81,6 +81,30 @@ function isMessageData(data: unknown): data is SSEMessageData {
 const INITIAL_PROGRESS: UploadProgress = { stage: 'idle', percent: 0 };
 
 /**
+ * Create UploadProgress object from SSE progress data
+ */
+function createProgressUpdate(data: SSEProgressData): UploadProgress {
+  return {
+    stage: data.stage,
+    percent: data.percent,
+    current: data.current,
+    total: data.total,
+    chunkCount: data.chunkCount,
+  };
+}
+
+/**
+ * Create UploadResult object from SSE complete data
+ */
+function createUploadResult(data: SSECompleteData): UploadResult {
+  return {
+    documentId: data.documentId,
+    chunks: data.chunks,
+    name: data.name,
+  };
+}
+
+/**
  * Hook for uploading files with SSE progress streaming
  */
 export function useUploadStream(options: UseUploadStreamOptions = {}): UseUploadStreamReturn {
@@ -173,24 +197,14 @@ export function useUploadStream(options: UseUploadStreamOptions = {}): UseUpload
             switch (currentEventType) {
               case 'progress': {
                 if (!isProgressData(data)) break;
-                const progressUpdate: UploadProgress = {
-                  stage: data.stage,
-                  percent: data.percent,
-                  current: data.current,
-                  total: data.total,
-                  chunkCount: data.chunkCount,
-                };
+                const progressUpdate = createProgressUpdate(data);
                 setProgress(progressUpdate);
                 onProgress?.(progressUpdate);
                 break;
               }
               case 'complete': {
                 if (!isCompleteData(data)) break;
-                result = {
-                  documentId: data.documentId,
-                  chunks: data.chunks,
-                  name: data.name,
-                };
+                result = createUploadResult(data);
                 setProgress({ stage: 'complete', percent: 100 });
                 onComplete?.(result);
                 break;
@@ -208,21 +222,11 @@ export function useUploadStream(options: UseUploadStreamOptions = {}): UseUpload
               default: {
                 // Fallback to data structure inference for backwards compatibility
                 if (isProgressData(data)) {
-                  const progressUpdate: UploadProgress = {
-                    stage: data.stage,
-                    percent: data.percent,
-                    current: data.current,
-                    total: data.total,
-                    chunkCount: data.chunkCount,
-                  };
+                  const progressUpdate = createProgressUpdate(data);
                   setProgress(progressUpdate);
                   onProgress?.(progressUpdate);
                 } else if (isCompleteData(data)) {
-                  result = {
-                    documentId: data.documentId,
-                    chunks: data.chunks,
-                    name: data.name,
-                  };
+                  result = createUploadResult(data);
                   setProgress({ stage: 'complete', percent: 100 });
                   onComplete?.(result);
                 } else if (isMessageData(data)) {

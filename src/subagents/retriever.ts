@@ -106,28 +106,35 @@ Respond in this exact JSON format (no markdown, just raw JSON):
 }
 
 /**
+ * Validate that parsed JSON contains required LLM response fields
+ */
+function validateLLMResponse(parsed: unknown): LLMResponse {
+  if (typeof parsed !== 'object' || parsed === null) {
+    throw new RetrieverError('Response is not a valid object');
+  }
+  const obj = parsed as Record<string, unknown>;
+  if (!Array.isArray(obj.selectedIndices)) {
+    throw new RetrieverError('Response missing selectedIndices array');
+  }
+  if (typeof obj.relevantContext !== 'string') {
+    throw new RetrieverError('Response missing relevantContext string');
+  }
+  return obj as unknown as LLMResponse;
+}
+
+/**
  * Parses the JSON response from the LLM
  */
 function parseLLMResponse(text: string): LLMResponse {
   // Try to extract JSON from the response (handles markdown code blocks)
-  // Use non-greedy matching with balanced brace counting for accuracy
   const jsonMatch = extractBalancedJson(text);
   if (!jsonMatch) {
     throw new RetrieverError('Could not find valid JSON in LLM response');
   }
 
   try {
-    const parsed = JSON.parse(jsonMatch) as LLMResponse;
-
-    // Validate required fields
-    if (!Array.isArray(parsed.selectedIndices)) {
-      throw new RetrieverError('Response missing selectedIndices array');
-    }
-    if (typeof parsed.relevantContext !== 'string') {
-      throw new RetrieverError('Response missing relevantContext string');
-    }
-
-    return parsed;
+    const parsed = JSON.parse(jsonMatch);
+    return validateLLMResponse(parsed);
   } catch (error) {
     if (error instanceof RetrieverError) {
       throw error;

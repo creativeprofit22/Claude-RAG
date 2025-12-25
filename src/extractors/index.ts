@@ -68,6 +68,45 @@ export function getSupportedExtensions(): string[] {
 }
 
 /**
+ * HTML entity mapping for decoding
+ */
+const HTML_ENTITIES: Record<string, string> = {
+  '&nbsp;': ' ',
+  '&amp;': '&',
+  '&lt;': '<',
+  '&gt;': '>',
+  '&quot;': '"',
+  '&apos;': "'",
+  '&#39;': "'",
+  '&mdash;': '—',
+  '&ndash;': '–',
+  '&hellip;': '…',
+  '&copy;': '©',
+  '&reg;': '®',
+  '&trade;': '™',
+  '&ldquo;': '\u201C',
+  '&rdquo;': '\u201D',
+  '&lsquo;': '\u2018',
+  '&rsquo;': '\u2019',
+};
+
+/**
+ * Decode HTML entities in text
+ * Handles named entities and numeric entities (decimal and hex)
+ */
+function decodeHtmlEntities(text: string): string {
+  // Decode named entities
+  let result = text;
+  for (const [entity, char] of Object.entries(HTML_ENTITIES)) {
+    result = result.replace(new RegExp(entity, 'gi'), char);
+  }
+  // Decode numeric entities (decimal and hex)
+  return result
+    .replace(/&#(\d+);/g, (_, code) => String.fromCharCode(parseInt(code, 10)))
+    .replace(/&#x([0-9a-fA-F]+);/g, (_, code) => String.fromCharCode(parseInt(code, 16)));
+}
+
+/**
  * Extract text from a file buffer
  * @param buffer - File content as ArrayBuffer
  * @param mimeType - MIME type of the file
@@ -121,32 +160,12 @@ export async function extractText(
       // - CDATA sections
       // - Comments (<!-- -->)
       // For production use with untrusted HTML, consider a proper HTML parser
-      const text = html
+      const stripped = html
         .replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '') // Remove scripts
         .replace(/<style\b[^<]*(?:(?!<\/style>)<[^<]*)*<\/style>/gi, '') // Remove styles
         .replace(/<!--[\s\S]*?-->/g, '') // Remove HTML comments
-        .replace(/<[^>]*>/g, ' ') // Remove remaining tags (handles self-closing and malformed)
-        // Decode common HTML entities
-        .replace(/&nbsp;/gi, ' ')
-        .replace(/&amp;/gi, '&')
-        .replace(/&lt;/gi, '<')
-        .replace(/&gt;/gi, '>')
-        .replace(/&quot;/gi, '"')
-        .replace(/&apos;/gi, "'")
-        .replace(/&#39;/gi, "'")
-        .replace(/&mdash;/gi, '—')
-        .replace(/&ndash;/gi, '–')
-        .replace(/&hellip;/gi, '…')
-        .replace(/&copy;/gi, '©')
-        .replace(/&reg;/gi, '®')
-        .replace(/&trade;/gi, '™')
-        .replace(/&ldquo;/gi, '\u201C')
-        .replace(/&rdquo;/gi, '\u201D')
-        .replace(/&lsquo;/gi, '\u2018')
-        .replace(/&rsquo;/gi, '\u2019')
-        // Decode numeric entities (decimal and hex)
-        .replace(/&#(\d+);/g, (_, code) => String.fromCharCode(parseInt(code, 10)))
-        .replace(/&#x([0-9a-fA-F]+);/g, (_, code) => String.fromCharCode(parseInt(code, 16)))
+        .replace(/<[^>]*>/g, ' '); // Remove remaining tags (handles self-closing and malformed)
+      const text = decodeHtmlEntities(stripped)
         .replace(/\s+/g, ' ') // Normalize whitespace
         .trim();
       return { text };

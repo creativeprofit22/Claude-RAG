@@ -30,10 +30,6 @@ export function UploadModal({
 }: UploadModalProps): React.ReactElement | null {
   const { handleBackdropClick } = useModal({ onClose });
 
-  // Track modal open state to prevent stale category fetches
-  const isOpenRef = React.useRef(isOpen);
-  isOpenRef.current = isOpen;
-
   // Category management - use stable endpoint reference to prevent race conditions
   const { categories, isLoading: categoriesLoading, refetch: refetchCategories } = useCategories({
     endpoint,
@@ -43,17 +39,23 @@ export function UploadModal({
 
   // Fetch categories when modal opens, abort if it closes before completing
   React.useEffect(() => {
-    if (isOpen) {
-      // Only fetch if modal is still open when this effect runs
-      const fetchIfStillOpen = async () => {
-        // Small delay to let any rapid open/close settle
-        await new Promise(resolve => setTimeout(resolve, 50));
-        if (isOpenRef.current) {
-          refetchCategories();
-        }
-      };
-      fetchIfStillOpen();
-    }
+    if (!isOpen) return;
+
+    const abortController = new AbortController();
+
+    // Fetch categories with cancellation support
+    const fetchCategories = async () => {
+      // Yield to event loop to allow rapid open/close to settle
+      await Promise.resolve();
+      if (!abortController.signal.aborted) {
+        refetchCategories();
+      }
+    };
+    fetchCategories();
+
+    return () => {
+      abortController.abort();
+    };
   }, [isOpen, refetchCategories]);
 
   const [selectedCategoryId, setSelectedCategoryId] = React.useState<string | null>(null);

@@ -30,16 +30,16 @@ Files analyzed:
 | 2 | responder.ts + embeddings.ts | Duplicate Gemini client pattern: both files create their own `genaiClient` singletons with identical API key validation | Use shared `gemini-client.ts` singleton in `embeddings.ts` instead of duplicating | S |
 | 3 | server.ts:1315-1320 | CORS preflight handler returns empty body for 403, but other error paths return JSON | Consistent error response format - either all JSON or document the exception | S |
 
-## Medium Priority (Code Clarity)
+## Medium Priority (Code Clarity) ✅ COMPLETED
 
-| # | Location | Issue | Suggested Fix | Effort |
-|---|----------|-------|---------------|--------|
-| 4 | extractors/index.ts:124-150 | Long chain of `.replace()` calls for HTML entity decoding is hard to maintain | Extract to `decodeHtmlEntities()` helper with entity map or use existing library | M |
-| 5 | useUploadStream.ts:163-232 | SSE event parsing switch has duplicated fallback logic in default case | Extract event handlers into separate functions, simplify dispatch | M |
-| 6 | useFileQueue.ts:156-213 | `startUpload` function is 57 lines with deeply nested logic | Extract success/error handlers to separate functions | M |
-| 7 | subagents/retriever.ts:111-137 | `parseLLMResponse` mixes JSON extraction and validation | Split into `extractJson()` and `validateResponse()` functions | S |
-| 8 | database.ts:206-248 | `addDocuments` has race condition handling embedded in main flow | Extract race condition retry logic to wrapper function | M |
-| 9 | UploadModal.tsx:45-57 | Category fetch effect uses setTimeout hack for race condition | Use proper AbortController or cancellation token pattern | S |
+| # | Location | Issue | Suggested Fix | Effort | Status |
+|---|----------|-------|---------------|--------|--------|
+| 4 | extractors/index.ts | Long chain of `.replace()` calls for HTML entity decoding | Extracted `decodeHtmlEntities()` with HTML_ENTITIES map | M | ✅ |
+| 5 | useUploadStream.ts | SSE event parsing switch has duplicated fallback logic | Extracted `createProgressUpdate()` and `createUploadResult()` | M | ✅ |
+| 6 | useFileQueue.ts | `startUpload` function is 57 lines with deeply nested logic | Extracted `markFileComplete()` and `markFileError()` | M | ✅ |
+| 7 | subagents/retriever.ts | `parseLLMResponse` mixes JSON extraction and validation | Added `validateLLMResponse()` function | S | ✅ |
+| 8 | database.ts | `addDocuments` has race condition handling in main flow | Extracted `withTableRaceRetry()` wrapper | M | ✅ |
+| 9 | UploadModal.tsx | Category fetch effect uses setTimeout hack | Replaced with AbortController pattern | S | ✅ |
 
 ## Low Priority (Nice-to-Have)
 
@@ -55,13 +55,13 @@ Files analyzed:
 | 17 | subagents/retriever.ts:256-257 | Temperature `0.1` is magic number | Extract to constant with doc explaining low-temp rationale | S |
 
 ## Summary
-- High: 3 refactors (3 Small, 0 Medium, 0 Large)
-- Medium: 6 refactors (2 Small, 4 Medium, 0 Large)
-- Low: 8 refactors (8 Small, 0 Medium, 0 Large)
-- Total: 17 refactors
+- High: 3 refactors (3 Small, 0 Medium, 0 Large) - pending
+- Medium: 6 refactors (2 Small, 4 Medium, 0 Large) - **COMPLETED** ✅
+- Low: 8 refactors (8 Small, 0 Medium, 0 Large) - pending
+- Total: 17 refactors (6 completed)
 
 ### Key Themes
 1. **DRY violations in Gemini client usage** - Two files maintain separate singletons
-2. **Long functions needing extraction** - Several 50+ line functions with nested logic
+2. ~~**Long functions needing extraction** - Several 50+ line functions with nested logic~~ ✅
 3. **Magic numbers** - Multiple numeric constants without documentation
-4. **HTML entity handling** - Brittle regex chain that should be abstracted
+4. ~~**HTML entity handling** - Brittle regex chain that should be abstracted~~ ✅

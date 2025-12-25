@@ -48,6 +48,46 @@ const generateId = () => `file_${Date.now()}_${Math.random().toString(36).slice(
 const INITIAL_PROGRESS: UploadProgress = { stage: 'idle', percent: 0 };
 
 /**
+ * Update file state to completed status
+ */
+function markFileComplete(
+  files: QueuedFile[],
+  fileId: string,
+  result: UploadResult
+): QueuedFile[] {
+  return files.map((f) =>
+    f.id === fileId
+      ? {
+          ...f,
+          status: 'complete' as FileStatus,
+          progress: { stage: 'complete', percent: 100 },
+          result,
+        }
+      : f
+  );
+}
+
+/**
+ * Update file state to error status
+ */
+function markFileError(
+  files: QueuedFile[],
+  fileId: string,
+  errorMessage: string
+): QueuedFile[] {
+  return files.map((f) =>
+    f.id === fileId
+      ? {
+          ...f,
+          status: 'error' as FileStatus,
+          progress: { stage: 'error', percent: 0 },
+          error: errorMessage,
+        }
+      : f
+  );
+}
+
+/**
  * Hook for managing a queue of files to upload sequentially
  */
 export function useFileQueue(options: UseFileQueueOptions = {}): UseFileQueueReturn {
@@ -178,34 +218,12 @@ export function useFileQueue(options: UseFileQueueOptions = {}): UseFileQueueRet
       if (result) {
         // Success
         results.push(result);
-        setFiles((prev) =>
-          prev.map((f) =>
-            f.id === queuedFile.id
-              ? {
-                  ...f,
-                  status: 'complete' as FileStatus,
-                  progress: { stage: 'complete', percent: 100 },
-                  result,
-                }
-              : f
-          )
-        );
+        setFiles((prev) => markFileComplete(prev, queuedFile.id, result));
         onFileComplete?.({ ...queuedFile, status: 'complete', result }, result);
       } else {
         // Error or cancelled - use actual error message
         const errorMessage = lastErrorRef.current || 'Upload failed';
-        setFiles((prev) =>
-          prev.map((f) =>
-            f.id === queuedFile.id
-              ? {
-                  ...f,
-                  status: 'error' as FileStatus,
-                  progress: { stage: 'error', percent: 0 },
-                  error: errorMessage,
-                }
-              : f
-          )
-        );
+        setFiles((prev) => markFileError(prev, queuedFile.id, errorMessage));
         onError?.({ ...queuedFile, status: 'error', error: errorMessage }, errorMessage);
       }
 

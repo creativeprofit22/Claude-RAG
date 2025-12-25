@@ -15,7 +15,7 @@ Query → Gemini Embeddings → LanceDB → Chunks → Claude Code CLI → Respo
 ## Pipeline State
 Phase: refactoring
 Feature: Comprehensive bug fixes
-Tier: high
+Tier: medium
 Tier-Status: pending
 
 ## Reports
@@ -23,13 +23,15 @@ Tier-Status: pending
 - refactors: `reports/refactors-comprehensive-bug-fixes.md`
 
 ## Last Session (2025-12-25)
-- Fixed all 16 LOW priority bugs (3 were false positives)
-- Committed: `c9cf5c6`
-- Generated refactor report: 17 refactors (3 High, 6 Medium, 8 Low)
+- Completed HIGH priority refactors (3 of 3):
+  - embeddings.ts: Extracted `generateEmbeddingCore()` to eliminate DRY violation
+  - embeddings.ts: Replaced local singleton with shared `gemini-client.ts`
+  - server.ts: Documented CORS preflight 403 empty body rationale
+- Committed: `35858c7`
 
 ## Next Steps
-1. Execute high priority refactors (DRY violations)
-2. Run tests to verify
+1. Execute medium priority refactors (6 items)
+2. Execute low priority refactors (8 items)
 3. Update to build phase
 
 ## Key Files

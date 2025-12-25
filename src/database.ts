@@ -107,6 +107,24 @@ function toSearchResults(results: unknown[]): SearchResult[] {
 }
 
 /**
+ * Execute a database operation with automatic retry on table already exists error.
+ * Handles race condition where another process creates the table between check and create.
+ */
+async function withTableRaceRetry<T>(
+  operation: () => Promise<T>,
+  retryOperation: () => Promise<T>
+): Promise<T> {
+  try {
+    return await operation();
+  } catch (error) {
+    if (error instanceof Error && error.message.includes('already exists')) {
+      return await retryOperation();
+    }
+    throw error;
+  }
+}
+
+/**
  * RAG Database class for managing vector storage
  */
 class RAGDatabase {
@@ -225,27 +243,26 @@ class RAGDatabase {
       throw new Error('Database connection failed');
     }
 
-    // Use try-catch to handle race condition between tableNames() check and openTable()
+    // Handle race condition between tableNames() check and openTable()
     // Another process could create the table between our check and createTable call
-    try {
-      const tables = await this.db.tableNames();
-      if (tables.includes(TABLE_NAME)) {
-        const table = await this.db.openTable(TABLE_NAME);
+    const db = this.db;
+    this.table = await withTableRaceRetry(
+      async () => {
+        const tables = await db.tableNames();
+        if (tables.includes(TABLE_NAME)) {
+          const table = await db.openTable(TABLE_NAME);
+          await table.add(docs);
+          return table;
+        } else {
+          return await db.createTable(TABLE_NAME, docs);
+        }
+      },
+      async () => {
+        const table = await db.openTable(TABLE_NAME);
         await table.add(docs);
-        this.table = table;
-      } else {
-        this.table = await this.db.createTable(TABLE_NAME, docs);
+        return table;
       }
-    } catch (error) {
-      // If table was created by another process, retry with openTable
-      if (error instanceof Error && error.message.includes('already exists')) {
-        const table = await this.db.openTable(TABLE_NAME);
-        await table.add(docs);
-        this.table = table;
-      } else {
-        throw error;
-      }
-    }
+    );
   }
 
   /**
