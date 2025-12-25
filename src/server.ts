@@ -128,6 +128,10 @@ function errorResponse(message: string, status = 400): Response {
 
 // Parse URL path and extract route params
 function parseRoute(pathname: string): { route: string; params: Record<string, string> } {
+  // Match /api/rag/documents/details exactly (list all with details - before :id pattern)
+  if (pathname === '/api/rag/documents/details') {
+    return { route: pathname, params: {} };
+  }
   // Match /api/rag/documents/:id/metadata pattern (for category/tag updates)
   const docMetadataMatch = pathname.match(/^\/api\/rag\/documents\/([^\/]+)\/metadata$/);
   if (docMetadataMatch) {
