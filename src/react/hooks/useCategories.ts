@@ -34,7 +34,34 @@ interface UseCategoriesReturn {
 
 // Transform API response to extract categories array
 const transformCategoriesResponse = (data: unknown): Category[] => {
-  return (data as { categories?: Category[] })?.categories || [];
+  // Validate response shape before casting
+  if (data === null || typeof data !== 'object') {
+    throw new Error('Invalid API response: expected an object');
+  }
+
+  const response = data as Record<string, unknown>;
+
+  // If no categories property, return empty array (valid empty state)
+  if (!('categories' in response)) {
+    return [];
+  }
+
+  if (!Array.isArray(response.categories)) {
+    throw new Error('Invalid API response: categories must be an array');
+  }
+
+  // Validate each category has required properties
+  for (const cat of response.categories) {
+    if (typeof cat !== 'object' || cat === null) {
+      throw new Error('Invalid category: expected an object');
+    }
+    const c = cat as Record<string, unknown>;
+    if (typeof c.id !== 'string' || typeof c.name !== 'string' || typeof c.color !== 'string') {
+      throw new Error('Invalid category: missing required properties (id, name, color)');
+    }
+  }
+
+  return response.categories as Category[];
 };
 
 /**

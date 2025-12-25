@@ -49,6 +49,8 @@ export function DocumentCard({
         if (e.key === 'Enter' || e.key === ' ') {
           e.preventDefault();
           handleCardClick();
+        } else if (e.key === 'Escape') {
+          (e.target as HTMLElement).blur();
         }
       }}
     >

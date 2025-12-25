@@ -96,7 +96,8 @@ class RAGDatabase {
     }
     try {
       return await callback(table);
-    } catch {
+    } catch (error) {
+      console.error('[RAGDatabase] Error in table operation:', error);
       return fallback;
     }
   }
@@ -186,17 +187,27 @@ class RAGDatabase {
 
   /**
    * List all unique document IDs in the database
+   * Uses pagination to handle large datasets
    */
   async listDocuments(): Promise<string[]> {
     return this.withTable([], async (table) => {
-      const all = await table.query().limit(10000).toArray();
       const docIds = new Set<string>();
+      const batchSize = 5000;
+      let offset = 0;
+      let hasMore = true;
 
-      for (const row of all) {
-        const doc = row as unknown as VectorDocument;
-        if (doc.metadata?.documentId) {
-          docIds.add(doc.metadata.documentId);
+      while (hasMore) {
+        const batch = await table.query().limit(batchSize).offset(offset).toArray();
+
+        for (const row of batch) {
+          const doc = row as unknown as VectorDocument;
+          if (doc.metadata?.documentId) {
+            docIds.add(doc.metadata.documentId);
+          }
         }
+
+        hasMore = batch.length === batchSize;
+        offset += batchSize;
       }
 
       return Array.from(docIds);
@@ -293,10 +304,10 @@ class RAGDatabase {
 
   /**
    * Get summary of all documents (aggregated by documentId)
+   * Uses pagination to handle large datasets
    */
   async getDocumentSummaries(): Promise<DocumentSummary[]> {
     return this.withTable([], async (table) => {
-      const all = await table.query().limit(10000).toArray();
       const docMap = new Map<string, {
         documentName: string;
         chunkCount: number;
@@ -304,23 +315,33 @@ class RAGDatabase {
         source?: string;
         type?: string;
       }>();
+      const batchSize = 5000;
+      let offset = 0;
+      let hasMore = true;
 
-      for (const row of all) {
-        const doc = row as unknown as VectorDocument;
-        if (!doc.metadata?.documentId) continue;
+      while (hasMore) {
+        const batch = await table.query().limit(batchSize).offset(offset).toArray();
 
-        const existing = docMap.get(doc.metadata.documentId);
-        if (existing) {
-          existing.chunkCount++;
-        } else {
-          docMap.set(doc.metadata.documentId, {
-            documentName: doc.metadata.documentName,
-            chunkCount: 1,
-            timestamp: doc.metadata.timestamp,
-            source: doc.metadata.source as string | undefined,
-            type: doc.metadata.type as string | undefined,
-          });
+        for (const row of batch) {
+          const doc = row as unknown as VectorDocument;
+          if (!doc.metadata?.documentId) continue;
+
+          const existing = docMap.get(doc.metadata.documentId);
+          if (existing) {
+            existing.chunkCount++;
+          } else {
+            docMap.set(doc.metadata.documentId, {
+              documentName: doc.metadata.documentName,
+              chunkCount: 1,
+              timestamp: doc.metadata.timestamp,
+              source: doc.metadata.source as string | undefined,
+              type: doc.metadata.type as string | undefined,
+            });
+          }
         }
+
+        hasMore = batch.length === batchSize;
+        offset += batchSize;
       }
 
       return Array.from(docMap.entries()).map(([documentId, data]) => ({
@@ -348,8 +369,8 @@ class RAGDatabase {
       const docs = results as unknown as VectorDocument[];
       const firstDoc = docs[0];
 
-      // Sort chunks by chunkIndex
-      const sortedDocs = docs.sort((a, b) => a.metadata.chunkIndex - b.metadata.chunkIndex);
+      // Sort chunks by chunkIndex (copy to avoid mutating query results)
+      const sortedDocs = [...docs].sort((a, b) => a.metadata.chunkIndex - b.metadata.chunkIndex);
 
       return {
         documentId,

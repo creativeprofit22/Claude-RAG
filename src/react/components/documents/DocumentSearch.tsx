@@ -39,19 +39,23 @@ export function DocumentSearch({
   const onChangeRef = useRef(onChange);
   onChangeRef.current = onChange;
 
+  // Track prop value in ref to avoid dependency array issues
+  const valueRef = useRef(value);
+  valueRef.current = value;
+
   // Sync local value with prop
   useEffect(() => {
     setLocalValue(value);
   }, [value]);
 
-  // Debounced search
+  // Debounced search - only depends on localValue to avoid double-firing
   useEffect(() => {
     if (debounceRef.current) {
       clearTimeout(debounceRef.current);
     }
 
     debounceRef.current = setTimeout(() => {
-      if (localValue !== value) {
+      if (localValue !== valueRef.current) {
         onChangeRef.current(localValue);
       }
     }, 300);
@@ -61,7 +65,7 @@ export function DocumentSearch({
         clearTimeout(debounceRef.current);
       }
     };
-  }, [localValue, value]);
+  }, [localValue]);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setLocalValue(e.target.value);

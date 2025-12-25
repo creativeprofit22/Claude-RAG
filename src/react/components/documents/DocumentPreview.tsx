@@ -30,7 +30,7 @@ export function DocumentPreview({
   const getFileType = () => {
     if (docDetails.type) return docDetails.type.toUpperCase();
     const ext = docDetails.documentName.split('.').pop();
-    return ext ? ext.toUpperCase() : 'DOC';
+    return ext ? ext.toUpperCase() : 'FILE';
   };
 
   return (

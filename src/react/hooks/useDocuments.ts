@@ -39,7 +39,35 @@ interface UseDocumentsReturn {
 
 // Transform API response to extract documents array
 const transformDocumentsResponse = (data: unknown): DocumentSummary[] => {
-  return (data as { documents?: DocumentSummary[] })?.documents || [];
+  // Validate response shape before casting
+  if (data === null || typeof data !== 'object') {
+    throw new Error('Invalid API response: expected an object');
+  }
+
+  const response = data as Record<string, unknown>;
+
+  // If no documents property, return empty array (valid empty state)
+  if (!('documents' in response)) {
+    return [];
+  }
+
+  if (!Array.isArray(response.documents)) {
+    throw new Error('Invalid API response: documents must be an array');
+  }
+
+  // Validate each document has required properties
+  for (const doc of response.documents) {
+    if (typeof doc !== 'object' || doc === null) {
+      throw new Error('Invalid document: expected an object');
+    }
+    const d = doc as Record<string, unknown>;
+    if (typeof d.documentId !== 'string' || typeof d.documentName !== 'string' ||
+        typeof d.chunkCount !== 'number' || typeof d.timestamp !== 'number') {
+      throw new Error('Invalid document: missing required properties (documentId, documentName, chunkCount, timestamp)');
+    }
+  }
+
+  return response.documents as DocumentSummary[];
 };
 
 export function useDocuments(options: UseDocumentsOptions = {}): UseDocumentsReturn {
@@ -66,6 +94,7 @@ export function useDocuments(options: UseDocumentsOptions = {}): UseDocumentsRet
   });
 
   // Filtering/sorting state
+  // Default sort: newest documents first (date descending)
   const [searchQuery, setSearchQuery] = useState('');
   const [sortBy, setSortBy] = useState<'name' | 'date' | 'chunks'>('date');
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');

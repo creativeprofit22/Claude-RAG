@@ -6,7 +6,8 @@
  */
 
 import { readFileSync, writeFileSync, existsSync, mkdirSync } from 'fs';
-import { join, dirname } from 'path';
+import { join, dirname, basename } from 'path';
+import { randomUUID } from 'crypto';
 
 // ============================================
 // Types
@@ -71,7 +72,7 @@ function readJsonStore<T>(
       return JSON.parse(data) as T;
     }
   } catch (error) {
-    const msg = errorMessage || `Error reading ${path}`;
+    const msg = errorMessage || `Error reading ${basename(path)}`;
     console.warn(msg, error instanceof Error ? error.message : error);
   }
   return fallback;
@@ -148,8 +149,8 @@ export function getCategories(): Category[] {
 export function createCategory(name: string, color: string, icon?: string): Category {
   const store = readCategoryStore();
 
-  // Generate unique ID
-  const id = `cat_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
+  // Generate unique ID using crypto.randomUUID() for guaranteed uniqueness
+  const id = `cat_${randomUUID()}`;
 
   const category: Category = {
     id,
