@@ -13,28 +13,27 @@ Query → Gemini Embeddings → LanceDB → Chunks → Claude Code CLI → Respo
 ```
 
 ## Current Focus
-Section: Document Library Module
-Files: src/react/components/documents/*, src/react/hooks/useDocuments.ts, src/react/hooks/useCategories.ts, src/categories.ts, src/database.ts
+Section: Enhanced Upload (Phase 4)
+Files: src/react/components/upload/*, src/react/hooks/useUploadStream.ts, src/react/hooks/useFileQueue.ts, src/extractors/*, src/server.ts
 
 ## Pipeline State
-Phase: build
-Feature: Chat Integration (Phase 3)
-Status: RAGInterface component complete
+Phase: debugging
+Feature: Enhanced Upload (Phase 4)
+Tier: low
+Tier-Status: pending
+Reports: reports/bugs-enhanced-upload.md (3 High ✓, 5 Medium ✓, 5 Low)
 
-## Last Session (2025-12-24)
-Started Phase 3: Chat Integration:
-- Created `RAGInterface.tsx` - unified tabbed component (Chat | Documents)
-- Implements document scoping: select document in library → queries filter to that doc
-- Added scope indicator bar with document name and clear button
-- CSS styles for tabs, scope indicator, and view content
-- Updated exports in `src/react/index.ts`
-- Build passes
-
-Previous session - Document Library refactors:
-- All 10 refactors complete (2 high, 4 medium, 4 low)
-- Committed: 622e55d
+## Last Session (2025-12-25)
+- Fixed all 5 medium priority bugs:
+  - Empty text extraction now rejected with error (server.ts:457-465)
+  - JSON.parse for categoryIds/tags wrapped in try-catch (server.ts:417-427)
+  - SSE stream flushed with 10ms delay before close (5 locations)
+  - File name extension preserved on rename (useFileQueue.ts:134-146)
+  - PDF date parsing validates with isNaN check (pdf.ts:39-46)
+- Type check passes
 
 ## Completed Features
+- **Enhanced Upload** (2025-12-25): SSE progress streaming, PDF/DOCX extraction, multi-file queue, category selection
 - **Chat Integration** (2025-12-24): RAGInterface component with tab navigation + document scoping
 - **Document Library** (2025-12-24): Phase 1 complete, all 14 bugs fixed
 - **Category System** (2025-12-24): JSON-based storage, CRUD API, React components
@@ -66,13 +65,17 @@ import { DocumentLibrary } from 'claude-rag/react';
 ```
 
 ## Key Files
-- `src/index.ts` - Main API exports
-- `src/server.ts` - Bun HTTP server
+- `src/index.ts` - Main API exports (addDocumentWithProgress, estimateChunks)
+- `src/server.ts` - Bun HTTP server (includes SSE upload/stream endpoint)
 - `src/database.ts` - LanceDB wrapper with document queries
 - `src/categories.ts` - Category storage helpers
+- `src/extractors/index.ts` - PDF/DOCX/text extraction dispatcher
 - `src/react/RAGInterface.tsx` - Unified chat + documents tabbed interface
-- `src/react/components/documents/DocumentLibrary.tsx` - Document browser
+- `src/react/components/documents/DocumentLibrary.tsx` - Document browser with upload button
+- `src/react/components/upload/UploadModal.tsx` - Enhanced upload modal with SSE progress
 - `src/react/hooks/useDocuments.ts` - Document management hook
+- `src/react/hooks/useUploadStream.ts` - SSE upload progress hook
+- `src/react/hooks/useFileQueue.ts` - Multi-file queue management hook
 
 ## Environment
 ```

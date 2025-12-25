@@ -4,6 +4,70 @@ import { useState, useCallback, useMemo } from 'react';
 import type { DocumentSummary, DocumentDetails } from '../types.js';
 import { useAPIResource } from './useAPIResource.js';
 
+type SortField = 'name' | 'date' | 'chunks';
+type SortOrder = 'asc' | 'desc';
+
+/**
+ * Sort documents by the specified field and order.
+ * Extracted to reduce inline complexity in useMemo.
+ */
+export function sortDocuments(
+  docs: DocumentSummary[],
+  sortBy: SortField,
+  sortOrder: SortOrder
+): DocumentSummary[] {
+  return [...docs].sort((a, b) => {
+    let comparison = 0;
+
+    switch (sortBy) {
+      case 'name':
+        comparison = a.documentName.localeCompare(b.documentName);
+        break;
+      case 'date':
+        comparison = a.timestamp - b.timestamp;
+        break;
+      case 'chunks':
+        comparison = a.chunkCount - b.chunkCount;
+        break;
+    }
+
+    return sortOrder === 'asc' ? comparison : -comparison;
+  });
+}
+
+/**
+ * Validate an API response that contains an array under a specific field.
+ * Reduces duplication across transform functions in hooks.
+ */
+export function validateApiArrayResponse<T>(
+  data: unknown,
+  fieldName: string,
+  validateItem: (item: Record<string, unknown>) => void
+): T[] {
+  if (data === null || typeof data !== 'object') {
+    throw new Error('Invalid API response: expected an object');
+  }
+
+  const response = data as Record<string, unknown>;
+
+  if (!(fieldName in response)) {
+    return [];
+  }
+
+  if (!Array.isArray(response[fieldName])) {
+    throw new Error(`Invalid API response: ${fieldName} must be an array`);
+  }
+
+  for (const item of response[fieldName]) {
+    if (typeof item !== 'object' || item === null) {
+      throw new Error(`Invalid ${fieldName} item: expected an object`);
+    }
+    validateItem(item as Record<string, unknown>);
+  }
+
+  return response[fieldName] as T[];
+}
+
 interface UseDocumentsOptions {
   /** API endpoint base URL (default: /api/rag) */
   endpoint?: string;
@@ -37,37 +101,17 @@ interface UseDocumentsReturn {
   filteredDocuments: DocumentSummary[];
 }
 
+// Document field validator
+const validateDocumentItem = (d: Record<string, unknown>): void => {
+  if (typeof d.documentId !== 'string' || typeof d.documentName !== 'string' ||
+      typeof d.chunkCount !== 'number' || typeof d.timestamp !== 'number') {
+    throw new Error('Invalid document: missing required properties (documentId, documentName, chunkCount, timestamp)');
+  }
+};
+
 // Transform API response to extract documents array
 const transformDocumentsResponse = (data: unknown): DocumentSummary[] => {
-  // Validate response shape before casting
-  if (data === null || typeof data !== 'object') {
-    throw new Error('Invalid API response: expected an object');
-  }
-
-  const response = data as Record<string, unknown>;
-
-  // If no documents property, return empty array (valid empty state)
-  if (!('documents' in response)) {
-    return [];
-  }
-
-  if (!Array.isArray(response.documents)) {
-    throw new Error('Invalid API response: documents must be an array');
-  }
-
-  // Validate each document has required properties
-  for (const doc of response.documents) {
-    if (typeof doc !== 'object' || doc === null) {
-      throw new Error('Invalid document: expected an object');
-    }
-    const d = doc as Record<string, unknown>;
-    if (typeof d.documentId !== 'string' || typeof d.documentName !== 'string' ||
-        typeof d.chunkCount !== 'number' || typeof d.timestamp !== 'number') {
-      throw new Error('Invalid document: missing required properties (documentId, documentName, chunkCount, timestamp)');
-    }
-  }
-
-  return response.documents as DocumentSummary[];
+  return validateApiArrayResponse<DocumentSummary>(data, 'documents', validateDocumentItem);
 };
 
 export function useDocuments(options: UseDocumentsOptions = {}): UseDocumentsReturn {
@@ -151,7 +195,7 @@ export function useDocuments(options: UseDocumentsOptions = {}): UseDocumentsRet
 
   // Filtered and sorted documents (client-side)
   const filteredDocuments = useMemo(() => {
-    let result = [...documents];
+    let result = documents;
 
     // Filter by search query (case-insensitive match on documentName)
     if (searchQuery.trim()) {
@@ -161,26 +205,7 @@ export function useDocuments(options: UseDocumentsOptions = {}): UseDocumentsRet
       );
     }
 
-    // Sort
-    result.sort((a, b) => {
-      let comparison = 0;
-
-      switch (sortBy) {
-        case 'name':
-          comparison = a.documentName.localeCompare(b.documentName);
-          break;
-        case 'date':
-          comparison = a.timestamp - b.timestamp;
-          break;
-        case 'chunks':
-          comparison = a.chunkCount - b.chunkCount;
-          break;
-      }
-
-      return sortOrder === 'asc' ? comparison : -comparison;
-    });
-
-    return result;
+    return sortDocuments(result, sortBy, sortOrder);
   }, [documents, searchQuery, sortBy, sortOrder]);
 
   return {

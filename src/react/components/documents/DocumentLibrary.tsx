@@ -1,11 +1,13 @@
 'use client';
 
-import { Library, AlertCircle, X } from 'lucide-react';
+import { useState } from 'react';
+import { Library, AlertCircle, X, Upload } from 'lucide-react';
 import { DocumentSearch } from './DocumentSearch.js';
 import { DocumentList } from './DocumentList.js';
 import { DocumentPreview } from './DocumentPreview.js';
 import { ConfirmDialog } from '../shared/ConfirmDialog.js';
 import { EmptyState } from '../shared/EmptyState.js';
+import { UploadModal } from '../upload/UploadModal.js';
 import { useDocuments } from '../../hooks/useDocuments.js';
 import { useDocumentLibraryState } from '../../hooks/useDocumentLibraryState.js';
 import { DEFAULT_ACCENT_COLOR, type DocumentSummary } from '../../types.js';
@@ -96,6 +98,13 @@ export function DocumentLibrary({
     onDocumentSelect,
   });
 
+  // Upload modal state
+  const [isUploadOpen, setIsUploadOpen] = useState(false);
+
+  const handleUploadComplete = () => {
+    refetch();
+  };
+
   // Combined error state
   const displayError = localError || error;
 
@@ -135,6 +144,15 @@ export function DocumentLibrary({
             </span>
           </div>
         </div>
+        <button
+          type="button"
+          onClick={() => setIsUploadOpen(true)}
+          className="rag-library-upload-btn"
+          style={{ backgroundColor: accentColor }}
+        >
+          <Upload size={16} />
+          Upload
+        </button>
       </header>
 
       {/* Error Banner */}
@@ -199,6 +217,15 @@ export function DocumentLibrary({
           isDestructive
         />
       )}
+
+      {/* Upload Modal */}
+      <UploadModal
+        isOpen={isUploadOpen}
+        onClose={() => setIsUploadOpen(false)}
+        onUploadComplete={handleUploadComplete}
+        endpoint={endpoint}
+        headers={headers}
+      />
     </div>
   );
 }

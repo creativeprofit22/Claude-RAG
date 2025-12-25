@@ -42,10 +42,16 @@ export { TypingIndicator } from './components/TypingIndicator.js';
 export { CategoryBadge, CategoryFilter } from './components/categories/index.js';
 export type { CategoryBadgeProps, CategoryFilterProps } from './components/categories/index.js';
 
+// Upload components
+export { UploadModal, FileDropZone, FileQueue, FilePreview, ProgressIndicator } from './components/upload/index.js';
+export type { UploadModalProps, FileDropZoneProps, FileQueueProps, FilePreviewProps, ProgressIndicatorProps } from './components/upload/index.js';
+
 // Hooks for custom implementations
 export { useRAGChat } from './hooks/useRAGChat.js';
 export { useDocuments } from './hooks/useDocuments.js';
 export { useCategories } from './hooks/useCategories.js';
+export { useUploadStream, useFileQueue } from './hooks/index.js';
+export type { UploadProgress, UploadResult, UploadOptions, UploadStage, QueuedFile, FileStatus } from './hooks/index.js';
 
 // Types
 export type {

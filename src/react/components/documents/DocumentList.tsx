@@ -4,6 +4,9 @@ import { DocumentCard } from './DocumentCard.js';
 import { EmptyState } from '../shared/EmptyState.js';
 import type { DocumentSummary } from '../../types.js';
 
+/** Number of skeleton cards to show while loading */
+const DEFAULT_SKELETON_COUNT = 6;
+
 export interface DocumentListProps {
   documents: DocumentSummary[];
   isLoading?: boolean;
@@ -12,6 +15,8 @@ export interface DocumentListProps {
   onDocumentPreview?: (doc: DocumentSummary) => void;
   selectedDocumentId?: string;
   emptyState?: React.ReactNode;
+  /** Number of skeleton cards to show while loading */
+  skeletonCount?: number;
 }
 
 /**
@@ -54,12 +59,13 @@ export function DocumentList({
   onDocumentPreview,
   selectedDocumentId,
   emptyState,
+  skeletonCount = DEFAULT_SKELETON_COUNT,
 }: DocumentListProps) {
   // Show loading skeletons
   if (isLoading) {
     return (
       <div className="rag-doc-list" aria-busy="true" aria-label="Loading documents">
-        {Array.from({ length: 6 }).map((_, index) => (
+        {Array.from({ length: skeletonCount }).map((_, index) => (
           <DocumentCardSkeleton key={`skeleton-${index}`} />
         ))}
       </div>

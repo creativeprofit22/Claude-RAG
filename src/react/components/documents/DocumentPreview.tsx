@@ -6,6 +6,15 @@ import { DEFAULT_ACCENT_COLOR } from '../../types.js';
 import { useModal } from '../../hooks/useModal.js';
 import { formatDate } from '../../utils/formatDate.js';
 
+/**
+ * Get file type display label from document type or name
+ */
+function getFileType(docDetails: DocumentDetails): string {
+  if (docDetails.type) return docDetails.type.toUpperCase();
+  const ext = docDetails.documentName.split('.').pop();
+  return ext ? ext.toUpperCase() : 'FILE';
+}
+
 export interface DocumentPreviewProps {
   document: DocumentDetails;
   isLoading?: boolean;
@@ -25,13 +34,6 @@ export function DocumentPreview({
   accentColor = DEFAULT_ACCENT_COLOR,
 }: DocumentPreviewProps) {
   const { handleBackdropClick } = useModal({ onClose });
-
-  // Get file type from document name or type field
-  const getFileType = () => {
-    if (docDetails.type) return docDetails.type.toUpperCase();
-    const ext = docDetails.documentName.split('.').pop();
-    return ext ? ext.toUpperCase() : 'FILE';
-  };
 
   return (
     <div
@@ -59,7 +61,7 @@ export function DocumentPreview({
                 className="rag-preview-type-badge"
                 style={{ backgroundColor: `${accentColor}20`, color: accentColor }}
               >
-                {getFileType()}
+                {getFileType(docDetails)}
               </span>
             </div>
           </div>

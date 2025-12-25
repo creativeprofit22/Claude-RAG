@@ -267,16 +267,59 @@ export async function query(
 }
 
 /**
- * Add a document to the RAG system
+ * Estimate how many chunks a text will produce
  */
-export async function addDocument(
+export function estimateChunks(
   text: string,
-  metadata: { name: string; source?: string; type?: string }
+  options?: { chunkSize?: number; chunkOverlap?: number }
+): { wordCount: number; estimatedChunks: number; chunkSize: number; chunkOverlap: number } {
+  const config = getDefaultConfig();
+  const chunkSize = options?.chunkSize ?? config.chunkSize;
+  const chunkOverlap = options?.chunkOverlap ?? config.chunkOverlap;
+  const words = text.split(/\s+/).filter(w => w.trim());
+  const wordCount = words.length;
+
+  if (wordCount === 0) {
+    return { wordCount: 0, estimatedChunks: 0, chunkSize, chunkOverlap };
+  }
+
+  // Calculate chunks with overlap
+  const step = chunkSize - chunkOverlap;
+  const estimatedChunks = Math.max(1, Math.ceil((wordCount - chunkOverlap) / step));
+
+  return { wordCount, estimatedChunks, chunkSize, chunkOverlap };
+}
+
+/**
+ * Progress stage for document upload
+ */
+export type UploadStage = 'reading' | 'extracting' | 'chunking' | 'embedding' | 'storing' | 'complete';
+
+/**
+ * Progress callback for document upload
+ */
+export interface UploadProgress {
+  stage: UploadStage;
+  percent: number;
+  current?: number;
+  total?: number;
+  chunkCount?: number;
+}
+
+/**
+ * Add a document to the RAG system with progress callback
+ */
+export async function addDocumentWithProgress(
+  text: string,
+  metadata: { name: string; source?: string; type?: string; categoryIds?: string[]; tags?: string[] },
+  onProgress?: (progress: UploadProgress) => void
 ): Promise<{ documentId: string; chunks: number }> {
   const config = getDefaultConfig();
   const documentId = `doc_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
 
-  // Simple chunking (word-based with overlap)
+  // Chunking stage (30-35%)
+  onProgress?.({ stage: 'chunking', percent: 30 });
+
   const words = text.split(/\s+/);
   const chunkSize = config.chunkSize;
   const overlap = config.chunkOverlap;
@@ -287,11 +330,18 @@ export async function addDocument(
     if (chunk.trim()) chunks.push(chunk);
   }
 
-  // Generate embeddings
-  logger.info(`Generating embeddings for ${chunks.length} chunks...`);
-  const embeddings = await generateEmbeddingsBatch(chunks);
+  onProgress?.({ stage: 'chunking', percent: 35, chunkCount: chunks.length });
 
-  // Store in database
+  // Embedding stage (35-90%)
+  logger.info(`Generating embeddings for ${chunks.length} chunks...`);
+  const embeddings = await generateEmbeddingsBatch(chunks, 50, (completed, total) => {
+    const percent = 35 + Math.floor((completed / total) * 55);
+    onProgress?.({ stage: 'embedding', percent, current: completed, total });
+  });
+
+  // Storing stage (90-100%)
+  onProgress?.({ stage: 'storing', percent: 90 });
+
   const docs = chunks.map((text, i) => ({
     id: `${documentId}_${i}`,
     vector: embeddings[i],
@@ -307,9 +357,32 @@ export async function addDocument(
   }));
 
   await ragDatabase.addDocuments(docs);
+
+  // Store category and tag metadata if provided
+  if (metadata.categoryIds || metadata.tags) {
+    const { setDocumentCategories, setDocumentTags } = await import('./categories.js');
+    if (metadata.categoryIds) {
+      setDocumentCategories(documentId, metadata.categoryIds);
+    }
+    if (metadata.tags) {
+      setDocumentTags(documentId, metadata.tags);
+    }
+  }
+
   logger.info(`Added document ${documentId} with ${chunks.length} chunks`);
+  onProgress?.({ stage: 'complete', percent: 100 });
 
   return { documentId, chunks: chunks.length };
+}
+
+/**
+ * Add a document to the RAG system
+ */
+export async function addDocument(
+  text: string,
+  metadata: { name: string; source?: string; type?: string }
+): Promise<{ documentId: string; chunks: number }> {
+  return addDocumentWithProgress(text, metadata);
 }
 
 /**

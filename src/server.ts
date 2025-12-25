@@ -4,7 +4,8 @@
  * Supports both Claude Code CLI and Gemini responders
  */
 
-import { addDocument, listDocuments, deleteDocument, isReady, search, query, getDocumentSummaries, getDocumentDetails, type QueryResult } from './index.js';
+import { addDocument, addDocumentWithProgress, estimateChunks, listDocuments, deleteDocument, isReady, search, query, getDocumentSummaries, getDocumentDetails, type QueryResult, type UploadProgress } from './index.js';
+import { extractText, isSupported, getMimeType } from './extractors/index.js';
 import { checkGeminiReady } from './responder-gemini.js';
 import { logger } from './utils/logger.js';
 import { checkClaudeCodeAvailable } from './utils/cli.js';
@@ -178,6 +179,16 @@ const ROUTES: Record<string, RouteConfig> = {
     method: 'POST',
     description: 'Upload document'
   },
+  uploadStream: {
+    path: '/api/rag/upload/stream',
+    method: 'POST',
+    description: 'Upload document with SSE progress streaming'
+  },
+  uploadEstimate: {
+    path: '/api/rag/upload/estimate',
+    method: 'POST',
+    description: 'Estimate chunk count for text'
+  },
   query: {
     path: '/api/rag/query',
     method: 'POST',
@@ -262,6 +273,8 @@ const ROUTE_HANDLERS: Record<string, RouteHandler> = {
   [`GET:${ROUTES.health.path}`]: () => handleHealthCheck(),
   [`GET:${ROUTES.responders.path}`]: () => handleRespondersCheck(),
   [`POST:${ROUTES.upload.path}`]: ({ req }) => handleUpload(req),
+  [`POST:${ROUTES.uploadStream.path}`]: ({ req }) => handleUploadStream(req),
+  [`POST:${ROUTES.uploadEstimate.path}`]: ({ req }) => handleUploadEstimate(req),
   [`POST:${ROUTES.query.path}`]: ({ req, url }) => handleQuery(req, url),
   [`POST:${ROUTES.search.path}`]: ({ req }) => handleSearch(req),
   [`GET:${ROUTES.documents.path}`]: () => handleListDocuments(),
@@ -372,6 +385,159 @@ async function handleUpload(req: Request): Promise<Response> {
     logger.error('Document upload failed:', { name: body.name, error: errorMessage });
     return errorResponse(`Failed to process document: ${errorMessage}`, 500);
   }
+}
+
+/**
+ * POST /api/rag/upload/stream - Upload with SSE progress streaming
+ */
+async function handleUploadStream(req: Request): Promise<Response> {
+  const encoder = new TextEncoder();
+
+  // Helper to send SSE events
+  const createSSEMessage = (event: string, data: unknown): Uint8Array => {
+    return encoder.encode(`event: ${event}\ndata: ${JSON.stringify(data)}\n\n`);
+  };
+
+  const stream = new ReadableStream({
+    async start(controller) {
+      try {
+        // Parse multipart form data
+        const formData = await req.formData();
+        const file = formData.get('file') as File | null;
+        const customName = formData.get('name') as string | null;
+        const categoryIdsRaw = formData.get('categoryIds') as string | null;
+        const tagsRaw = formData.get('tags') as string | null;
+
+        if (!file) {
+          controller.enqueue(createSSEMessage('error', { message: 'No file provided' }));
+          await new Promise(resolve => setTimeout(resolve, 10));
+          controller.close();
+          return;
+        }
+
+        let categoryIds: string[] | undefined;
+        let tags: string[] | undefined;
+        try {
+          categoryIds = categoryIdsRaw ? JSON.parse(categoryIdsRaw) : undefined;
+          tags = tagsRaw ? JSON.parse(tagsRaw) : undefined;
+        } catch {
+          controller.enqueue(createSSEMessage('error', { message: 'Invalid JSON in categoryIds or tags' }));
+          await new Promise(resolve => setTimeout(resolve, 10));
+          controller.close();
+          return;
+        }
+        const fileName = customName || file.name;
+
+        // Stage 1: Reading file
+        controller.enqueue(createSSEMessage('progress', { stage: 'reading', percent: 0 }));
+        const buffer = await file.arrayBuffer();
+        controller.enqueue(createSSEMessage('progress', { stage: 'reading', percent: 10 }));
+
+        // Stage 2: Extracting text
+        controller.enqueue(createSSEMessage('progress', { stage: 'extracting', percent: 10 }));
+        let extractedText: string;
+        let isScanned = false;
+
+        try {
+          const mimeType = file.type || getMimeType(file.name) || 'application/octet-stream';
+
+          if (!isSupported(mimeType) && !getMimeType(file.name)) {
+            controller.enqueue(createSSEMessage('error', {
+              message: `Unsupported file type: ${file.type || 'unknown'}. Supported: PDF, DOCX, TXT, MD, HTML`
+            }));
+            await new Promise(resolve => setTimeout(resolve, 10));
+            controller.close();
+            return;
+          }
+
+          const result = await extractText(buffer, mimeType, file.name);
+          extractedText = result.text;
+          isScanned = result.isScanned ?? false;
+
+          // Reject completely empty text extraction
+          if (extractedText.trim().length === 0) {
+            controller.enqueue(createSSEMessage('error', {
+              message: 'No text could be extracted from this file. The document may be empty, scanned, or image-based.'
+            }));
+            await new Promise(resolve => setTimeout(resolve, 10));
+            controller.close();
+            return;
+          }
+
+          if (isScanned || extractedText.trim().length < 50) {
+            controller.enqueue(createSSEMessage('warning', {
+              message: 'This file appears to be scanned or has minimal text content. Text extraction may be incomplete.',
+              isScanned: true
+            }));
+          }
+
+          controller.enqueue(createSSEMessage('progress', { stage: 'extracting', percent: 30 }));
+        } catch (error) {
+          const errorMsg = error instanceof Error ? error.message : 'Failed to extract text';
+          controller.enqueue(createSSEMessage('error', { message: errorMsg }));
+          await new Promise(resolve => setTimeout(resolve, 10));
+          controller.close();
+          return;
+        }
+
+        // Stage 3-5: Chunking, Embedding, Storing (handled by addDocumentWithProgress)
+        const result = await addDocumentWithProgress(
+          extractedText,
+          {
+            name: fileName,
+            source: file.name,
+            type: file.type,
+            categoryIds,
+            tags,
+          },
+          (progress: UploadProgress) => {
+            controller.enqueue(createSSEMessage('progress', progress));
+          }
+        );
+
+        // Complete
+        controller.enqueue(createSSEMessage('complete', {
+          documentId: result.documentId,
+          chunks: result.chunks,
+          name: fileName,
+        }));
+      } catch (error) {
+        const errorMsg = error instanceof Error ? error.message : 'Upload failed';
+        logger.error('Stream upload failed:', { error: errorMsg });
+        controller.enqueue(createSSEMessage('error', { message: errorMsg }));
+      } finally {
+        controller.close();
+      }
+    },
+  });
+
+  return new Response(stream, {
+    headers: {
+      'Content-Type': 'text/event-stream',
+      'Cache-Control': 'no-cache',
+      'Connection': 'keep-alive',
+      'Access-Control-Allow-Origin': CORS_ORIGIN,
+      'Access-Control-Allow-Credentials': 'true',
+    },
+  });
+}
+
+/**
+ * POST /api/rag/upload/estimate - Estimate chunk count
+ */
+async function handleUploadEstimate(req: Request): Promise<Response> {
+  validateContentLength(req);
+
+  const parsed = await parseJsonBody(req);
+  if (!parsed.ok) return parsed.error;
+  const body = parsed.data;
+
+  if (!body.text || typeof body.text !== 'string') {
+    return errorResponse('Missing required field: text');
+  }
+
+  const result = estimateChunks(body.text);
+  return jsonResponse(result);
 }
 
 /**

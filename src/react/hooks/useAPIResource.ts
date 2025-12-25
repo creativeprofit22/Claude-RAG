@@ -127,3 +127,69 @@ export function useAPIResource<T>(options: UseAPIResourceOptions<T>): UseAPIReso
     stableHeaders,
   };
 }
+
+/**
+ * Options for creating an API mutation function
+ */
+interface CreateApiMutationOptions {
+  /** Base API endpoint URL */
+  endpoint: string;
+  /** Stable headers from useAPIResource */
+  stableHeaders: Record<string, string>;
+  /** Error setter from useAPIResource */
+  setError: React.Dispatch<React.SetStateAction<string | null>>;
+}
+
+/**
+ * Configuration for a specific mutation call
+ */
+interface MutationConfig {
+  /** URL path segment to append to endpoint */
+  path: string;
+  /** HTTP method */
+  method: 'POST' | 'PATCH' | 'DELETE';
+  /** Request body (will be JSON.stringify'd) */
+  body?: Record<string, unknown>;
+  /** Default error message if request fails */
+  errorMessage: string;
+}
+
+/**
+ * Create a reusable mutation executor that handles common fetch patterns:
+ * - Error clearing before request
+ * - JSON headers and body handling
+ * - Error response parsing
+ * - Error state management
+ *
+ * Returns the JSON response on success, or null on failure.
+ */
+export function createApiMutation(options: CreateApiMutationOptions) {
+  const { endpoint, stableHeaders, setError } = options;
+
+  return async <T>(config: MutationConfig): Promise<T | null> => {
+    const { path, method, body, errorMessage } = config;
+    setError(null);
+
+    try {
+      const response = await fetch(`${endpoint}${path}`, {
+        method,
+        headers: {
+          'Content-Type': 'application/json',
+          ...stableHeaders,
+        },
+        ...(body && { body: JSON.stringify(body) }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.error || `Request failed: ${response.status}`);
+      }
+
+      return await response.json() as T;
+    } catch (err) {
+      const message = err instanceof Error ? err.message : errorMessage;
+      setError(message);
+      return null;
+    }
+  };
+}

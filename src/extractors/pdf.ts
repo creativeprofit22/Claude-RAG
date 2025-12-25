@@ -1,0 +1,58 @@
+/**
+ * PDF Text Extraction
+ * Uses pdf-parse for text-based PDFs
+ */
+
+import pdfParse from 'pdf-parse';
+
+export interface PDFExtractionResult {
+  text: string;
+  pageCount: number;
+  isScanned: boolean;
+  metadata?: {
+    title?: string;
+    author?: string;
+    creationDate?: Date;
+  };
+}
+
+/**
+ * Extract text from a PDF buffer
+ * @param buffer - PDF file as ArrayBuffer
+ * @returns Extracted text and metadata
+ */
+export async function extractPDF(buffer: ArrayBuffer): Promise<PDFExtractionResult> {
+  const nodeBuffer = Buffer.from(buffer);
+
+  const result = await pdfParse(nodeBuffer, {
+    // Limit pages for performance (can be overridden)
+    max: 0, // 0 = no limit
+  });
+
+  const text = result.text.trim();
+  const pageCount = result.numpages;
+
+  // Heuristic: if text is very short relative to page count, it's likely scanned
+  const avgCharsPerPage = text.length / Math.max(pageCount, 1);
+  const isScanned = avgCharsPerPage < 100 && pageCount > 0;
+
+  // Parse creation date safely (PDF dates can be in various formats)
+  let creationDate: Date | undefined;
+  if (result.info?.CreationDate) {
+    const parsed = new Date(result.info.CreationDate);
+    if (!isNaN(parsed.getTime())) {
+      creationDate = parsed;
+    }
+  }
+
+  return {
+    text,
+    pageCount,
+    isScanned,
+    metadata: {
+      title: result.info?.Title,
+      author: result.info?.Author,
+      creationDate,
+    },
+  };
+}

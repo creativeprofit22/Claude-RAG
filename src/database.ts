@@ -8,6 +8,8 @@ import { join } from 'path';
 
 const DB_PATH = process.env.RAG_DB_PATH || join(process.cwd(), 'data', 'vectors');
 const TABLE_NAME = 'documents';
+/** Default maximum chunks to fetch per document query */
+const DEFAULT_CHUNK_LIMIT = 10000;
 
 /**
  * Summary of a document (aggregated from chunks)
@@ -75,6 +77,22 @@ function escapeFilterValue(value: string): string {
 }
 
 /**
+ * Cast LanceDB query results to VectorDocument array.
+ * LanceDB returns untyped rows, this provides a single cast point.
+ */
+function toVectorDocuments(results: unknown[]): VectorDocument[] {
+  return results as unknown as VectorDocument[];
+}
+
+/**
+ * Cast LanceDB search results to SearchResult array.
+ * SearchResult extends VectorDocument with optional _distance field.
+ */
+function toSearchResults(results: unknown[]): SearchResult[] {
+  return results as unknown as SearchResult[];
+}
+
+/**
  * RAG Database class for managing vector storage
  */
 class RAGDatabase {
@@ -99,6 +117,31 @@ class RAGDatabase {
     } catch (error) {
       console.error('[RAGDatabase] Error in table operation:', error);
       return fallback;
+    }
+  }
+
+  /**
+   * Paginate through all rows in a table, processing each row with a callback.
+   * Handles batching and offset logic internally.
+   */
+  private async paginateTable(
+    table: Table,
+    processRow: (doc: VectorDocument) => void,
+    batchSize: number = 5000
+  ): Promise<void> {
+    let offset = 0;
+    let hasMore = true;
+
+    while (hasMore) {
+      const batch = await table.query().limit(batchSize).offset(offset).toArray();
+      const docs = toVectorDocuments(batch);
+
+      for (const doc of docs) {
+        processRow(doc);
+      }
+
+      hasMore = batch.length === batchSize;
+      offset += batchSize;
     }
   }
 
@@ -182,7 +225,7 @@ class RAGDatabase {
     }
 
     const results = await query.toArray();
-    return results as unknown as SearchResult[];
+    return toSearchResults(results);
   }
 
   /**
@@ -192,23 +235,12 @@ class RAGDatabase {
   async listDocuments(): Promise<string[]> {
     return this.withTable([], async (table) => {
       const docIds = new Set<string>();
-      const batchSize = 5000;
-      let offset = 0;
-      let hasMore = true;
 
-      while (hasMore) {
-        const batch = await table.query().limit(batchSize).offset(offset).toArray();
-
-        for (const row of batch) {
-          const doc = row as unknown as VectorDocument;
-          if (doc.metadata?.documentId) {
-            docIds.add(doc.metadata.documentId);
-          }
+      await this.paginateTable(table, (doc) => {
+        if (doc.metadata?.documentId) {
+          docIds.add(doc.metadata.documentId);
         }
-
-        hasMore = batch.length === batchSize;
-        offset += batchSize;
-      }
+      });
 
       return Array.from(docIds);
     });
@@ -216,16 +248,18 @@ class RAGDatabase {
 
   /**
    * Get all chunks for a specific document
+   * @param documentId - The document ID to fetch chunks for
+   * @param limit - Maximum chunks to return (default: 10000)
    */
-  async getDocumentChunks(documentId: string): Promise<VectorDocument[]> {
+  async getDocumentChunks(documentId: string, limit: number = DEFAULT_CHUNK_LIMIT): Promise<VectorDocument[]> {
     return this.withTable([], async (table) => {
       const results = await table
         .query()
         .where(`metadata.documentId = "${escapeFilterValue(documentId)}"`)
-        .limit(10000)
+        .limit(limit)
         .toArray();
 
-      return results as unknown as VectorDocument[];
+      return toVectorDocuments(results);
     });
   }
 
@@ -315,34 +349,23 @@ class RAGDatabase {
         source?: string;
         type?: string;
       }>();
-      const batchSize = 5000;
-      let offset = 0;
-      let hasMore = true;
 
-      while (hasMore) {
-        const batch = await table.query().limit(batchSize).offset(offset).toArray();
+      await this.paginateTable(table, (doc) => {
+        if (!doc.metadata?.documentId) return;
 
-        for (const row of batch) {
-          const doc = row as unknown as VectorDocument;
-          if (!doc.metadata?.documentId) continue;
-
-          const existing = docMap.get(doc.metadata.documentId);
-          if (existing) {
-            existing.chunkCount++;
-          } else {
-            docMap.set(doc.metadata.documentId, {
-              documentName: doc.metadata.documentName,
-              chunkCount: 1,
-              timestamp: doc.metadata.timestamp,
-              source: doc.metadata.source as string | undefined,
-              type: doc.metadata.type as string | undefined,
-            });
-          }
+        const existing = docMap.get(doc.metadata.documentId);
+        if (existing) {
+          existing.chunkCount++;
+        } else {
+          docMap.set(doc.metadata.documentId, {
+            documentName: doc.metadata.documentName,
+            chunkCount: 1,
+            timestamp: doc.metadata.timestamp,
+            source: doc.metadata.source as string | undefined,
+            type: doc.metadata.type as string | undefined,
+          });
         }
-
-        hasMore = batch.length === batchSize;
-        offset += batchSize;
-      }
+      });
 
       return Array.from(docMap.entries()).map(([documentId, data]) => ({
         documentId,
@@ -353,20 +376,22 @@ class RAGDatabase {
 
   /**
    * Get detailed info for a single document including chunk previews
+   * @param documentId - The document ID to fetch details for
+   * @param limit - Maximum chunks to include (default: 10000)
    */
-  async getDocumentDetails(documentId: string): Promise<DocumentDetails | null> {
+  async getDocumentDetails(documentId: string, limit: number = DEFAULT_CHUNK_LIMIT): Promise<DocumentDetails | null> {
     return this.withTable(null, async (table) => {
       const results = await table
         .query()
         .where(`metadata.documentId = "${escapeFilterValue(documentId)}"`)
-        .limit(10000)
+        .limit(limit)
         .toArray();
 
       if (results.length === 0) {
         return null;
       }
 
-      const docs = results as unknown as VectorDocument[];
+      const docs = toVectorDocuments(results);
       const firstDoc = docs[0];
 
       // Sort chunks by chunkIndex (copy to avoid mutating query results)

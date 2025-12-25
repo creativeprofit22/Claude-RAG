@@ -1,8 +1,9 @@
 'use client';
 
-import { useCallback } from 'react';
+import { useCallback, useMemo } from 'react';
 import type { Category } from '../types.js';
-import { useAPIResource } from './useAPIResource.js';
+import { useAPIResource, createApiMutation } from './useAPIResource.js';
+import { validateApiArrayResponse } from './useDocuments.js';
 
 interface UseCategoriesOptions {
   /** API endpoint base URL (default: /api/rag) */
@@ -32,36 +33,16 @@ interface UseCategoriesReturn {
   getCategoryById: (id: string) => Category | undefined;
 }
 
+// Category field validator
+const validateCategoryItem = (c: Record<string, unknown>): void => {
+  if (typeof c.id !== 'string' || typeof c.name !== 'string' || typeof c.color !== 'string') {
+    throw new Error('Invalid category: missing required properties (id, name, color)');
+  }
+};
+
 // Transform API response to extract categories array
 const transformCategoriesResponse = (data: unknown): Category[] => {
-  // Validate response shape before casting
-  if (data === null || typeof data !== 'object') {
-    throw new Error('Invalid API response: expected an object');
-  }
-
-  const response = data as Record<string, unknown>;
-
-  // If no categories property, return empty array (valid empty state)
-  if (!('categories' in response)) {
-    return [];
-  }
-
-  if (!Array.isArray(response.categories)) {
-    throw new Error('Invalid API response: categories must be an array');
-  }
-
-  // Validate each category has required properties
-  for (const cat of response.categories) {
-    if (typeof cat !== 'object' || cat === null) {
-      throw new Error('Invalid category: expected an object');
-    }
-    const c = cat as Record<string, unknown>;
-    if (typeof c.id !== 'string' || typeof c.name !== 'string' || typeof c.color !== 'string') {
-      throw new Error('Invalid category: missing required properties (id, name, color)');
-    }
-  }
-
-  return response.categories as Category[];
+  return validateApiArrayResponse<Category>(data, 'categories', validateCategoryItem);
 };
 
 /**
@@ -91,109 +72,67 @@ export function useCategories(options: UseCategoriesOptions = {}): UseCategories
     transformResponse: transformCategoriesResponse,
   });
 
+  // Create mutation executor for CRUD operations
+  const mutate = useMemo(
+    () => createApiMutation({ endpoint, stableHeaders, setError }),
+    [endpoint, stableHeaders, setError]
+  );
+
   // Create a new category
   const createCategory = useCallback(async (
     name: string,
     color: string,
     icon?: string
   ): Promise<Category | null> => {
-    setError(null);
+    const data = await mutate<{ category: Category }>({
+      path: '/categories',
+      method: 'POST',
+      body: { name, color, icon },
+      errorMessage: 'Failed to create category',
+    });
 
-    try {
-      const response = await fetch(`${endpoint}/categories`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          ...stableHeaders,
-        },
-        body: JSON.stringify({ name, color, icon }),
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}));
-        throw new Error(errorData.error || `Request failed: ${response.status}`);
-      }
-
-      const data = await response.json();
-      const newCategory = data.category as Category;
-
-      // Optimistically add to local state
-      setCategories((prev) => [...prev, newCategory]);
-
-      return newCategory;
-    } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'Failed to create category';
-      setError(errorMessage);
-      return null;
+    if (data) {
+      setCategories((prev) => [...prev, data.category]);
+      return data.category;
     }
-  }, [endpoint, stableHeaders, setCategories, setError]);
+    return null;
+  }, [mutate, setCategories]);
 
   // Update an existing category
   const updateCategory = useCallback(async (
     id: string,
     updates: Partial<Omit<Category, 'id'>>
   ): Promise<Category | null> => {
-    setError(null);
+    const data = await mutate<{ category: Category }>({
+      path: `/categories/${encodeURIComponent(id)}`,
+      method: 'PATCH',
+      body: updates as Record<string, unknown>,
+      errorMessage: 'Failed to update category',
+    });
 
-    try {
-      const response = await fetch(`${endpoint}/categories/${encodeURIComponent(id)}`, {
-        method: 'PATCH',
-        headers: {
-          'Content-Type': 'application/json',
-          ...stableHeaders,
-        },
-        body: JSON.stringify(updates),
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}));
-        throw new Error(errorData.error || `Request failed: ${response.status}`);
-      }
-
-      const data = await response.json();
-      const updatedCategory = data.category as Category;
-
-      // Update local state
+    if (data) {
       setCategories((prev) =>
-        prev.map((cat) => (cat.id === id ? updatedCategory : cat))
+        prev.map((cat) => (cat.id === id ? data.category : cat))
       );
-
-      return updatedCategory;
-    } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'Failed to update category';
-      setError(errorMessage);
-      return null;
+      return data.category;
     }
-  }, [endpoint, stableHeaders, setCategories, setError]);
+    return null;
+  }, [mutate, setCategories]);
 
   // Delete a category
   const deleteCategory = useCallback(async (id: string): Promise<boolean> => {
-    setError(null);
+    const data = await mutate<{ success: boolean }>({
+      path: `/categories/${encodeURIComponent(id)}`,
+      method: 'DELETE',
+      errorMessage: 'Failed to delete category',
+    });
 
-    try {
-      const response = await fetch(`${endpoint}/categories/${encodeURIComponent(id)}`, {
-        method: 'DELETE',
-        headers: {
-          'Content-Type': 'application/json',
-          ...stableHeaders,
-        },
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}));
-        throw new Error(errorData.error || `Request failed: ${response.status}`);
-      }
-
-      // Optimistically remove from local state
+    if (data) {
       setCategories((prev) => prev.filter((cat) => cat.id !== id));
-
       return true;
-    } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'Failed to delete category';
-      setError(errorMessage);
-      return false;
     }
-  }, [endpoint, stableHeaders, setCategories, setError]);
+    return false;
+  }, [mutate, setCategories]);
 
   // Get a category by ID (from local state)
   const getCategoryById = useCallback((id: string): Category | undefined => {

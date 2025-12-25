@@ -41,12 +41,42 @@ const CATEGORIES_FILE = join(DATA_DIR, 'categories.json');
 const DOC_METADATA_FILE = join(DATA_DIR, 'document-metadata.json');
 
 // Default categories with distinct colors
-const DEFAULT_CATEGORIES: Category[] = [
+const BUILTIN_CATEGORIES: Category[] = [
   { id: 'cat_general', name: 'General', color: '#6b7280', icon: 'folder' },
   { id: 'cat_docs', name: 'Documentation', color: '#3b82f6', icon: 'book' },
   { id: 'cat_code', name: 'Code', color: '#10b981', icon: 'code' },
   { id: 'cat_notes', name: 'Notes', color: '#f59e0b', icon: 'sticky-note' },
 ];
+
+/**
+ * Parse custom categories from RAG_DEFAULT_CATEGORIES env var.
+ * Expects JSON array of Category objects. Falls back to built-in if invalid.
+ */
+function getDefaultCategories(): Category[] {
+  const envCategories = process.env.RAG_DEFAULT_CATEGORIES;
+  if (!envCategories) {
+    return BUILTIN_CATEGORIES;
+  }
+
+  try {
+    const parsed = JSON.parse(envCategories);
+    if (!Array.isArray(parsed)) {
+      console.warn('RAG_DEFAULT_CATEGORIES must be a JSON array, using built-in defaults');
+      return BUILTIN_CATEGORIES;
+    }
+    // Validate each category has required fields
+    for (const cat of parsed) {
+      if (typeof cat.id !== 'string' || typeof cat.name !== 'string' || typeof cat.color !== 'string') {
+        console.warn('Invalid category in RAG_DEFAULT_CATEGORIES, using built-in defaults');
+        return BUILTIN_CATEGORIES;
+      }
+    }
+    return parsed as Category[];
+  } catch {
+    console.warn('Failed to parse RAG_DEFAULT_CATEGORIES, using built-in defaults');
+    return BUILTIN_CATEGORIES;
+  }
+}
 
 // ============================================
 // File I/O Helpers
@@ -89,7 +119,7 @@ function writeJsonStore<T>(path: string, data: T): void {
 function readCategoryStore(): CategoryStore {
   return readJsonStore<CategoryStore>(
     CATEGORIES_FILE,
-    { categories: [...DEFAULT_CATEGORIES], tags: [] },
+    { categories: [...getDefaultCategories()], tags: [] },
     'Failed to parse categories file, using defaults. Custom categories may have been lost:'
   );
 }
@@ -110,6 +140,28 @@ function writeDocMetadataStore(store: DocumentMetadataStore): void {
   writeJsonStore(DOC_METADATA_FILE, store);
 }
 
+/**
+ * Remove a reference value from all documents' metadata for a given field.
+ * Used by both deleteCategory (categories field) and removeTag (tags field).
+ */
+function removeReferenceFromAllDocs(field: 'categories' | 'tags', value: string): void {
+  const docStore = readDocMetadataStore();
+  let modified = false;
+
+  for (const docId of Object.keys(docStore)) {
+    const docMeta = docStore[docId];
+    const index = docMeta[field].indexOf(value);
+    if (index !== -1) {
+      docMeta[field].splice(index, 1);
+      modified = true;
+    }
+  }
+
+  if (modified) {
+    writeDocMetadataStore(docStore);
+  }
+}
+
 // ============================================
 // Initialization
 // ============================================
@@ -122,7 +174,7 @@ export function initializeCategoryStore(): void {
 
   // Initialize categories file if it doesn't exist
   if (!existsSync(CATEGORIES_FILE)) {
-    writeCategoryStore({ categories: [...DEFAULT_CATEGORIES], tags: [] });
+    writeCategoryStore({ categories: [...getDefaultCategories()], tags: [] });
   }
 
   // Initialize document metadata file if it doesn't exist
@@ -205,20 +257,7 @@ export function deleteCategory(id: string): boolean {
   writeCategoryStore(store);
 
   // Remove category from all document metadata
-  const docStore = readDocMetadataStore();
-  let modified = false;
-
-  for (const docId of Object.keys(docStore)) {
-    const docMeta = docStore[docId];
-    if (docMeta.categories.includes(id)) {
-      docMeta.categories = docMeta.categories.filter(cid => cid !== id);
-      modified = true;
-    }
-  }
-
-  if (modified) {
-    writeDocMetadataStore(docStore);
-  }
+  removeReferenceFromAllDocs('categories', id);
 
   return true;
 }
@@ -287,14 +326,17 @@ export function setDocumentTags(documentId: string, tags: string[]): void {
 }
 
 /**
- * Get all document IDs that have a specific category
+ * Get document IDs matching a predicate on their metadata.
+ * Reduces duplication between category and tag filtering.
  */
-export function getDocumentsByCategory(categoryId: string): string[] {
+function getDocumentsByPredicate(
+  predicate: (metadata: { categories: string[]; tags: string[] }) => boolean
+): string[] {
   const store = readDocMetadataStore();
   const documentIds: string[] = [];
 
   for (const [docId, metadata] of Object.entries(store)) {
-    if (metadata.categories.includes(categoryId)) {
+    if (predicate(metadata)) {
       documentIds.push(docId);
     }
   }
@@ -303,20 +345,18 @@ export function getDocumentsByCategory(categoryId: string): string[] {
 }
 
 /**
+ * Get all document IDs that have a specific category
+ */
+export function getDocumentsByCategory(categoryId: string): string[] {
+  return getDocumentsByPredicate((meta) => meta.categories.includes(categoryId));
+}
+
+/**
  * Get all document IDs that have a specific tag
  */
 export function getDocumentsByTag(tag: string): string[] {
-  const store = readDocMetadataStore();
-  const documentIds: string[] = [];
   const normalizedTag = tag.trim().toLowerCase();
-
-  for (const [docId, metadata] of Object.entries(store)) {
-    if (metadata.tags.includes(normalizedTag)) {
-      documentIds.push(docId);
-    }
-  }
-
-  return documentIds;
+  return getDocumentsByPredicate((meta) => meta.tags.includes(normalizedTag));
 }
 
 // ============================================
@@ -362,21 +402,7 @@ export function removeTag(tag: string): void {
   }
 
   // Remove from all document metadata
-  const docStore = readDocMetadataStore();
-  let modified = false;
-
-  for (const docId of Object.keys(docStore)) {
-    const docMeta = docStore[docId];
-    const tagIndex = docMeta.tags.indexOf(normalizedTag);
-    if (tagIndex !== -1) {
-      docMeta.tags.splice(tagIndex, 1);
-      modified = true;
-    }
-  }
-
-  if (modified) {
-    writeDocMetadataStore(docStore);
-  }
+  removeReferenceFromAllDocs('tags', normalizedTag);
 }
 
 /**
