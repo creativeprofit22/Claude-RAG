@@ -9,7 +9,7 @@ import { extractText, isSupported, getMimeType } from './extractors/index.js';
 import { checkGeminiReady } from './responder-gemini.js';
 import { logger } from './utils/logger.js';
 import { checkClaudeCodeAvailable } from './utils/cli.js';
-import { readFileSync, existsSync, realpathSync } from 'fs';
+import { readFileSync, existsSync, realpathSync, statSync } from 'fs';
 import { join, extname, resolve, normalize } from 'path';
 import {
   initializeCategoryStore,
@@ -493,6 +493,20 @@ async function parseUploadForm(
   try {
     categoryIds = categoryIdsRaw ? JSON.parse(categoryIdsRaw) : undefined;
     tags = tagsRaw ? JSON.parse(tagsRaw) : undefined;
+
+    // Validate parsed arrays are actually string arrays
+    if (categoryIds !== undefined) {
+      if (!Array.isArray(categoryIds) || !categoryIds.every(id => typeof id === 'string')) {
+        await sendSSEError(controller, send, 'categoryIds must be an array of strings');
+        return null;
+      }
+    }
+    if (tags !== undefined) {
+      if (!Array.isArray(tags) || !tags.every(tag => typeof tag === 'string')) {
+        await sendSSEError(controller, send, 'tags must be an array of strings');
+        return null;
+      }
+    }
   } catch {
     await sendSSEError(controller, send, 'Invalid JSON in categoryIds or tags');
     return null;
@@ -631,7 +645,8 @@ async function handleUploadStream(req: Request): Promise<Response> {
         logger.error('Stream upload failed:', { error: errorMsg });
         send('error', { message: errorMsg });
       } finally {
-        controller.close();
+        // Use flush delay to ensure final SSE message is delivered before closing
+        await closeSSEWithFlush(controller);
       }
     },
   });
@@ -690,26 +705,32 @@ async function handleQuery(req: Request, url: URL): Promise<Response> {
       ? responderValue
       : getResponderPreference(req, url);
 
-  const result = await query(body.query, {
-    topK,
-    documentId,
-    compress,
-    systemPrompt,
-    responder: responderPreference,
-  });
+  try {
+    const result = await query(body.query, {
+      topK,
+      documentId,
+      compress,
+      systemPrompt,
+      responder: responderPreference,
+    });
 
-  return jsonResponse({
-    answer: result.answer,
-    sources: result.sources,
-    tokensUsed: result.tokensUsed,
-    timing: result.timing,
-    responder: result.responderUsed,
-    ...(result.responderFallback && {
-      responderFallback: result.responderFallback,
-      responderMessage: result.responderFallbackMessage
-    }),
-    ...(result.subAgentResult && { subAgentResult: result.subAgentResult }),
-  });
+    return jsonResponse({
+      answer: result.answer,
+      sources: result.sources,
+      tokensUsed: result.tokensUsed,
+      timing: result.timing,
+      responder: result.responderUsed,
+      ...(result.responderFallback && {
+        responderFallback: result.responderFallback,
+        responderMessage: result.responderFallbackMessage
+      }),
+      ...(result.subAgentResult && { subAgentResult: result.subAgentResult }),
+    });
+  } catch (error) {
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+    logger.error('Query failed:', { error: errorMessage });
+    return errorResponse(`Query failed: ${errorMessage}`, 500);
+  }
 }
 
 /**
@@ -760,21 +781,33 @@ async function handleDeleteDocument(documentId: string): Promise<Response> {
     return errorResponse('Document ID is required');
   }
 
-  await deleteDocument(documentId);
-  return jsonResponse({
-    success: true,
-    message: `Document ${documentId} deleted`,
-  });
+  try {
+    await deleteDocument(documentId);
+    return jsonResponse({
+      success: true,
+      message: `Document ${documentId} deleted`,
+    });
+  } catch (error) {
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+    logger.error('Document deletion failed:', { documentId, error: errorMessage });
+    return errorResponse(`Failed to delete document: ${errorMessage}`, 500);
+  }
 }
 
 /**
  * GET /api/rag/documents/details - List all documents with full metadata
  */
 async function handleListDocumentsDetails(): Promise<Response> {
-  const documents = await getDocumentSummaries();
-  return jsonResponse({
-    documents,
-  });
+  try {
+    const documents = await getDocumentSummaries();
+    return jsonResponse({
+      documents,
+    });
+  } catch (error) {
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+    logger.error('Failed to get document summaries:', { error: errorMessage });
+    return errorResponse(`Failed to get document summaries: ${errorMessage}`, 500);
+  }
 }
 
 /**
@@ -815,7 +848,13 @@ async function handleUpdateDocumentMetadata(req: Request, documentId: string): P
         return errorResponse('categories must be an array of strings');
       }
     }
-    setDocumentCategories(documentId, body.categories as string[]);
+    try {
+      setDocumentCategories(documentId, body.categories as string[]);
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      logger.error('Failed to set document categories:', { documentId, error: errorMessage });
+      return errorResponse(`Failed to update categories: ${errorMessage}`, 500);
+    }
   }
 
   // Validate tags array if provided
@@ -828,11 +867,20 @@ async function handleUpdateDocumentMetadata(req: Request, documentId: string): P
         return errorResponse('tags must be an array of strings');
       }
     }
-    setDocumentTags(documentId, body.tags as string[]);
+    try {
+      setDocumentTags(documentId, body.tags as string[]);
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      logger.error('Failed to set document tags:', { documentId, error: errorMessage });
+      return errorResponse(`Failed to update tags: ${errorMessage}`, 500);
+    }
   }
 
   // Return updated metadata
   const metadata = getDocumentMetadata(documentId);
+  if (!metadata) {
+    return errorResponse('Document not found after update', 404);
+  }
   return jsonResponse({
     success: true,
     documentId,
@@ -1256,7 +1304,14 @@ async function handleRequest(req: Request): Promise<Response> {
 
   // Handle CORS preflight
   if (req.method === 'OPTIONS') {
-    const isValidRoute = VALID_ROUTES.includes(route) || route === '/api/rag/documents/:id';
+    // Include all parameterized routes for preflight validation
+    const parameterizedRoutes = [
+      '/api/rag/documents/:id',
+      '/api/rag/documents/:id/metadata',
+      '/api/rag/documents/:id/details',
+      '/api/rag/categories/:id',
+    ];
+    const isValidRoute = VALID_ROUTES.includes(route) || parameterizedRoutes.includes(route);
     if (!isValidRoute) {
       return errorResponse('Not found', 404);
     }
@@ -1286,6 +1341,13 @@ async function handleRequest(req: Request): Promise<Response> {
       filePath = normalizedPath;
 
       if (existsSync(filePath)) {
+        // Check file size to prevent DoS from large file reads
+        const stats = statSync(filePath);
+        const MAX_STATIC_FILE_SIZE = 5 * 1024 * 1024; // 5MB limit for static files
+        if (stats.size > MAX_STATIC_FILE_SIZE) {
+          return errorResponse('File too large', 413);
+        }
+
         const ext = extname(filePath);
         const mimeType = MIME_TYPES[ext] || 'application/octet-stream';
         const content = readFileSync(filePath);

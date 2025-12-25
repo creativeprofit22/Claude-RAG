@@ -110,13 +110,14 @@ Respond in this exact JSON format (no markdown, just raw JSON):
  */
 function parseLLMResponse(text: string): LLMResponse {
   // Try to extract JSON from the response (handles markdown code blocks)
-  const jsonMatch = text.match(/\{[\s\S]*\}/);
+  // Use non-greedy matching with balanced brace counting for accuracy
+  const jsonMatch = extractBalancedJson(text);
   if (!jsonMatch) {
-    throw new RetrieverError('Could not find JSON in LLM response');
+    throw new RetrieverError('Could not find valid JSON in LLM response');
   }
 
   try {
-    const parsed = JSON.parse(jsonMatch[0]) as LLMResponse;
+    const parsed = JSON.parse(jsonMatch) as LLMResponse;
 
     // Validate required fields
     if (!Array.isArray(parsed.selectedIndices)) {
@@ -133,6 +134,51 @@ function parseLLMResponse(text: string): LLMResponse {
     }
     throw new RetrieverError('Failed to parse LLM response as JSON', error);
   }
+}
+
+/**
+ * Extract JSON object from text using balanced brace matching
+ * More accurate than greedy regex for nested structures
+ */
+function extractBalancedJson(text: string): string | null {
+  const startIdx = text.indexOf('{');
+  if (startIdx === -1) return null;
+
+  let depth = 0;
+  let inString = false;
+  let escape = false;
+
+  for (let i = startIdx; i < text.length; i++) {
+    const char = text[i];
+
+    if (escape) {
+      escape = false;
+      continue;
+    }
+
+    if (char === '\\' && inString) {
+      escape = true;
+      continue;
+    }
+
+    if (char === '"') {
+      inString = !inString;
+      continue;
+    }
+
+    if (!inString) {
+      if (char === '{') {
+        depth++;
+      } else if (char === '}') {
+        depth--;
+        if (depth === 0) {
+          return text.slice(startIdx, i + 1);
+        }
+      }
+    }
+  }
+
+  return null; // Unbalanced braces
 }
 
 /**
@@ -225,6 +271,11 @@ export async function filterAndRankChunks(
 
     // Warn if no valid indices were selected - may indicate LLM misunderstanding
     if (limitedIndices.length === 0 && chunks.length > 0) {
+      console.warn('[Retriever] LLM returned invalid indices:', {
+        requestedIndices: parsed.selectedIndices,
+        maxValidIndex: chunks.length - 1,
+        query: query.slice(0, 100)
+      });
       return {
         relevantContext: chunks.slice(0, maxChunks).map((c) => c.text).join('\n\n'),
         selectedChunks: chunks.slice(0, maxChunks).map((_, i) => i),

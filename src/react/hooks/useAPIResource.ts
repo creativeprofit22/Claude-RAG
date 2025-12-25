@@ -110,12 +110,12 @@ export function useAPIResource<T>(options: UseAPIResourceOptions<T>): UseAPIReso
   // Keep refetchRef updated
   refetchRef.current = refetch;
 
-  // Auto-fetch on mount (use ref to avoid infinite loop)
+  // Auto-fetch on mount and when fetchUrl changes (use ref to avoid infinite loop from refetch identity changes)
   useEffect(() => {
     if (autoFetch) {
       refetchRef.current?.();
     }
-  }, [autoFetch]);
+  }, [autoFetch, fetchUrl]);
 
   return {
     data,

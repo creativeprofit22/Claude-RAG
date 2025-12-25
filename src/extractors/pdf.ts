@@ -35,6 +35,20 @@ export async function extractPDF(buffer: ArrayBuffer): Promise<PDFExtractionResu
   const text = result.text.trim();
   const pageCount = result.numpages;
 
+  // Validate we got some text content - empty PDFs should be flagged
+  if (text.length === 0 && pageCount > 0) {
+    // Return with isScanned=true to indicate content couldn't be extracted
+    return {
+      text: '',
+      pageCount,
+      isScanned: true,
+      metadata: {
+        title: result.info?.Title,
+        author: result.info?.Author,
+      },
+    };
+  }
+
   // Heuristic: if text is very short relative to page count, it's likely scanned
   const avgCharsPerPage = text.length / Math.max(pageCount, 1);
   const isScanned = avgCharsPerPage < MIN_CHARS_PER_PAGE && pageCount > 0;

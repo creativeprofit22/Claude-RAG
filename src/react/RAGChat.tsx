@@ -67,9 +67,21 @@ export function RAGChat({
   });
 
   // Auto-scroll to bottom when messages change
+  // Use a ref to track the last message count to avoid race conditions on rapid updates
+  const lastMessageCountRef = useRef(messages.length);
+
   useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  }, [messages, isTyping]);
+    // Only scroll if message count increased or typing state changed
+    const shouldScroll = messages.length > lastMessageCountRef.current || isTyping;
+    lastMessageCountRef.current = messages.length;
+
+    if (shouldScroll && messagesEndRef.current) {
+      // Use requestAnimationFrame to batch scroll with render cycle
+      requestAnimationFrame(() => {
+        messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+      });
+    }
+  }, [messages.length, isTyping]);
 
   const defaultEmptyState = (
     <div className="rag-empty-state">

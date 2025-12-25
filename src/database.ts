@@ -68,10 +68,24 @@ export interface SearchOptions {
 }
 
 /**
+ * Validate document ID format to prevent injection attacks
+ * Only allows alphanumeric characters, underscores, and hyphens
+ */
+function validateDocumentId(documentId: string): void {
+  if (!/^[a-zA-Z0-9_-]+$/.test(documentId)) {
+    throw new Error('Invalid document ID format: must contain only alphanumeric characters, underscores, and hyphens');
+  }
+}
+
+/**
  * Escape a string value for use in LanceDB WHERE clause
  * Prevents SQL injection by escaping special characters
  */
-function escapeFilterValue(value: string): string {
+function escapeFilterValue(value: unknown): string {
+  // Type validation - ensure we have a string
+  if (typeof value !== 'string') {
+    throw new Error('Filter value must be a string');
+  }
   // Escape backslashes first, then double quotes
   return value.replace(/\\/g, '\\\\').replace(/"/g, '\\"');
 }
@@ -133,15 +147,21 @@ class RAGDatabase {
     let hasMore = true;
 
     while (hasMore) {
-      const batch = await table.query().limit(batchSize).offset(offset).toArray();
-      const docs = toVectorDocuments(batch);
+      try {
+        const batch = await table.query().limit(batchSize).offset(offset).toArray();
+        const docs = toVectorDocuments(batch);
 
-      for (const doc of docs) {
-        processRow(doc);
+        for (const doc of docs) {
+          processRow(doc);
+        }
+
+        hasMore = batch.length === batchSize;
+        offset += batchSize;
+      } catch (error) {
+        console.error('[RAGDatabase] Error in pagination batch:', { offset, batchSize, error });
+        // Re-throw to let caller handle the error appropriately
+        throw error;
       }
-
-      hasMore = batch.length === batchSize;
-      offset += batchSize;
     }
   }
 
@@ -160,10 +180,16 @@ class RAGDatabase {
   async ensureTable(): Promise<Table | null> {
     await this.connect();
 
+    // Verify connection succeeded before accessing db
+    if (!this.db) {
+      console.error('[RAGDatabase] Database connection is null after connect()');
+      return null;
+    }
+
     if (!this.table) {
-      const tables = await this.db!.tableNames();
+      const tables = await this.db.tableNames();
       if (tables.includes(TABLE_NAME)) {
-        this.table = await this.db!.openTable(TABLE_NAME);
+        this.table = await this.db.openTable(TABLE_NAME);
       }
     }
 
@@ -190,13 +216,31 @@ class RAGDatabase {
 
     await this.connect();
 
-    const tables = await this.db!.tableNames();
-    if (tables.includes(TABLE_NAME)) {
-      const table = await this.db!.openTable(TABLE_NAME);
-      await table.add(docs);
-      this.table = table;
-    } else {
-      this.table = await this.db!.createTable(TABLE_NAME, docs);
+    // Verify connection succeeded
+    if (!this.db) {
+      throw new Error('Database connection failed');
+    }
+
+    // Use try-catch to handle race condition between tableNames() check and openTable()
+    // Another process could create the table between our check and createTable call
+    try {
+      const tables = await this.db.tableNames();
+      if (tables.includes(TABLE_NAME)) {
+        const table = await this.db.openTable(TABLE_NAME);
+        await table.add(docs);
+        this.table = table;
+      } else {
+        this.table = await this.db.createTable(TABLE_NAME, docs);
+      }
+    } catch (error) {
+      // If table was created by another process, retry with openTable
+      if (error instanceof Error && error.message.includes('already exists')) {
+        const table = await this.db.openTable(TABLE_NAME);
+        await table.add(docs);
+        this.table = table;
+      } else {
+        throw error;
+      }
     }
   }
 
@@ -252,6 +296,9 @@ class RAGDatabase {
    * @param limit - Maximum chunks to return (default: 10000)
    */
   async getDocumentChunks(documentId: string, limit: number = DEFAULT_CHUNK_LIMIT): Promise<VectorDocument[]> {
+    // Validate documentId format to prevent injection
+    validateDocumentId(documentId);
+
     return this.withTable([], async (table) => {
       const results = await table
         .query()
@@ -270,6 +317,9 @@ class RAGDatabase {
     if (!documentId) {
       throw new Error('Document ID is required');
     }
+
+    // Validate documentId format to prevent injection
+    validateDocumentId(documentId);
 
     const table = await this.ensureTable();
     if (!table) {
@@ -351,16 +401,17 @@ class RAGDatabase {
       }>();
 
       await this.paginateTable(table, (doc) => {
-        if (!doc.metadata?.documentId) return;
+        // Validate doc and metadata exist before accessing properties
+        if (!doc || !doc.metadata || !doc.metadata.documentId) return;
 
         const existing = docMap.get(doc.metadata.documentId);
         if (existing) {
           existing.chunkCount++;
         } else {
           docMap.set(doc.metadata.documentId, {
-            documentName: doc.metadata.documentName,
+            documentName: doc.metadata.documentName || 'Unknown',
             chunkCount: 1,
-            timestamp: doc.metadata.timestamp,
+            timestamp: doc.metadata.timestamp || Date.now(),
             source: doc.metadata.source as string | undefined,
             type: doc.metadata.type as string | undefined,
           });

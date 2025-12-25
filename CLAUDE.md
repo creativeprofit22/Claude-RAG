@@ -13,35 +13,30 @@ Query → Gemini Embeddings → LanceDB → Chunks → Claude Code CLI → Respo
 ```
 
 ## Current Focus
-All phases complete - project stable
+Bug fixing - 52 bugs identified across codebase
 
 ## Pipeline State
-Phase: stable
-Feature: All features complete
-Status: Tested and verified
+Phase: debugging
+Feature: Comprehensive bug fixes
+Tier: medium
+Status: pending
+
+## Reports
+- bugs: `reports/bug-report-2025-12-25.md`
 
 ## Last Session (2025-12-25)
-Full system testing completed:
-- 21/21 unit tests passing
-- All API endpoints verified working:
-  - /api/rag/documents, /api/rag/documents/details
-  - /api/rag/documents/:id/details, /api/rag/documents/:id/metadata
-  - /api/rag/categories (CRUD)
-  - /api/rag/tags
-  - /api/rag/admin/stats, /api/rag/admin/health, /api/rag/admin/dashboard
-  - /api/rag/search, /api/rag/query
-  - /api/rag/upload, /api/rag/upload/stream
-- Demo UI loading correctly at /demo
-- TypeScript check passed
+Fixed all 12 HIGH priority bugs:
+- server.ts: Added try-catch to deleteDocument, getDocumentSummaries, query; fixed CORS preflight; SSE flush
+- database.ts: Null check after connect(), race condition handling, validateDocumentId() for injection prevention
+- useFileQueue.ts: Fixed stale closure with filesRef
+- useUploadStream.ts: Added reader cleanup on unmount
+- useDocumentLibraryState.ts: Verified ref pattern is correct
+- Type check passed with no errors
 
-## Completed Features
-- **Admin Dashboard** (2025-12-25): Stats API, Health API, AdminDashboard component, charts, service monitoring
-- **Enhanced Upload** (2025-12-25): SSE progress streaming, PDF/DOCX extraction, multi-file queue, category selection
-- **Chat Integration** (2025-12-24): RAGInterface component with tab navigation + document scoping
-- **Document Library** (2025-12-24): Phase 1 complete, all 14 bugs fixed
-- **Category System** (2025-12-24): JSON-based storage, CRUD API, React components
-- **Chat Scroll Fix** (2025-12-24): Bug fixes + refactoring complete
-- **Demo UI Page** (2025-12-24): Security fixes, refactors complete
+## Next Steps
+1. Fix 24 MEDIUM priority bugs
+2. Fix 19 LOW priority bugs
+3. Run tests to verify fixes
 
 ## Package Usage
 ```tsx

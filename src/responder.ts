@@ -4,17 +4,36 @@ import { DEFAULT_SYSTEM_PROMPT } from './constants.js';
 import { classifyCliError, cliNotFoundError } from './utils/responder-errors.js';
 import type { ChunkSource } from './utils/chunks.js';
 
+/** Default timeout for Claude CLI subprocess (2 minutes) */
+const CLI_TIMEOUT_MS = Number(process.env.CLAUDE_CLI_TIMEOUT_MS) || 120_000;
+
 /**
- * Spawn Claude CLI process with stdin prompt
+ * Spawn Claude CLI process with stdin prompt and timeout
  */
-function spawnClaudeProcess(prompt: string): ChildProcess {
+function spawnClaudeProcess(prompt: string, timeoutMs: number = CLI_TIMEOUT_MS): { process: ChildProcess; cleanup: () => void } {
   const claudeProcess = spawn('claude', ['--print'], {
     stdio: ['pipe', 'pipe', 'pipe'],
     env: { ...process.env }
   });
   claudeProcess.stdin.write(prompt);
   claudeProcess.stdin.end();
-  return claudeProcess;
+
+  // Set up timeout to prevent hanging processes
+  const timeoutId = setTimeout(() => {
+    claudeProcess.kill('SIGTERM');
+    // Force kill if SIGTERM doesn't work after 5 seconds
+    setTimeout(() => {
+      if (!claudeProcess.killed) {
+        claudeProcess.kill('SIGKILL');
+      }
+    }, 5000);
+  }, timeoutMs);
+
+  const cleanup = () => {
+    clearTimeout(timeoutId);
+  };
+
+  return { process: claudeProcess, cleanup };
 }
 
 // Re-export ChunkSource as Source for API compatibility
@@ -82,9 +101,10 @@ export async function generateResponse(
   const fullPrompt = buildPrompt(query, context, systemPrompt);
 
   return new Promise((resolve, reject) => {
-    const claudeProcess = spawnClaudeProcess(fullPrompt);
+    const { process: claudeProcess, cleanup } = spawnClaudeProcess(fullPrompt);
     let stdout = '';
     let stderr = '';
+    let timedOut = false;
 
     claudeProcess.stdout!.on('data', (data: Buffer) => {
       stdout += data.toString();
@@ -94,9 +114,20 @@ export async function generateResponse(
       stderr += data.toString();
     });
 
-    claudeProcess.on('close', (code: number | null) => {
+    claudeProcess.on('close', (code: number | null, signal: NodeJS.Signals | null) => {
+      cleanup();
+
+      // Check if process was killed due to timeout
+      if (signal === 'SIGTERM' || signal === 'SIGKILL') {
+        timedOut = true;
+        reject(new Error('Claude CLI timed out. The request may be too complex or the CLI is unresponsive.'));
+        return;
+      }
+
       if (code !== 0) {
-        reject(classifyCliError(stderr, stdout, code));
+        // Sanitize stderr to avoid leaking internal details to users
+        const sanitizedError = sanitizeStderr(stderr);
+        reject(classifyCliError(sanitizedError, stdout, code));
         return;
       }
 
@@ -111,6 +142,7 @@ export async function generateResponse(
     });
 
     claudeProcess.on('error', (error: Error) => {
+      cleanup();
       if ((error as NodeJS.ErrnoException).code === 'ENOENT') {
         reject(cliNotFoundError());
         return;
@@ -118,6 +150,21 @@ export async function generateResponse(
       reject(classifyCliError(error.message, '', 1));
     });
   });
+}
+
+/**
+ * Sanitize stderr to avoid leaking internal details (paths, stack traces, etc.)
+ */
+function sanitizeStderr(stderr: string): string {
+  // Remove file paths that might reveal server structure
+  let sanitized = stderr.replace(/\/[^\s:]+\.(ts|js|json)/g, '[path]');
+  // Remove stack traces
+  sanitized = sanitized.replace(/\s+at\s+.+\(.*\)/g, '');
+  // Truncate if too long
+  if (sanitized.length > 500) {
+    sanitized = sanitized.slice(0, 500) + '... [truncated]';
+  }
+  return sanitized.trim() || 'CLI error';
 }
 
 /**
@@ -147,6 +194,7 @@ function waitForChunk(state: StreamState): Promise<void> {
  */
 function setupStreamHandlers(
   claudeProcess: ChildProcess,
+  cleanup: () => void,
   state: StreamState,
   fullAnswer: { value: string },
   resolve: () => void,
@@ -167,20 +215,29 @@ function setupStreamHandlers(
     stderr += data.toString();
   });
 
-  claudeProcess.on('close', (code: number | null) => {
+  claudeProcess.on('close', (code: number | null, signal: NodeJS.Signals | null) => {
+    cleanup();
     state.processComplete = true;
     const waitResolve = state.resolveWait;
     state.resolveWait = null;
     waitResolve?.();
 
+    // Check if process was killed due to timeout
+    if (signal === 'SIGTERM' || signal === 'SIGKILL') {
+      reject(new Error('Claude CLI timed out. The request may be too complex or the CLI is unresponsive.'));
+      return;
+    }
+
     if (code !== 0) {
-      reject(classifyCliError(stderr, fullAnswer.value, code));
+      const sanitizedError = sanitizeStderr(stderr);
+      reject(classifyCliError(sanitizedError, fullAnswer.value, code));
       return;
     }
     resolve();
   });
 
   claudeProcess.on('error', (err: Error) => {
+    cleanup();
     state.processComplete = true;
     const waitResolve = state.resolveWait;
     state.resolveWait = null;
@@ -221,8 +278,8 @@ export async function* streamResponse(
   };
 
   const processPromise = new Promise<void>((resolve, reject) => {
-    const claudeProcess = spawnClaudeProcess(fullPrompt);
-    setupStreamHandlers(claudeProcess, state, fullAnswer, resolve, reject);
+    const { process: claudeProcess, cleanup } = spawnClaudeProcess(fullPrompt);
+    setupStreamHandlers(claudeProcess, cleanup, state, fullAnswer, resolve, reject);
   });
 
   try {

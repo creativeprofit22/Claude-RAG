@@ -98,6 +98,8 @@ export function useUploadStream(options: UseUploadStreamOptions = {}): UseUpload
   const [error, setError] = useState<string | null>(null);
   const [warning, setWarning] = useState<string | null>(null);
   const abortControllerRef = useRef<AbortController | null>(null);
+  // Track active reader for cleanup on abort/unmount
+  const activeReaderRef = useRef<ReadableStreamDefaultReader<Uint8Array> | null>(null);
 
   const upload = useCallback(async (file: File, uploadOptions?: UploadOptions): Promise<UploadResult | null> => {
     // Reset state
@@ -141,6 +143,8 @@ export function useUploadStream(options: UseUploadStreamOptions = {}): UseUpload
 
       // Read SSE stream
       const reader = response.body.getReader();
+      // Store reader ref for cleanup on abort/unmount
+      activeReaderRef.current = reader;
       const decoder = new TextDecoder();
       let buffer = '';
       let result: UploadResult | null = null;
@@ -248,10 +252,19 @@ export function useUploadStream(options: UseUploadStreamOptions = {}): UseUpload
     } finally {
       setIsUploading(false);
       abortControllerRef.current = null;
+      // Clean up reader reference
+      activeReaderRef.current = null;
     }
   }, [endpoint, headers, onProgress, onComplete, onError, onWarning]);
 
   const cancel = useCallback(() => {
+    // Cancel the active reader to prevent memory leak
+    if (activeReaderRef.current) {
+      activeReaderRef.current.cancel().catch(() => {
+        // Ignore cancel errors (already closed, etc.)
+      });
+      activeReaderRef.current = null;
+    }
     if (abortControllerRef.current) {
       abortControllerRef.current.abort();
     }

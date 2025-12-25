@@ -120,11 +120,27 @@ export async function extractText(
         .replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '') // Remove scripts
         .replace(/<style\b[^<]*(?:(?!<\/style>)<[^<]*)*<\/style>/gi, '') // Remove styles
         .replace(/<[^>]+>/g, ' ') // Remove remaining tags
-        .replace(/&nbsp;/g, ' ')
-        .replace(/&amp;/g, '&')
-        .replace(/&lt;/g, '<')
-        .replace(/&gt;/g, '>')
-        .replace(/&quot;/g, '"')
+        // Decode common HTML entities
+        .replace(/&nbsp;/gi, ' ')
+        .replace(/&amp;/gi, '&')
+        .replace(/&lt;/gi, '<')
+        .replace(/&gt;/gi, '>')
+        .replace(/&quot;/gi, '"')
+        .replace(/&apos;/gi, "'")
+        .replace(/&#39;/gi, "'")
+        .replace(/&mdash;/gi, '—')
+        .replace(/&ndash;/gi, '–')
+        .replace(/&hellip;/gi, '…')
+        .replace(/&copy;/gi, '©')
+        .replace(/&reg;/gi, '®')
+        .replace(/&trade;/gi, '™')
+        .replace(/&ldquo;/gi, '\u201C')
+        .replace(/&rdquo;/gi, '\u201D')
+        .replace(/&lsquo;/gi, '\u2018')
+        .replace(/&rsquo;/gi, '\u2019')
+        // Decode numeric entities (decimal and hex)
+        .replace(/&#(\d+);/g, (_, code) => String.fromCharCode(parseInt(code, 10)))
+        .replace(/&#x([0-9a-fA-F]+);/g, (_, code) => String.fromCharCode(parseInt(code, 16)))
         .replace(/\s+/g, ' ') // Normalize whitespace
         .trim();
       return { text };

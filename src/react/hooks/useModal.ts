@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useCallback } from 'react';
+import { useEffect, useCallback, useRef } from 'react';
 
 interface UseModalOptions {
   /** Callback when modal should close */
@@ -19,17 +19,18 @@ interface UseModalReturn {
  * - Backdrop click detection
  */
 export function useModal({ onClose }: UseModalOptions): UseModalReturn {
-  // Handle ESC key to close
-  const handleKeyDown = useCallback(
-    (e: KeyboardEvent) => {
-      if (e.key === 'Escape') {
-        onClose();
-      }
-    },
-    [onClose]
-  );
+  // Use ref for onClose to avoid event listener re-registration on every render
+  const onCloseRef = useRef(onClose);
+  onCloseRef.current = onClose;
 
   useEffect(() => {
+    // Use a stable handler that reads from ref to avoid event listener accumulation
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        onCloseRef.current();
+      }
+    };
+
     document.addEventListener('keydown', handleKeyDown, { passive: true });
     // Prevent body scroll when modal is open
     document.body.style.overflow = 'hidden';
@@ -38,16 +39,16 @@ export function useModal({ onClose }: UseModalOptions): UseModalReturn {
       document.removeEventListener('keydown', handleKeyDown);
       document.body.style.overflow = '';
     };
-  }, [handleKeyDown]);
+  }, []); // Empty deps - handler is stable via ref
 
   // Handle backdrop click (close if clicked on backdrop, not modal content)
   const handleBackdropClick = useCallback(
     (e: React.MouseEvent) => {
       if (e.target === e.currentTarget) {
-        onClose();
+        onCloseRef.current();
       }
     },
-    [onClose]
+    []
   );
 
   return { handleBackdropClick };

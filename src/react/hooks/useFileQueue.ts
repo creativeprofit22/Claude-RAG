@@ -64,6 +64,9 @@ export function useFileQueue(options: UseFileQueueOptions = {}): UseFileQueueRet
   const cancelRef = useRef(false);
   const currentFileIdRef = useRef<string | null>(null);
   const lastErrorRef = useRef<string | null>(null);
+  // Ref to get current files state to avoid stale closure in startUpload
+  const filesRef = useRef<QueuedFile[]>(files);
+  filesRef.current = files;
 
   const { upload, cancel } = useUploadStream({
     endpoint,
@@ -147,7 +150,8 @@ export function useFileQueue(options: UseFileQueueOptions = {}): UseFileQueueRet
     cancelRef.current = false;
 
     const results: UploadResult[] = [];
-    const pendingFiles = files.filter((f) => f.status === 'queued');
+    // Use ref to get current files state, avoiding stale closure
+    const pendingFiles = filesRef.current.filter((f) => f.status === 'queued');
 
     for (const queuedFile of pendingFiles) {
       if (cancelRef.current) break;
@@ -213,7 +217,7 @@ export function useFileQueue(options: UseFileQueueOptions = {}): UseFileQueueRet
     if (results.length > 0) {
       onAllComplete?.(results);
     }
-  }, [files, upload, onFileComplete, onAllComplete, onError]);
+  }, [upload, onFileComplete, onAllComplete, onError]);
 
   // Cancel current upload
   const cancelUpload = useCallback(() => {

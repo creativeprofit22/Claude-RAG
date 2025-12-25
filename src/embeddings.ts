@@ -147,8 +147,15 @@ export async function generateEmbeddingsBatch(
       throw new Error('Invalid batch embedding response: missing embeddings array');
     }
 
-    // Extract embeddings in order
-    const batchEmbeddings = response.embeddings.map((e) => e.values || []);
+    // Extract embeddings in order, validating each one
+    const batchEmbeddings = response.embeddings.map((e, idx) => {
+      const values = e.values;
+      // Validate embedding is a non-empty array to prevent DB corruption
+      if (!Array.isArray(values) || values.length === 0) {
+        throw new Error(`Invalid embedding at batch index ${i + idx}: expected non-empty array, got ${JSON.stringify(values)?.slice(0, 50)}`);
+      }
+      return values;
+    });
     results.push(...batchEmbeddings);
 
     if (onProgress) {
