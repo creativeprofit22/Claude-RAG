@@ -18,22 +18,24 @@ Files: src/react/components/documents/*, src/react/hooks/useDocuments.ts, src/re
 
 ## Pipeline State
 Phase: build
-Feature: Document Library & Categorization
-Status: Pipeline complete
-Reports:
-  - bugs: reports/bugs-document-library.md
-  - refactors: reports/refactors-document-library.md
+Feature: Chat Integration (Phase 3)
+Status: RAGInterface component complete
 
 ## Last Session (2025-12-24)
-Completed low priority refactors (final tier):
-- Extracted reusable `Dropdown` component from DocumentSearch
-- Moved `getDocumentIcon` to `src/react/utils/documentIcons.ts`
-- Added `withTable<T>` wrapper in database.ts (refactored 5 methods)
+Started Phase 3: Chat Integration:
+- Created `RAGInterface.tsx` - unified tabbed component (Chat | Documents)
+- Implements document scoping: select document in library → queries filter to that doc
+- Added scope indicator bar with document name and clear button
+- CSS styles for tabs, scope indicator, and view content
+- Updated exports in `src/react/index.ts`
+- Build passes
+
+Previous session - Document Library refactors:
 - All 10 refactors complete (2 high, 4 medium, 4 low)
-- Tested: API endpoints, TypeScript compilation pass
 - Committed: 622e55d
 
 ## Completed Features
+- **Chat Integration** (2025-12-24): RAGInterface component with tab navigation + document scoping
 - **Document Library** (2025-12-24): Phase 1 complete, all 14 bugs fixed
 - **Category System** (2025-12-24): JSON-based storage, CRUD API, React components
 - **Chat Scroll Fix** (2025-12-24): Bug fixes + refactoring complete
@@ -44,19 +46,23 @@ Completed low priority refactors (final tier):
 // Backend API
 import { query, addDocument, getDocumentSummaries, getDocumentDetails } from 'claude-rag';
 
-// React Chat UI
-import { RAGChat } from 'claude-rag/react';
+// Unified Interface (Chat + Documents with tabs)
+import { RAGInterface } from 'claude-rag/react';
 import 'claude-rag/react/styles.css';
 
+<RAGInterface
+  endpoint="/api/rag"
+  chatTitle="Document Assistant"
+  accentColor="#10b981"
+/>
+
+// Standalone Chat UI
+import { RAGChat } from 'claude-rag/react';
 <RAGChat endpoint="/api/rag/query" />
 
-// React Document Library
+// Standalone Document Library
 import { DocumentLibrary } from 'claude-rag/react';
-
-<DocumentLibrary
-  endpoint="/api/rag"
-  onDocumentSelect={(doc) => console.log('Query:', doc.documentId)}
-/>
+<DocumentLibrary endpoint="/api/rag" onDocumentSelect={(doc) => console.log(doc)} />
 ```
 
 ## Key Files
@@ -64,6 +70,7 @@ import { DocumentLibrary } from 'claude-rag/react';
 - `src/server.ts` - Bun HTTP server
 - `src/database.ts` - LanceDB wrapper with document queries
 - `src/categories.ts` - Category storage helpers
+- `src/react/RAGInterface.tsx` - Unified chat + documents tabbed interface
 - `src/react/components/documents/DocumentLibrary.tsx` - Document browser
 - `src/react/hooks/useDocuments.ts` - Document management hook
 

@@ -21,9 +21,16 @@
  * ```
  */
 
-// Main component
+// Main components
 export { RAGChat } from './RAGChat.js';
 export type { RAGChatProps } from './RAGChat.js';
+
+export { RAGInterface } from './RAGInterface.js';
+export type { RAGInterfaceProps, RAGInterfaceView } from './RAGInterface.js';
+
+// Document Library
+export { DocumentLibrary } from './components/documents/DocumentLibrary.js';
+export type { DocumentLibraryProps } from './components/documents/DocumentLibrary.js';
 
 // Individual components for custom implementations
 export { ChatHeader } from './components/ChatHeader.js';
