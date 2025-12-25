@@ -46,6 +46,10 @@ export type { CategoryBadgeProps, CategoryFilterProps } from './components/categ
 export { UploadModal, FileDropZone, FileQueue, FilePreview, ProgressIndicator } from './components/upload/index.js';
 export type { UploadModalProps, FileDropZoneProps, FileQueueProps, FilePreviewProps, ProgressIndicatorProps } from './components/upload/index.js';
 
+// Admin Dashboard
+export { AdminDashboard } from './components/admin/index.js';
+export type { AdminDashboardProps } from './components/admin/index.js';
+
 // Hooks for custom implementations
 export { useRAGChat } from './hooks/useRAGChat.js';
 export { useDocuments } from './hooks/useDocuments.js';
@@ -65,4 +69,6 @@ export type {
   DocumentSummary,
   DocumentDetails,
   DocumentLibraryState,
+  AdminStats,
+  AdminHealth,
 } from './types.js';

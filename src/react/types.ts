@@ -106,3 +106,45 @@ export interface DocumentLibraryState {
   sortOrder: 'asc' | 'desc';
   selectedCategory: string | null;
 }
+
+// ============================================
+// Admin Dashboard Types
+// ============================================
+
+/** Admin statistics response */
+export interface AdminStats {
+  documents: {
+    total: number;
+    byCategory: Array<{ categoryId: string; categoryName: string; color: string; count: number }>;
+  };
+  chunks: {
+    total: number;
+    averagePerDocument: number;
+  };
+  storage: {
+    estimatedBytes: number;
+    estimatedMB: string;
+  };
+  recentUploads: Array<{
+    documentId: string;
+    documentName: string;
+    timestamp: number;
+    chunkCount: number;
+  }>;
+  timestamp: string;
+}
+
+/** Admin health response */
+export interface AdminHealth {
+  status: 'healthy' | 'degraded' | 'unhealthy';
+  services: {
+    database: { status: 'up' | 'down'; documentCount: number; chunkCount: number };
+    embeddings: { status: 'up' | 'down'; provider: string };
+    responders: {
+      claude: { available: boolean; configured: boolean };
+      gemini: { available: boolean; configured: boolean };
+    };
+  };
+  defaultResponder: 'claude' | 'gemini' | 'none';
+  timestamp: string;
+}

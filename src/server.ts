@@ -254,6 +254,17 @@ const ROUTES: Record<string, RouteConfig> = {
     path: '/api/rag/tags',
     method: 'GET',
     description: 'List all tags'
+  },
+  // Admin Dashboard endpoints
+  adminStats: {
+    path: '/api/rag/admin/stats',
+    method: 'GET',
+    description: 'Get dashboard statistics'
+  },
+  adminHealth: {
+    path: '/api/rag/admin/health',
+    method: 'GET',
+    description: 'Get system health status'
   }
 };
 
@@ -293,6 +304,9 @@ const ROUTE_HANDLERS: Record<string, RouteHandler> = {
   [`DELETE:${ROUTES.deleteCategory.path}`]: ({ params }) => handleDeleteCategory(params.id),
   // Tags handler
   [`GET:${ROUTES.tags.path}`]: () => handleGetTags(),
+  // Admin Dashboard handlers
+  [`GET:${ROUTES.adminStats.path}`]: () => handleAdminStats(),
+  [`GET:${ROUTES.adminHealth.path}`]: () => handleAdminHealth(),
 };
 
 /**
@@ -933,6 +947,181 @@ async function handleGetTags(): Promise<Response> {
     tags,
     count: tags.length,
   });
+}
+
+// ============================================
+// Admin Dashboard Handlers
+// ============================================
+
+/**
+ * Admin stats response interface
+ */
+interface AdminStats {
+  documents: {
+    total: number;
+    byCategory: Array<{ categoryId: string; categoryName: string; color: string; count: number }>;
+  };
+  chunks: {
+    total: number;
+    averagePerDocument: number;
+  };
+  storage: {
+    estimatedBytes: number;
+    estimatedMB: string;
+  };
+  recentUploads: Array<{
+    documentId: string;
+    documentName: string;
+    timestamp: number;
+    chunkCount: number;
+  }>;
+  timestamp: string;
+}
+
+/**
+ * GET /api/rag/admin/stats - Dashboard statistics
+ */
+async function handleAdminStats(): Promise<Response> {
+  // Get document summaries and categories
+  const documents = await getDocumentSummaries();
+  const categories = getCategories();
+
+  // Count documents by category
+  const categoryCountMap = new Map<string, number>();
+  for (const doc of documents) {
+    const meta = getDocumentMetadata(doc.documentId);
+    for (const catId of meta.categories) {
+      categoryCountMap.set(catId, (categoryCountMap.get(catId) || 0) + 1);
+    }
+  }
+
+  // Build byCategory array with category details
+  const byCategory = categories.map(cat => ({
+    categoryId: cat.id,
+    categoryName: cat.name,
+    color: cat.color,
+    count: categoryCountMap.get(cat.id) || 0,
+  }));
+
+  // Calculate totals
+  const totalDocs = documents.length;
+  const totalChunks = documents.reduce((sum, d) => sum + d.chunkCount, 0);
+  const avgChunksPerDoc = totalDocs > 0 ? Math.round(totalChunks / totalDocs) : 0;
+
+  // Estimate storage (average ~1KB per chunk for text + embeddings)
+  const estimatedBytes = totalChunks * 1024;
+  const estimatedMB = (estimatedBytes / (1024 * 1024)).toFixed(2);
+
+  // Get recent uploads (last 10, sorted by timestamp desc)
+  const recentUploads = [...documents]
+    .sort((a, b) => b.timestamp - a.timestamp)
+    .slice(0, 10)
+    .map(d => ({
+      documentId: d.documentId,
+      documentName: d.documentName,
+      timestamp: d.timestamp,
+      chunkCount: d.chunkCount,
+    }));
+
+  const stats: AdminStats = {
+    documents: {
+      total: totalDocs,
+      byCategory,
+    },
+    chunks: {
+      total: totalChunks,
+      averagePerDocument: avgChunksPerDoc,
+    },
+    storage: {
+      estimatedBytes,
+      estimatedMB,
+    },
+    recentUploads,
+    timestamp: new Date().toISOString(),
+  };
+
+  return jsonResponse(stats);
+}
+
+/**
+ * Admin health response interface
+ */
+interface AdminHealth {
+  status: 'healthy' | 'degraded' | 'unhealthy';
+  services: {
+    database: { status: 'up' | 'down'; documentCount: number; chunkCount: number };
+    embeddings: { status: 'up' | 'down'; provider: string };
+    responders: {
+      claude: { available: boolean; configured: boolean };
+      gemini: { available: boolean; configured: boolean };
+    };
+  };
+  defaultResponder: 'claude' | 'gemini' | 'none';
+  timestamp: string;
+}
+
+/**
+ * GET /api/rag/admin/health - System health monitoring
+ */
+async function handleAdminHealth(): Promise<Response> {
+  const claudeAvailable = await checkClaudeCodeAvailable();
+  const geminiConfigured = !!process.env.GOOGLE_AI_API_KEY;
+
+  // Check database status
+  let dbStatus: 'up' | 'down' = 'down';
+  let documentCount = 0;
+  let chunkCount = 0;
+  try {
+    const status = await isReady();
+    if (status.ready) {
+      dbStatus = 'up';
+      const documents = await getDocumentSummaries();
+      documentCount = documents.length;
+      chunkCount = documents.reduce((sum, d) => sum + d.chunkCount, 0);
+    }
+  } catch {
+    dbStatus = 'down';
+  }
+
+  // Check embeddings (uses Google AI for embeddings)
+  const embeddingsStatus: 'up' | 'down' = geminiConfigured ? 'up' : 'down';
+
+  // Determine overall health
+  let overallStatus: 'healthy' | 'degraded' | 'unhealthy' = 'unhealthy';
+  if (dbStatus === 'up' && embeddingsStatus === 'up' && (claudeAvailable || geminiConfigured)) {
+    overallStatus = 'healthy';
+  } else if (dbStatus === 'up' || embeddingsStatus === 'up') {
+    overallStatus = 'degraded';
+  }
+
+  const health: AdminHealth = {
+    status: overallStatus,
+    services: {
+      database: {
+        status: dbStatus,
+        documentCount,
+        chunkCount,
+      },
+      embeddings: {
+        status: embeddingsStatus,
+        provider: 'Google AI (Gemini)',
+      },
+      responders: {
+        claude: {
+          available: claudeAvailable,
+          configured: true, // Claude Code CLI is always "configured", just may not be available
+        },
+        gemini: {
+          available: geminiConfigured,
+          configured: geminiConfigured,
+        },
+      },
+    },
+    defaultResponder: claudeAvailable ? 'claude' : (geminiConfigured ? 'gemini' : 'none'),
+    timestamp: new Date().toISOString(),
+  };
+
+  return jsonResponse(health);
 }
 
 /**
