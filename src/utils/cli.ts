@@ -13,10 +13,11 @@ export const execAsync = promisify(exec);
 
 /**
  * Check if Claude Code CLI is available in PATH
+ * @param timeout - Timeout in milliseconds (default: 5000ms)
  */
-export async function checkClaudeCodeAvailable(): Promise<boolean> {
+export async function checkClaudeCodeAvailable(timeout = 5000): Promise<boolean> {
   try {
-    await execAsync('which claude');
+    await execAsync('which claude', { timeout });
     return true;
   } catch {
     return false;

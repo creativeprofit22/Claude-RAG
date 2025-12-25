@@ -19,6 +19,7 @@ import {
   Activity,
 } from 'lucide-react';
 import type { AdminStats, AdminHealth } from '../../types.js';
+import { formatBytes, formatRelativeTime } from '../../utils/formatters.js';
 
 export interface AdminDashboardProps {
   /** Base API endpoint (default: /api/rag) */
@@ -29,27 +30,67 @@ export interface AdminDashboardProps {
   refreshInterval?: number;
 }
 
-/** Format bytes to human readable */
-function formatBytes(bytes: number): string {
-  if (bytes === 0) return '0 B';
-  const k = 1024;
-  const sizes = ['B', 'KB', 'MB', 'GB'];
-  const i = Math.floor(Math.log(bytes) / Math.log(k));
-  return `${parseFloat((bytes / Math.pow(k, i)).toFixed(2))} ${sizes[i]}`;
+/** Health status icon lookup */
+const HEALTH_STATUS_ICONS = {
+  healthy: CheckCircle,
+  degraded: AlertCircle,
+  unhealthy: XCircle,
+} as const;
+
+/** Skeleton loader count */
+const SKELETON_COUNT = 4;
+
+/** Reusable stat card component */
+interface StatCardProps {
+  icon: React.ReactNode;
+  iconBgColor: string;
+  iconColor: string;
+  value: string | number;
+  label: string;
+  meta?: string;
+  isLoading?: boolean;
 }
 
-/** Format timestamp to relative time */
-function formatRelativeTime(timestamp: number): string {
-  const now = Date.now();
-  const diff = now - timestamp;
-  const minutes = Math.floor(diff / 60000);
-  const hours = Math.floor(diff / 3600000);
-  const days = Math.floor(diff / 86400000);
+function StatCard({ icon, iconBgColor, iconColor, value, label, meta, isLoading }: StatCardProps) {
+  return (
+    <div className="rag-admin-stat-card">
+      <div className="rag-admin-stat-icon" style={{ backgroundColor: iconBgColor, color: iconColor }}>
+        {icon}
+      </div>
+      <div className="rag-admin-stat-info">
+        <span className="rag-admin-stat-value">
+          {isLoading ? '-' : value}
+        </span>
+        <span className="rag-admin-stat-label">{label}</span>
+      </div>
+      {meta && <span className="rag-admin-stat-meta">{meta}</span>}
+    </div>
+  );
+}
 
-  if (minutes < 1) return 'just now';
-  if (minutes < 60) return `${minutes}m ago`;
-  if (hours < 24) return `${hours}h ago`;
-  return `${days}d ago`;
+/** Reusable service status item component */
+interface ServiceStatusItemProps {
+  icon: React.ReactNode;
+  label: string;
+  isUp: boolean;
+  statusText: string;
+  meta?: string;
+}
+
+function ServiceStatusItem({ icon, label, isUp, statusText, meta }: ServiceStatusItemProps) {
+  return (
+    <div className="rag-admin-service-item">
+      <div className="rag-admin-service-header">
+        {icon}
+        <span>{label}</span>
+        <span className={`rag-admin-service-status rag-admin-service-${isUp ? 'up' : 'down'}`}>
+          {isUp ? <CheckCircle size={14} /> : <XCircle size={14} />}
+          {statusText}
+        </span>
+      </div>
+      {meta && <div className="rag-admin-service-meta">{meta}</div>}
+    </div>
+  );
 }
 
 export function AdminDashboard({
@@ -63,45 +104,58 @@ export function AdminDashboard({
   const [error, setError] = useState<string | null>(null);
   const [lastRefresh, setLastRefresh] = useState<Date>(new Date());
 
-  const fetchData = useCallback(async () => {
+  const fetchData = useCallback(async (signal?: AbortSignal) => {
     try {
       setError(null);
-      const [statsRes, healthRes] = await Promise.all([
-        fetch(`${endpoint}/admin/stats`),
-        fetch(`${endpoint}/admin/health`),
-      ]);
+      const res = await fetch(`${endpoint}/admin/dashboard`, { signal });
 
-      if (!statsRes.ok || !healthRes.ok) {
+      if (!res.ok) {
         throw new Error('Failed to fetch dashboard data');
       }
 
-      const [statsData, healthData] = await Promise.all([
-        statsRes.json(),
-        healthRes.json(),
-      ]);
-
-      setStats(statsData);
-      setHealth(healthData);
+      const data = await res.json();
+      setStats(data.stats);
+      setHealth(data.health);
       setLastRefresh(new Date());
     } catch (err) {
+      // Ignore aborted requests
+      if (err instanceof Error && err.name === 'AbortError') return;
       setError(err instanceof Error ? err.message : 'Unknown error');
     } finally {
       setIsLoading(false);
     }
   }, [endpoint]);
 
-  useEffect(() => {
-    fetchData();
+  // AbortController ref for manual refresh
+  const abortControllerRef = React.useRef<AbortController | null>(null);
 
+  useEffect(() => {
+    const controller = new AbortController();
+    fetchData(controller.signal);
+
+    let interval: ReturnType<typeof setInterval> | undefined;
     if (refreshInterval > 0) {
-      const interval = setInterval(fetchData, refreshInterval);
-      return () => clearInterval(interval);
+      interval = setInterval(() => {
+        // Cancel pending request before starting new one
+        abortControllerRef.current?.abort();
+        abortControllerRef.current = new AbortController();
+        fetchData(abortControllerRef.current.signal);
+      }, refreshInterval);
     }
+
+    return () => {
+      controller.abort();
+      abortControllerRef.current?.abort();
+      if (interval) clearInterval(interval);
+    };
   }, [fetchData, refreshInterval]);
 
   const handleRefresh = () => {
+    // Cancel any pending requests
+    abortControllerRef.current?.abort();
+    abortControllerRef.current = new AbortController();
     setIsLoading(true);
-    fetchData();
+    fetchData(abortControllerRef.current.signal);
   };
 
   // Calculate max count for chart scaling
@@ -111,12 +165,12 @@ export function AdminDashboard({
   ) || 1;
 
   return (
-    <div className="rag-admin-dashboard">
+    <div className="rag-admin-dashboard" style={{ '--rag-accent': accentColor } as React.CSSProperties}>
       {/* Header */}
       <div className="rag-admin-header">
         <div className="rag-admin-header-info">
-          <div className="rag-admin-header-icon" style={{ borderColor: `${accentColor}40`, backgroundColor: `${accentColor}15` }}>
-            <BarChart3 size={20} style={{ color: accentColor }} />
+          <div className="rag-admin-header-icon">
+            <BarChart3 size={20} />
           </div>
           <div className="rag-admin-header-text">
             <h2 className="rag-admin-title">Admin Dashboard</h2>
@@ -150,9 +204,7 @@ export function AdminDashboard({
       {/* Health Status Banner */}
       {health && (
         <div className={`rag-admin-health-banner rag-admin-health-${health.status}`}>
-          {health.status === 'healthy' && <CheckCircle size={18} />}
-          {health.status === 'degraded' && <AlertCircle size={18} />}
-          {health.status === 'unhealthy' && <XCircle size={18} />}
+          {React.createElement(HEALTH_STATUS_ICONS[health.status], { size: 18 })}
           <span className="rag-admin-health-text">
             System Status: <strong>{health.status.charAt(0).toUpperCase() + health.status.slice(1)}</strong>
           </span>
@@ -164,60 +216,39 @@ export function AdminDashboard({
 
       {/* Stats Cards */}
       <div className="rag-admin-stats-grid">
-        {/* Documents Card */}
-        <div className="rag-admin-stat-card">
-          <div className="rag-admin-stat-icon" style={{ backgroundColor: '#3b82f620', color: '#3b82f6' }}>
-            <FileText size={20} />
-          </div>
-          <div className="rag-admin-stat-info">
-            <span className="rag-admin-stat-value">
-              {isLoading ? '-' : stats?.documents.total || 0}
-            </span>
-            <span className="rag-admin-stat-label">Documents</span>
-          </div>
-        </div>
-
-        {/* Chunks Card */}
-        <div className="rag-admin-stat-card">
-          <div className="rag-admin-stat-icon" style={{ backgroundColor: '#10b98120', color: '#10b981' }}>
-            <Layers size={20} />
-          </div>
-          <div className="rag-admin-stat-info">
-            <span className="rag-admin-stat-value">
-              {isLoading ? '-' : stats?.chunks.total.toLocaleString() || 0}
-            </span>
-            <span className="rag-admin-stat-label">Total Chunks</span>
-          </div>
-          <span className="rag-admin-stat-meta">
-            ~{stats?.chunks.averagePerDocument || 0} per doc
-          </span>
-        </div>
-
-        {/* Storage Card */}
-        <div className="rag-admin-stat-card">
-          <div className="rag-admin-stat-icon" style={{ backgroundColor: '#f59e0b20', color: '#f59e0b' }}>
-            <HardDrive size={20} />
-          </div>
-          <div className="rag-admin-stat-info">
-            <span className="rag-admin-stat-value">
-              {isLoading ? '-' : stats?.storage.estimatedMB || '0'} MB
-            </span>
-            <span className="rag-admin-stat-label">Est. Storage</span>
-          </div>
-        </div>
-
-        {/* Avg Chunks Card */}
-        <div className="rag-admin-stat-card">
-          <div className="rag-admin-stat-icon" style={{ backgroundColor: '#8b5cf620', color: '#8b5cf6' }}>
-            <Activity size={20} />
-          </div>
-          <div className="rag-admin-stat-info">
-            <span className="rag-admin-stat-value">
-              {isLoading ? '-' : stats?.chunks.averagePerDocument || 0}
-            </span>
-            <span className="rag-admin-stat-label">Avg Chunks/Doc</span>
-          </div>
-        </div>
+        <StatCard
+          icon={<FileText size={20} />}
+          iconBgColor="#3b82f620"
+          iconColor="#3b82f6"
+          value={stats?.documents.total || 0}
+          label="Documents"
+          isLoading={isLoading}
+        />
+        <StatCard
+          icon={<Layers size={20} />}
+          iconBgColor="#10b98120"
+          iconColor="#10b981"
+          value={(stats?.chunks.total ?? 0).toLocaleString()}
+          label="Total Chunks"
+          meta={`~${stats?.chunks.averagePerDocument || 0} per doc`}
+          isLoading={isLoading}
+        />
+        <StatCard
+          icon={<HardDrive size={20} />}
+          iconBgColor="#f59e0b20"
+          iconColor="#f59e0b"
+          value={`${stats?.storage.estimatedMB || '0'} MB`}
+          label="Est. Storage"
+          isLoading={isLoading}
+        />
+        <StatCard
+          icon={<Activity size={20} />}
+          iconBgColor="#8b5cf620"
+          iconColor="#8b5cf6"
+          value={stats?.chunks.averagePerDocument || 0}
+          label="Avg Chunks/Doc"
+          isLoading={isLoading}
+        />
       </div>
 
       {/* Main Content Grid */}
@@ -231,7 +262,7 @@ export function AdminDashboard({
           <div className="rag-admin-chart">
             {isLoading ? (
               <div className="rag-admin-chart-skeleton">
-                {[1, 2, 3, 4].map((i) => (
+                {Array.from({ length: SKELETON_COUNT }, (_, i) => (
                   <div key={i} className="rag-admin-chart-skeleton-bar" />
                 ))}
               </div>
@@ -274,77 +305,34 @@ export function AdminDashboard({
             Service Health
           </h3>
           <div className="rag-admin-services">
-            {/* Database */}
-            <div className="rag-admin-service-item">
-              <div className="rag-admin-service-header">
-                <Database size={16} />
-                <span>Database (LanceDB)</span>
-                <span className={`rag-admin-service-status rag-admin-service-${health?.services.database.status || 'down'}`}>
-                  {health?.services.database.status === 'up' ? (
-                    <CheckCircle size={14} />
-                  ) : (
-                    <XCircle size={14} />
-                  )}
-                  {health?.services.database.status || 'unknown'}
-                </span>
-              </div>
-              {health?.services.database.status === 'up' && (
-                <div className="rag-admin-service-meta">
-                  {health.services.database.documentCount} docs, {health.services.database.chunkCount.toLocaleString()} chunks
-                </div>
-              )}
-            </div>
-
-            {/* Embeddings */}
-            <div className="rag-admin-service-item">
-              <div className="rag-admin-service-header">
-                <Layers size={16} />
-                <span>Embeddings</span>
-                <span className={`rag-admin-service-status rag-admin-service-${health?.services.embeddings.status || 'down'}`}>
-                  {health?.services.embeddings.status === 'up' ? (
-                    <CheckCircle size={14} />
-                  ) : (
-                    <XCircle size={14} />
-                  )}
-                  {health?.services.embeddings.status || 'unknown'}
-                </span>
-              </div>
-              <div className="rag-admin-service-meta">
-                {health?.services.embeddings.provider || 'Not configured'}
-              </div>
-            </div>
-
-            {/* Claude Responder */}
-            <div className="rag-admin-service-item">
-              <div className="rag-admin-service-header">
-                <Activity size={16} />
-                <span>Claude Code CLI</span>
-                <span className={`rag-admin-service-status rag-admin-service-${health?.services.responders.claude.available ? 'up' : 'down'}`}>
-                  {health?.services.responders.claude.available ? (
-                    <CheckCircle size={14} />
-                  ) : (
-                    <XCircle size={14} />
-                  )}
-                  {health?.services.responders.claude.available ? 'available' : 'unavailable'}
-                </span>
-              </div>
-            </div>
-
-            {/* Gemini Responder */}
-            <div className="rag-admin-service-item">
-              <div className="rag-admin-service-header">
-                <Activity size={16} />
-                <span>Gemini API</span>
-                <span className={`rag-admin-service-status rag-admin-service-${health?.services.responders.gemini.available ? 'up' : 'down'}`}>
-                  {health?.services.responders.gemini.available ? (
-                    <CheckCircle size={14} />
-                  ) : (
-                    <XCircle size={14} />
-                  )}
-                  {health?.services.responders.gemini.available ? 'configured' : 'not configured'}
-                </span>
-              </div>
-            </div>
+            <ServiceStatusItem
+              icon={<Database size={16} />}
+              label="Database (LanceDB)"
+              isUp={health?.services.database.status === 'up'}
+              statusText={health?.services.database.status || 'unknown'}
+              meta={health?.services.database.status === 'up'
+                ? `${health.services.database.documentCount} docs, ${health.services.database.chunkCount.toLocaleString()} chunks`
+                : undefined}
+            />
+            <ServiceStatusItem
+              icon={<Layers size={16} />}
+              label="Embeddings"
+              isUp={health?.services.embeddings.status === 'up'}
+              statusText={health?.services.embeddings.status || 'unknown'}
+              meta={health?.services.embeddings.provider || 'Not configured'}
+            />
+            <ServiceStatusItem
+              icon={<Activity size={16} />}
+              label="Claude Code CLI"
+              isUp={health?.services.responders.claude.available ?? false}
+              statusText={health?.services.responders.claude.available ? 'available' : 'unavailable'}
+            />
+            <ServiceStatusItem
+              icon={<Activity size={16} />}
+              label="Gemini API"
+              isUp={health?.services.responders.gemini.available ?? false}
+              statusText={health?.services.responders.gemini.available ? 'configured' : 'not configured'}
+            />
           </div>
         </div>
 
@@ -357,7 +345,7 @@ export function AdminDashboard({
           <div className="rag-admin-recent-list">
             {isLoading ? (
               <div className="rag-admin-recent-skeleton">
-                {[1, 2, 3].map((i) => (
+                {Array.from({ length: 3 }, (_, i) => (
                   <div key={i} className="rag-admin-recent-skeleton-row" />
                 ))}
               </div>
