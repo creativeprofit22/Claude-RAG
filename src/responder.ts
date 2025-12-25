@@ -75,7 +75,13 @@ Please provide a comprehensive answer based on the context above.`;
 /**
  * Estimate token counts based on text length.
  * Claude Code CLI doesn't provide token usage, so we estimate.
- * Rough estimate: ~4 characters per token for English text.
+ *
+ * Note: This is a rough approximation. Actual tokenization varies:
+ * - English prose: ~3.5-4 chars/token
+ * - Code: ~2.5-3 chars/token (more symbols)
+ * - Non-ASCII text: typically fewer chars/token
+ *
+ * Using 4 chars/token as conservative estimate for English text.
  */
 function estimateTokens(text: string): number {
   return Math.ceil(text.length / 4);

@@ -690,6 +690,10 @@ async function handleQuery(req: Request, url: URL): Promise<Response> {
   if (!parsed.ok) return parsed.error;
   const body = parsed.data;
 
+  // Log responder selection source for debugging
+  const responderSource = body.responder ? 'body' : (url.searchParams.get('responder') ? 'query' : (req.headers.get('X-Responder') ? 'header' : 'default'));
+  logger.debug('Responder preference:', { source: responderSource });
+
   if (!body.query || typeof body.query !== 'string' || (body.query as string).trim().length === 0) {
     return errorResponse('Missing required field: query (must be non-empty string)');
   }
@@ -816,6 +820,11 @@ async function handleListDocumentsDetails(): Promise<Response> {
 async function handleGetDocumentDetails(documentId: string): Promise<Response> {
   if (!documentId) {
     return errorResponse('Document ID is required');
+  }
+
+  // Validate documentId format (alphanumeric, underscores, hyphens only)
+  if (!/^[a-zA-Z0-9_-]+$/.test(documentId)) {
+    return errorResponse('Invalid document ID format');
   }
 
   const details = await getDocumentDetails(documentId);
@@ -1237,11 +1246,9 @@ async function handleAdminDashboard(): Promise<Response> {
 
     return jsonResponse({ stats, health });
   } catch (err) {
-    console.error('[Admin Dashboard] Error:', err);
-    return jsonResponse(
-      { error: 'Failed to fetch admin dashboard', message: err instanceof Error ? err.message : 'Unknown error' },
-      500
-    );
+    const errorMessage = err instanceof Error ? err.message : 'Unknown error';
+    logger.error('Admin dashboard failed:', { error: errorMessage });
+    return errorResponse(`Failed to fetch admin dashboard: ${errorMessage}`, 500);
   }
 }
 
@@ -1313,7 +1320,8 @@ async function handleRequest(req: Request): Promise<Response> {
     ];
     const isValidRoute = VALID_ROUTES.includes(route) || parameterizedRoutes.includes(route);
     if (!isValidRoute) {
-      return errorResponse('Not found', 404);
+      // CORS preflight for unknown routes should return 403 (Forbidden), not 404
+      return new Response(null, { status: 403, headers: corsHeaders });
     }
     return new Response(null, { status: 204, headers: corsHeaders });
   }

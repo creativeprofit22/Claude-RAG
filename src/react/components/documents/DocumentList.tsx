@@ -62,11 +62,12 @@ export function DocumentList({
   skeletonCount = DEFAULT_SKELETON_COUNT,
 }: DocumentListProps) {
   // Show loading skeletons
+  // Using stable keys with prefix to avoid React reconciliation issues
   if (isLoading) {
     return (
       <div className="rag-doc-list" aria-busy="true" aria-label="Loading documents">
         {Array.from({ length: skeletonCount }).map((_, index) => (
-          <DocumentCardSkeleton key={`skeleton-${index}`} />
+          <DocumentCardSkeleton key={`doc-skeleton-${index}`} />
         ))}
       </div>
     );

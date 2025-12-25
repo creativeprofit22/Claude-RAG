@@ -56,7 +56,8 @@ function FileQueueItem({
     if (canEdit && onRename) {
       setEditName(file.name);
       setIsEditing(true);
-      setTimeout(() => inputRef.current?.focus(), 0);
+      // Use requestAnimationFrame for safer focus timing (no cleanup needed)
+      requestAnimationFrame(() => inputRef.current?.focus());
     }
   };
 

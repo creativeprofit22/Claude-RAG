@@ -116,10 +116,16 @@ export async function extractText(
     case 'text/html': {
       const html = new TextDecoder().decode(buffer);
       // Strip HTML tags for RAG indexing
+      // Note: This regex-based approach handles common cases but may miss:
+      // - Malformed HTML (unclosed tags)
+      // - CDATA sections
+      // - Comments (<!-- -->)
+      // For production use with untrusted HTML, consider a proper HTML parser
       const text = html
         .replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '') // Remove scripts
         .replace(/<style\b[^<]*(?:(?!<\/style>)<[^<]*)*<\/style>/gi, '') // Remove styles
-        .replace(/<[^>]+>/g, ' ') // Remove remaining tags
+        .replace(/<!--[\s\S]*?-->/g, '') // Remove HTML comments
+        .replace(/<[^>]*>/g, ' ') // Remove remaining tags (handles self-closing and malformed)
         // Decode common HTML entities
         .replace(/&nbsp;/gi, ' ')
         .replace(/&amp;/gi, '&')

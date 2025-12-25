@@ -287,7 +287,15 @@ export function setDocumentCategories(documentId: string, categoryIds: string[])
   // Validate category IDs exist
   const categoryStore = readCategoryStore();
   const validIds = new Set(categoryStore.categories.map(c => c.id));
-  store[documentId].categories = categoryIds.filter(id => validIds.has(id));
+  const filteredIds = categoryIds.filter(id => validIds.has(id));
+
+  // Log if any category IDs were filtered out
+  const invalidIds = categoryIds.filter(id => !validIds.has(id));
+  if (invalidIds.length > 0) {
+    console.warn(`[Categories] Filtered out ${invalidIds.length} invalid category ID(s) for document ${documentId}:`, invalidIds);
+  }
+
+  store[documentId].categories = filteredIds;
 
   writeDocMetadataStore(store);
 }

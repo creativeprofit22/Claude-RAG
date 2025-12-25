@@ -74,6 +74,7 @@ export function FileDropZone({
         onFilesSelected(validFiles);
       }
     }
+    // Note: onFilesSelected is included in deps; ensure parent memoizes it with useCallback
   }, [multiple, onFilesSelected]);
 
   const handleDrop = useCallback((e: React.DragEvent) => {

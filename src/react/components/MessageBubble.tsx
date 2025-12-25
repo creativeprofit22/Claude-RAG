@@ -66,7 +66,7 @@ export function MessageBubble({
             {sourcesExpanded && (
               <div className="rag-sources-list">
                 {sources.map((source, i) => (
-                  <div key={`${source.documentId}-${source.chunkIndex}`} className="rag-source-item">
+                  <div key={`${source.documentId}-${source.chunkIndex}-${i}`} className="rag-source-item">
                     <div className="rag-source-header">
                       <span className="rag-source-badge" style={{ backgroundColor: `${accentColor}20`, color: accentColor }}>
                         [{i + 1}]

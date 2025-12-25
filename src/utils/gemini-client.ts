@@ -7,6 +7,7 @@ import { GoogleGenAI } from '@google/genai';
 
 let genaiClient: GoogleGenAI | null = null;
 let initializationPromise: Promise<GoogleGenAI> | null = null;
+// Note: If GOOGLE_AI_API_KEY changes at runtime, call resetGeminiClient() to pick up the new key
 
 /**
  * Get or create the Gemini client singleton

@@ -318,14 +318,19 @@ export async function addDocumentWithProgress(
   const documentId = `doc_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
 
   // Chunking stage (30-35%)
+  // Splits text into overlapping word-based chunks for better semantic coverage.
+  // Each chunk contains `chunkSize` words, with `overlap` words shared between
+  // consecutive chunks. E.g., with chunkSize=200 and overlap=50:
+  // Chunk 1: words 0-199, Chunk 2: words 150-349, etc.
   onProgress?.({ stage: 'chunking', percent: 30 });
 
   const words = text.split(/\s+/);
   const chunkSize = config.chunkSize;
   const overlap = config.chunkOverlap;
   const chunks: string[] = [];
+  const step = chunkSize - overlap;
 
-  for (let i = 0; i < words.length; i += chunkSize - overlap) {
+  for (let i = 0; i < words.length; i += step) {
     const chunk = words.slice(i, i + chunkSize).join(' ');
     if (chunk.trim()) chunks.push(chunk);
   }

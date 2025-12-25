@@ -119,17 +119,21 @@ class RAGDatabase {
   }
 
   /**
-   * Execute a callback with the table, returning fallback if table doesn't exist
+   * Execute a callback with the table, returning fallback if table doesn't exist.
+   * Note: Errors are logged but not thrown to maintain backward compatibility.
+   * Consider using try-catch in caller if you need error handling.
    */
   private async withTable<T>(fallback: T, callback: (table: Table) => Promise<T>): Promise<T> {
     const table = await this.ensureTable();
     if (!table) {
+      console.warn('[RAGDatabase] Table not available, returning fallback');
       return fallback;
     }
     try {
       return await callback(table);
     } catch (error) {
-      console.error('[RAGDatabase] Error in table operation:', error);
+      const errorMsg = error instanceof Error ? error.message : 'Unknown error';
+      console.error('[RAGDatabase] Error in table operation:', { error: errorMsg, fallbackReturned: true });
       return fallback;
     }
   }
@@ -251,7 +255,10 @@ class RAGDatabase {
     queryVector: number[],
     options: SearchOptions = {}
   ): Promise<SearchResult[]> {
-    const { limit = 5, filter } = options;
+    // Validate and clamp limit to reasonable bounds (1-1000)
+    const rawLimit = options.limit ?? 5;
+    const limit = Math.max(1, Math.min(1000, rawLimit));
+    const { filter } = options;
 
     if (!Array.isArray(queryVector) || queryVector.length === 0) {
       throw new Error('Query vector must be a non-empty array');
@@ -404,12 +411,17 @@ class RAGDatabase {
         // Validate doc and metadata exist before accessing properties
         if (!doc || !doc.metadata || !doc.metadata.documentId) return;
 
+        // Validate documentName is a non-empty string
+        const documentName = typeof doc.metadata.documentName === 'string' && doc.metadata.documentName.trim()
+          ? doc.metadata.documentName
+          : 'Unknown';
+
         const existing = docMap.get(doc.metadata.documentId);
         if (existing) {
           existing.chunkCount++;
         } else {
           docMap.set(doc.metadata.documentId, {
-            documentName: doc.metadata.documentName || 'Unknown',
+            documentName,
             chunkCount: 1,
             timestamp: doc.metadata.timestamp || Date.now(),
             source: doc.metadata.source as string | undefined,
