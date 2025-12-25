@@ -4,6 +4,7 @@
 
 import React, { useState, useCallback, useRef } from 'react';
 import { Upload, FileText, AlertCircle } from 'lucide-react';
+import { SUPPORTED_EXTENSIONS, SUPPORTED_MIME_TYPES } from '../../../extractors/index.js';
 
 export interface FileDropZoneProps {
   onFilesSelected: (files: File[]) => void;
@@ -13,33 +14,18 @@ export interface FileDropZoneProps {
   className?: string;
 }
 
-const ACCEPTED_TYPES = [
-  'application/pdf',
-  'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
-  'text/plain',
-  'text/markdown',
-  'text/html',
-];
-
-const ACCEPTED_EXTENSIONS = ['.pdf', '.docx', '.txt', '.md', '.html', '.htm'];
-
 /**
- * Check if a file is acceptable
+ * Check if a file is acceptable by MIME type or extension
  */
 function isAcceptableFile(file: File): boolean {
-  // Check MIME type
-  if (ACCEPTED_TYPES.includes(file.type)) {
-    return true;
-  }
-
-  // Check extension
   const ext = '.' + file.name.split('.').pop()?.toLowerCase();
-  return ACCEPTED_EXTENSIONS.includes(ext);
+  return (SUPPORTED_MIME_TYPES as readonly string[]).includes(file.type) ||
+         (SUPPORTED_EXTENSIONS as readonly string[]).includes(ext);
 }
 
 export function FileDropZone({
   onFilesSelected,
-  accept = ACCEPTED_EXTENSIONS.join(','),
+  accept = SUPPORTED_EXTENSIONS.join(','),
   multiple = true,
   disabled = false,
   className = '',

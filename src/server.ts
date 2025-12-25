@@ -387,124 +387,210 @@ async function handleUpload(req: Request): Promise<Response> {
   }
 }
 
+// SSE helper types and functions
+const SSE_FLUSH_DELAY_MS = 10;
+
+type SSEController = ReadableStreamDefaultController<Uint8Array>;
+type SSESender = (event: string, data: unknown) => void;
+
+/**
+ * Create SSE message encoder
+ */
+function createSSEEncoder(): (event: string, data: unknown) => Uint8Array {
+  const encoder = new TextEncoder();
+  return (event: string, data: unknown) =>
+    encoder.encode(`event: ${event}\ndata: ${JSON.stringify(data)}\n\n`);
+}
+
+/**
+ * Close SSE stream with flush delay to ensure message delivery
+ */
+async function closeSSEWithFlush(controller: SSEController): Promise<void> {
+  await new Promise(resolve => setTimeout(resolve, SSE_FLUSH_DELAY_MS));
+  controller.close();
+}
+
+/**
+ * Send SSE error and close stream
+ */
+async function sendSSEError(
+  controller: SSEController,
+  send: SSESender,
+  message: string
+): Promise<void> {
+  send('error', { message });
+  await closeSSEWithFlush(controller);
+}
+
+// Upload form data parsing result
+interface ParsedUploadForm {
+  file: File;
+  fileName: string;
+  categoryIds?: string[];
+  tags?: string[];
+}
+
+/**
+ * Parse and validate multipart form data for upload
+ */
+async function parseUploadForm(
+  req: Request,
+  controller: SSEController,
+  send: SSESender
+): Promise<ParsedUploadForm | null> {
+  const formData = await req.formData();
+  const file = formData.get('file') as File | null;
+  const customName = formData.get('name') as string | null;
+  const categoryIdsRaw = formData.get('categoryIds') as string | null;
+  const tagsRaw = formData.get('tags') as string | null;
+
+  if (!file) {
+    await sendSSEError(controller, send, 'No file provided');
+    return null;
+  }
+
+  let categoryIds: string[] | undefined;
+  let tags: string[] | undefined;
+  try {
+    categoryIds = categoryIdsRaw ? JSON.parse(categoryIdsRaw) : undefined;
+    tags = tagsRaw ? JSON.parse(tagsRaw) : undefined;
+  } catch {
+    await sendSSEError(controller, send, 'Invalid JSON in categoryIds or tags');
+    return null;
+  }
+
+  return {
+    file,
+    fileName: customName || file.name,
+    categoryIds,
+    tags,
+  };
+}
+
+// Text extraction result
+interface ExtractedContent {
+  text: string;
+  isScanned: boolean;
+}
+
+/**
+ * Extract text from uploaded file with validation
+ */
+async function validateAndExtract(
+  file: File,
+  buffer: ArrayBuffer,
+  controller: SSEController,
+  send: SSESender
+): Promise<ExtractedContent | null> {
+  const mimeType = file.type || getMimeType(file.name) || 'application/octet-stream';
+
+  if (!isSupported(mimeType) && !getMimeType(file.name)) {
+    await sendSSEError(
+      controller,
+      send,
+      `Unsupported file type: ${file.type || 'unknown'}. Supported: PDF, DOCX, TXT, MD, HTML`
+    );
+    return null;
+  }
+
+  try {
+    const result = await extractText(buffer, mimeType, file.name);
+    const text = result.text;
+    const isScanned = result.isScanned ?? false;
+
+    // Reject completely empty text extraction
+    if (text.trim().length === 0) {
+      await sendSSEError(
+        controller,
+        send,
+        'No text could be extracted from this file. The document may be empty, scanned, or image-based.'
+      );
+      return null;
+    }
+
+    return { text, isScanned };
+  } catch (error) {
+    const errorMsg = error instanceof Error ? error.message : 'Failed to extract text';
+    await sendSSEError(controller, send, errorMsg);
+    return null;
+  }
+}
+
+// Minimum content length for warning
+const MIN_CONTENT_LENGTH = 50;
+
+/**
+ * Process upload: chunk, embed, and store document
+ */
+async function processUpload(
+  extracted: ExtractedContent,
+  form: ParsedUploadForm,
+  controller: SSEController,
+  send: SSESender
+): Promise<void> {
+  // Warn if scanned or minimal text
+  if (extracted.isScanned || extracted.text.trim().length < MIN_CONTENT_LENGTH) {
+    send('warning', {
+      message: 'This file appears to be scanned or has minimal text content. Text extraction may be incomplete.',
+      isScanned: true,
+    });
+  }
+
+  send('progress', { stage: 'extracting', percent: 30 });
+
+  // Stage 3-5: Chunking, Embedding, Storing
+  const result = await addDocumentWithProgress(
+    extracted.text,
+    {
+      name: form.fileName,
+      source: form.file.name,
+      type: form.file.type,
+      categoryIds: form.categoryIds,
+      tags: form.tags,
+    },
+    (progress: UploadProgress) => {
+      send('progress', progress);
+    }
+  );
+
+  // Complete
+  send('complete', {
+    documentId: result.documentId,
+    chunks: result.chunks,
+    name: form.fileName,
+  });
+}
+
 /**
  * POST /api/rag/upload/stream - Upload with SSE progress streaming
  */
 async function handleUploadStream(req: Request): Promise<Response> {
-  const encoder = new TextEncoder();
-
-  // Helper to send SSE events
-  const createSSEMessage = (event: string, data: unknown): Uint8Array => {
-    return encoder.encode(`event: ${event}\ndata: ${JSON.stringify(data)}\n\n`);
-  };
-
   const stream = new ReadableStream({
     async start(controller) {
+      const encode = createSSEEncoder();
+      const send: SSESender = (event, data) => controller.enqueue(encode(event, data));
+
       try {
-        // Parse multipart form data
-        const formData = await req.formData();
-        const file = formData.get('file') as File | null;
-        const customName = formData.get('name') as string | null;
-        const categoryIdsRaw = formData.get('categoryIds') as string | null;
-        const tagsRaw = formData.get('tags') as string | null;
-
-        if (!file) {
-          controller.enqueue(createSSEMessage('error', { message: 'No file provided' }));
-          await new Promise(resolve => setTimeout(resolve, 10));
-          controller.close();
-          return;
-        }
-
-        let categoryIds: string[] | undefined;
-        let tags: string[] | undefined;
-        try {
-          categoryIds = categoryIdsRaw ? JSON.parse(categoryIdsRaw) : undefined;
-          tags = tagsRaw ? JSON.parse(tagsRaw) : undefined;
-        } catch {
-          controller.enqueue(createSSEMessage('error', { message: 'Invalid JSON in categoryIds or tags' }));
-          await new Promise(resolve => setTimeout(resolve, 10));
-          controller.close();
-          return;
-        }
-        const fileName = customName || file.name;
+        // Parse form data
+        const form = await parseUploadForm(req, controller, send);
+        if (!form) return;
 
         // Stage 1: Reading file
-        controller.enqueue(createSSEMessage('progress', { stage: 'reading', percent: 0 }));
-        const buffer = await file.arrayBuffer();
-        controller.enqueue(createSSEMessage('progress', { stage: 'reading', percent: 10 }));
+        send('progress', { stage: 'reading', percent: 0 });
+        const buffer = await form.file.arrayBuffer();
+        send('progress', { stage: 'reading', percent: 10 });
 
-        // Stage 2: Extracting text
-        controller.enqueue(createSSEMessage('progress', { stage: 'extracting', percent: 10 }));
-        let extractedText: string;
-        let isScanned = false;
+        // Stage 2: Extract and validate
+        send('progress', { stage: 'extracting', percent: 10 });
+        const extracted = await validateAndExtract(form.file, buffer, controller, send);
+        if (!extracted) return;
 
-        try {
-          const mimeType = file.type || getMimeType(file.name) || 'application/octet-stream';
-
-          if (!isSupported(mimeType) && !getMimeType(file.name)) {
-            controller.enqueue(createSSEMessage('error', {
-              message: `Unsupported file type: ${file.type || 'unknown'}. Supported: PDF, DOCX, TXT, MD, HTML`
-            }));
-            await new Promise(resolve => setTimeout(resolve, 10));
-            controller.close();
-            return;
-          }
-
-          const result = await extractText(buffer, mimeType, file.name);
-          extractedText = result.text;
-          isScanned = result.isScanned ?? false;
-
-          // Reject completely empty text extraction
-          if (extractedText.trim().length === 0) {
-            controller.enqueue(createSSEMessage('error', {
-              message: 'No text could be extracted from this file. The document may be empty, scanned, or image-based.'
-            }));
-            await new Promise(resolve => setTimeout(resolve, 10));
-            controller.close();
-            return;
-          }
-
-          if (isScanned || extractedText.trim().length < 50) {
-            controller.enqueue(createSSEMessage('warning', {
-              message: 'This file appears to be scanned or has minimal text content. Text extraction may be incomplete.',
-              isScanned: true
-            }));
-          }
-
-          controller.enqueue(createSSEMessage('progress', { stage: 'extracting', percent: 30 }));
-        } catch (error) {
-          const errorMsg = error instanceof Error ? error.message : 'Failed to extract text';
-          controller.enqueue(createSSEMessage('error', { message: errorMsg }));
-          await new Promise(resolve => setTimeout(resolve, 10));
-          controller.close();
-          return;
-        }
-
-        // Stage 3-5: Chunking, Embedding, Storing (handled by addDocumentWithProgress)
-        const result = await addDocumentWithProgress(
-          extractedText,
-          {
-            name: fileName,
-            source: file.name,
-            type: file.type,
-            categoryIds,
-            tags,
-          },
-          (progress: UploadProgress) => {
-            controller.enqueue(createSSEMessage('progress', progress));
-          }
-        );
-
-        // Complete
-        controller.enqueue(createSSEMessage('complete', {
-          documentId: result.documentId,
-          chunks: result.chunks,
-          name: fileName,
-        }));
+        // Stage 3-5: Process and store
+        await processUpload(extracted, form, controller, send);
       } catch (error) {
         const errorMsg = error instanceof Error ? error.message : 'Upload failed';
         logger.error('Stream upload failed:', { error: errorMsg });
-        controller.enqueue(createSSEMessage('error', { message: errorMsg }));
+        send('error', { message: errorMsg });
       } finally {
         controller.close();
       }

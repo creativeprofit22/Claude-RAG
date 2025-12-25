@@ -5,6 +5,9 @@
 
 import pdfParse from 'pdf-parse';
 
+/** Minimum characters per page to consider PDF as text-based (not scanned) */
+const MIN_CHARS_PER_PAGE = 100;
+
 export interface PDFExtractionResult {
   text: string;
   pageCount: number;
@@ -34,7 +37,7 @@ export async function extractPDF(buffer: ArrayBuffer): Promise<PDFExtractionResu
 
   // Heuristic: if text is very short relative to page count, it's likely scanned
   const avgCharsPerPage = text.length / Math.max(pageCount, 1);
-  const isScanned = avgCharsPerPage < 100 && pageCount > 0;
+  const isScanned = avgCharsPerPage < MIN_CHARS_PER_PAGE && pageCount > 0;
 
   // Parse creation date safely (PDF dates can be in various formats)
   let creationDate: Date | undefined;

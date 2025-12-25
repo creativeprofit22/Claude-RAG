@@ -17,20 +17,24 @@ interface StageInfo {
   icon: React.ReactNode;
   rangeStart: number;
   rangeEnd: number;
+  order: number | null;
 }
 
 const STAGES: Record<UploadStage, StageInfo> = {
-  idle: { label: 'Waiting', icon: <FileText size={14} />, rangeStart: 0, rangeEnd: 0 },
-  reading: { label: 'Reading file', icon: <FileText size={14} />, rangeStart: 0, rangeEnd: 10 },
-  extracting: { label: 'Extracting text', icon: <FileText size={14} />, rangeStart: 10, rangeEnd: 30 },
-  chunking: { label: 'Chunking', icon: <FileText size={14} />, rangeStart: 30, rangeEnd: 35 },
-  embedding: { label: 'Generating embeddings', icon: <Sparkles size={14} />, rangeStart: 35, rangeEnd: 90 },
-  storing: { label: 'Storing', icon: <Database size={14} />, rangeStart: 90, rangeEnd: 100 },
-  complete: { label: 'Complete', icon: <Check size={14} />, rangeStart: 100, rangeEnd: 100 },
-  error: { label: 'Error', icon: <AlertCircle size={14} />, rangeStart: 0, rangeEnd: 0 },
+  idle: { label: 'Waiting', icon: <FileText size={14} />, rangeStart: 0, rangeEnd: 0, order: null },
+  reading: { label: 'Reading file', icon: <FileText size={14} />, rangeStart: 0, rangeEnd: 10, order: 0 },
+  extracting: { label: 'Extracting text', icon: <FileText size={14} />, rangeStart: 10, rangeEnd: 30, order: 1 },
+  chunking: { label: 'Chunking', icon: <FileText size={14} />, rangeStart: 30, rangeEnd: 35, order: 2 },
+  embedding: { label: 'Generating embeddings', icon: <Sparkles size={14} />, rangeStart: 35, rangeEnd: 90, order: 3 },
+  storing: { label: 'Storing', icon: <Database size={14} />, rangeStart: 90, rangeEnd: 100, order: 4 },
+  complete: { label: 'Complete', icon: <Check size={14} />, rangeStart: 100, rangeEnd: 100, order: 5 },
+  error: { label: 'Error', icon: <AlertCircle size={14} />, rangeStart: 0, rangeEnd: 0, order: null },
 };
 
-const STAGE_ORDER: UploadStage[] = ['reading', 'extracting', 'chunking', 'embedding', 'storing', 'complete'];
+const STAGE_ORDER = (Object.entries(STAGES) as [UploadStage, StageInfo][])
+  .filter(([, info]) => info.order !== null)
+  .sort((a, b) => a[1].order! - b[1].order!)
+  .map(([stage]) => stage);
 
 /**
  * Get the current stage index (for highlighting)

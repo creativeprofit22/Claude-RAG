@@ -21,8 +21,15 @@ export type SupportedMimeType =
   | 'text/markdown'
   | 'text/html';
 
-const SUPPORTED_EXTENSIONS = ['.pdf', '.docx', '.txt', '.md', '.html'] as const;
-type SupportedExtension = typeof SUPPORTED_EXTENSIONS[number];
+export const SUPPORTED_EXTENSIONS = ['.pdf', '.docx', '.txt', '.md', '.html', '.htm'] as const;
+
+export const SUPPORTED_MIME_TYPES = [
+  'application/pdf',
+  'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+  'text/plain',
+  'text/markdown',
+  'text/html',
+] as const;
 
 /**
  * Get MIME type from file extension
@@ -50,13 +57,7 @@ export function getMimeType(filename: string): SupportedMimeType | null {
  * Check if a file type is supported
  */
 export function isSupported(mimeType: string): mimeType is SupportedMimeType {
-  return [
-    'application/pdf',
-    'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
-    'text/plain',
-    'text/markdown',
-    'text/html',
-  ].includes(mimeType);
+  return (SUPPORTED_MIME_TYPES as readonly string[]).includes(mimeType);
 }
 
 /**

@@ -90,7 +90,7 @@ export function useFileQueue(options: UseFileQueueOptions = {}): UseFileQueueRet
   });
 
   // Add files to the queue (skips duplicates by name)
-  const addFiles = useCallback(async (newFiles: File[]) => {
+  const addFiles = useCallback((newFiles: File[]) => {
     setFiles((prev) => {
       const existingNames = new Set(prev.map((f) => f.name));
       const uniqueFiles = newFiles.filter((file) => !existingNames.has(file.name));

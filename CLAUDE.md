@@ -17,20 +17,22 @@ Section: Enhanced Upload (Phase 4)
 Files: src/react/components/upload/*, src/react/hooks/useUploadStream.ts, src/react/hooks/useFileQueue.ts, src/extractors/*, src/server.ts
 
 ## Pipeline State
-Phase: debugging
+Phase: refactoring
 Feature: Enhanced Upload (Phase 4)
 Tier: low
 Tier-Status: pending
-Reports: reports/bugs-enhanced-upload.md (3 High ✓, 5 Medium ✓, 5 Low)
+Reports:
+  - bugs: reports/bugs-enhanced-upload.md
+  - refactors: reports/refactors-enhanced-upload.md
 
 ## Last Session (2025-12-25)
-- Fixed all 5 medium priority bugs:
-  - Empty text extraction now rejected with error (server.ts:457-465)
-  - JSON.parse for categoryIds/tags wrapped in try-catch (server.ts:417-427)
-  - SSE stream flushed with 10ms delay before close (5 locations)
-  - File name extension preserved on rename (useFileQueue.ts:134-146)
-  - PDF date parsing validates with isNaN check (pdf.ts:39-46)
-- Type check passes
+Medium priority refactors complete (4/4):
+1. Added SSE type guards in useUploadStream.ts (SSEProgressData, SSECompleteData, SSEMessageData types + isProgressData, isCompleteData, isMessageData guards)
+2. Added `estimateEndpoint` prop to FilePreview.tsx (default: `/api/rag/upload/estimate`)
+3. Extracted `MIN_CHARS_PER_PAGE = 100` constant in pdf.ts
+4. Converted getFileTypeLabel to FILE_TYPE_LABELS lookup object in FilePreview.tsx
+
+Refactor progress: High 4/4 ✅, Medium 5/5 ✅, Low 0/4 pending
 
 ## Completed Features
 - **Enhanced Upload** (2025-12-25): SSE progress streaming, PDF/DOCX extraction, multi-file queue, category selection

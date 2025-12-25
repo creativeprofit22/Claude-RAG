@@ -4,6 +4,7 @@
 
 import React, { useEffect, useState } from 'react';
 import { FileText, Hash, Clock, AlertTriangle } from 'lucide-react';
+import { formatFileSize } from '../../utils/format.js';
 
 export interface FilePreviewProps {
   file: File;
@@ -11,6 +12,7 @@ export interface FilePreviewProps {
   estimatedChunks?: number;
   maxPreviewLength?: number;
   className?: string;
+  estimateEndpoint?: string;
   onEstimate?: (estimate: { wordCount: number; estimatedChunks: number }) => void;
 }
 
@@ -21,29 +23,21 @@ interface ChunkEstimate {
   chunkOverlap: number;
 }
 
-/**
- * Format file size for display
- */
-function formatFileSize(bytes: number): string {
-  if (bytes < 1024) return `${bytes} B`;
-  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
-  return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
-}
+const FILE_TYPE_LABELS: Record<string, string> = {
+  pdf: 'PDF',
+  docx: 'DOCX',
+  txt: 'Text',
+  md: 'Markdown',
+  html: 'HTML',
+  htm: 'HTML',
+};
 
 /**
- * Get file type icon/label
+ * Get file type label from extension
  */
 function getFileTypeLabel(file: File): string {
-  const ext = file.name.split('.').pop()?.toLowerCase();
-  switch (ext) {
-    case 'pdf': return 'PDF';
-    case 'docx': return 'DOCX';
-    case 'txt': return 'Text';
-    case 'md': return 'Markdown';
-    case 'html':
-    case 'htm': return 'HTML';
-    default: return ext?.toUpperCase() || 'File';
-  }
+  const ext = file.name.split('.').pop()?.toLowerCase() || '';
+  return FILE_TYPE_LABELS[ext] ?? (ext.toUpperCase() || 'File');
 }
 
 export function FilePreview({
@@ -52,6 +46,7 @@ export function FilePreview({
   estimatedChunks,
   maxPreviewLength = 500,
   className = '',
+  estimateEndpoint = '/api/rag/upload/estimate',
   onEstimate,
 }: FilePreviewProps): React.ReactElement {
   const [estimate, setEstimate] = useState<ChunkEstimate | null>(null);
@@ -64,7 +59,7 @@ export function FilePreview({
     const fetchEstimate = async () => {
       setIsLoading(true);
       try {
-        const response = await fetch('/api/rag/upload/estimate', {
+        const response = await fetch(estimateEndpoint, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ text: preview }),

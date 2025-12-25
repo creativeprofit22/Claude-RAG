@@ -6,6 +6,7 @@ import React from 'react';
 import { FileText, X, Check, AlertCircle, Loader2, Edit2 } from 'lucide-react';
 import type { QueuedFile, FileStatus } from '../../hooks/useFileQueue.js';
 import { ProgressIndicator } from './ProgressIndicator.js';
+import { formatFileSize } from '../../utils/format.js';
 
 export interface FileQueueProps {
   files: QueuedFile[];
@@ -20,15 +21,6 @@ interface FileQueueItemProps {
   onRemove: () => void;
   onRename?: (name: string) => void;
   isUploading?: boolean;
-}
-
-/**
- * Format file size for display
- */
-function formatFileSize(bytes: number): string {
-  if (bytes < 1024) return `${bytes} B`;
-  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
-  return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
 }
 
 /**

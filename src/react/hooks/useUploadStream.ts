@@ -44,6 +44,40 @@ export interface UseUploadStreamReturn {
   warning: string | null;
 }
 
+// SSE event data types
+interface SSEProgressData {
+  stage: UploadStage;
+  percent: number;
+  current?: number;
+  total?: number;
+  chunkCount?: number;
+}
+
+interface SSECompleteData {
+  documentId: string;
+  chunks: number;
+  name: string;
+}
+
+interface SSEMessageData {
+  message: string;
+}
+
+type SSEEventData = SSEProgressData | SSECompleteData | SSEMessageData;
+
+// Type guards for SSE event data
+function isProgressData(data: unknown): data is SSEProgressData {
+  return typeof data === 'object' && data !== null && 'stage' in data && 'percent' in data;
+}
+
+function isCompleteData(data: unknown): data is SSECompleteData {
+  return typeof data === 'object' && data !== null && 'documentId' in data && 'chunks' in data;
+}
+
+function isMessageData(data: unknown): data is SSEMessageData {
+  return typeof data === 'object' && data !== null && 'message' in data;
+}
+
 const INITIAL_PROGRESS: UploadProgress = { stage: 'idle', percent: 0 };
 
 /**
@@ -129,11 +163,12 @@ export function useUploadStream(options: UseUploadStreamOptions = {}): UseUpload
           }
 
           if (line.startsWith('data: ')) {
-            const data = JSON.parse(line.slice(6));
+            const data: unknown = JSON.parse(line.slice(6));
 
             // Use event type from event: line for dispatch
             switch (currentEventType) {
               case 'progress': {
+                if (!isProgressData(data)) break;
                 const progressUpdate: UploadProgress = {
                   stage: data.stage,
                   percent: data.percent,
@@ -146,6 +181,7 @@ export function useUploadStream(options: UseUploadStreamOptions = {}): UseUpload
                 break;
               }
               case 'complete': {
+                if (!isCompleteData(data)) break;
                 result = {
                   documentId: data.documentId,
                   chunks: data.chunks,
@@ -156,16 +192,18 @@ export function useUploadStream(options: UseUploadStreamOptions = {}): UseUpload
                 break;
               }
               case 'warning': {
+                if (!isMessageData(data)) break;
                 setWarning(data.message);
                 onWarning?.(data.message);
                 break;
               }
               case 'error': {
+                if (!isMessageData(data)) break;
                 throw new Error(data.message);
               }
               default: {
                 // Fallback to data structure inference for backwards compatibility
-                if ('stage' in data) {
+                if (isProgressData(data)) {
                   const progressUpdate: UploadProgress = {
                     stage: data.stage,
                     percent: data.percent,
@@ -175,7 +213,7 @@ export function useUploadStream(options: UseUploadStreamOptions = {}): UseUpload
                   };
                   setProgress(progressUpdate);
                   onProgress?.(progressUpdate);
-                } else if ('documentId' in data) {
+                } else if (isCompleteData(data)) {
                   result = {
                     documentId: data.documentId,
                     chunks: data.chunks,
@@ -183,7 +221,7 @@ export function useUploadStream(options: UseUploadStreamOptions = {}): UseUpload
                   };
                   setProgress({ stage: 'complete', percent: 100 });
                   onComplete?.(result);
-                } else if ('message' in data) {
+                } else if (isMessageData(data)) {
                   throw new Error(data.message);
                 }
               }
