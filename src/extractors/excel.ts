@@ -10,6 +10,7 @@ export interface ExcelExtractionResult {
   sheetCount: number;
   sheetNames: string[];
   rowCount: number;
+  warnings?: string[];
 }
 
 /**
@@ -50,11 +51,19 @@ export function extractExcel(buffer: ArrayBuffer): ExcelExtractionResult {
     }
   }
 
+  const text = textParts.join('\n\n');
+  const warnings: string[] = [];
+
+  if (!text) {
+    warnings.push('Workbook contains no extractable text content');
+  }
+
   return {
-    text: textParts.join('\n\n'),
+    text,
     sheetCount: sheetNames.length,
     sheetNames,
     rowCount: totalRows,
+    ...(warnings.length > 0 && { warnings }),
   };
 }
 

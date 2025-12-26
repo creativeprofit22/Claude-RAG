@@ -170,6 +170,7 @@ export async function extractText(
       const result = extractExcel(buffer);
       return {
         text: result.text,
+        warnings: result.warnings,
         metadata: {
           sheetCount: result.sheetCount,
           sheetNames: result.sheetNames,
@@ -182,6 +183,7 @@ export async function extractText(
       const result = extractCSV(buffer);
       return {
         text: result.text,
+        warnings: result.warnings,
         metadata: {
           rowCount: result.rowCount,
         },

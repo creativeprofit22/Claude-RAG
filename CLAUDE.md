@@ -15,17 +15,16 @@ Query → Gemini Embeddings → LanceDB → Chunks → Claude Code CLI → Respo
 ## Pipeline State
 Phase: debugging
 Feature: Excel/CSV Support & Chat Scroll Fix
-Tier: high
+Tier: low
 Tier-Status: pending
 Reports:
   - bugs: reports/bugs-excel-scroll-fix.md
 
 ## Last Session (2025-12-25)
-- Fixed chat input Enter key scroll bug: changed from `scrollIntoView()` to `container.scrollTop`
-- Added Excel/CSV file support: new `src/extractors/excel.ts` using SheetJS (xlsx)
-- Updated file-types.ts with .xlsx, .xls, .csv MIME types
-- Committed: `6baac60`
-- Bug hunt: Found 5 bugs (1 high, 2 medium, 2 low) in new code
+- Fixed Medium #1: RAGChat scroll trigger - added `wasTypingRef` to track typing state transitions, scroll now only fires when `isTyping` goes false→true
+- Fixed Medium #2: Empty workbook warning - added `warnings?: string[]` to `ExcelExtractionResult`, empty workbooks now return warning message
+- Updated `extractors/index.ts` to propagate Excel/CSV warnings
+- Type check passed
 
 ## Key Files
 - `src/server.ts` - Bun HTTP server

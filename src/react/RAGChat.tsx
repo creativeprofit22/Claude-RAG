@@ -67,15 +67,20 @@ export function RAGChat({
   });
 
   // Auto-scroll to bottom when messages change.
-  // Uses hybrid ref+deps pattern: ref tracks count between renders for comparison,
+  // Uses hybrid ref+deps pattern: refs track previous values between renders,
   // deps array triggers effect when relevant values change. This prevents scrolling
-  // on every render while still catching new messages and typing state changes.
+  // on every render while still catching new messages and typing state transitions.
   const lastMessageCountRef = useRef(messages.length);
+  const wasTypingRef = useRef(isTyping);
 
   useEffect(() => {
-    // Only scroll if message count increased or typing state changed
-    const shouldScroll = messages.length > lastMessageCountRef.current || isTyping;
+    // Only scroll if message count increased OR isTyping transitioned to true
+    const messageCountIncreased = messages.length > lastMessageCountRef.current;
+    const typingStarted = isTyping && !wasTypingRef.current;
+    const shouldScroll = messageCountIncreased || typingStarted;
+
     lastMessageCountRef.current = messages.length;
+    wasTypingRef.current = isTyping;
 
     if (shouldScroll && messagesContainerRef.current) {
       // Scroll container directly to avoid scrollIntoView affecting the whole page

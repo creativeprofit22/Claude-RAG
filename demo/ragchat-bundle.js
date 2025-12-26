@@ -497,9 +497,13 @@ var RAGBundle = (() => {
       documentId
     });
     const lastMessageCountRef = useRef(messages.length);
+    const wasTypingRef = useRef(isTyping);
     useEffect(() => {
-      const shouldScroll = messages.length > lastMessageCountRef.current || isTyping;
+      const messageCountIncreased = messages.length > lastMessageCountRef.current;
+      const typingStarted = isTyping && !wasTypingRef.current;
+      const shouldScroll = messageCountIncreased || typingStarted;
       lastMessageCountRef.current = messages.length;
+      wasTypingRef.current = isTyping;
       if (shouldScroll && messagesContainerRef.current) {
         requestAnimationFrame(() => {
           const container = messagesContainerRef.current;
