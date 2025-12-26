@@ -71,18 +71,28 @@ This system provides semantic search over your documents using Google Gemini emb
 ### Alternative (Gemini fallback)
 - Same Google AI API key works for both embeddings and responses
 
-## Installation
+## Quick Start
 
 ```bash
-# Clone the repository
-git clone <repo-url>
-cd claude-rag
+# One-liner setup (recommended)
+npx degit creativeprofit22/Claude-RAG my-rag-app && cd my-rag-app && npm install
 
-# Install dependencies
+# Or clone manually
+git clone https://github.com/creativeprofit22/Claude-RAG.git my-rag-app
+cd my-rag-app
+rm -rf .git  # Fresh start
 npm install
+```
 
-# Build TypeScript
-npm run build
+Then:
+1. Copy `.env.example` to `.env` and add your `GEMINI_API_KEY`
+2. Run `npm run dev` to start the server
+3. Open http://localhost:3000 for the demo
+
+## Installation (as library)
+
+```bash
+npm install claude-rag
 ```
 
 ## Environment Variables
