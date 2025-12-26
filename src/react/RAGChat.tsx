@@ -70,7 +70,8 @@ export function RAGChat({
   // Uses hybrid ref+deps pattern: refs track previous values between renders,
   // deps array triggers effect when relevant values change. This prevents scrolling
   // on every render while still catching new messages and typing state transitions.
-  const lastMessageCountRef = useRef(messages.length);
+  // Initialize to 0 so component scrolls on mount if there are existing messages.
+  const lastMessageCountRef = useRef(0);
   const wasTypingRef = useRef(isTyping);
 
   useEffect(() => {

@@ -28,6 +28,7 @@ export function extractExcel(buffer: ArrayBuffer): ExcelExtractionResult {
   }
 
   const sheetNames = workbook.SheetNames;
+  const sheetsWithContent: string[] = [];
   const textParts: string[] = [];
   let totalRows = 0;
 
@@ -39,6 +40,7 @@ export function extractExcel(buffer: ArrayBuffer): ExcelExtractionResult {
     const text = XLSX.utils.sheet_to_txt(sheet, { blankrows: false });
 
     if (text.trim()) {
+      sheetsWithContent.push(sheetName);
       // Add sheet header for multi-sheet workbooks
       if (sheetNames.length > 1) {
         textParts.push(`[Sheet: ${sheetName}]`);
@@ -56,23 +58,21 @@ export function extractExcel(buffer: ArrayBuffer): ExcelExtractionResult {
 
   if (!text) {
     warnings.push('Workbook contains no extractable text content');
+  } else if (sheetsWithContent.length < sheetNames.length) {
+    const emptyCount = sheetNames.length - sheetsWithContent.length;
+    warnings.push(`${emptyCount} empty sheet${emptyCount > 1 ? 's' : ''} skipped`);
   }
 
   return {
     text,
-    sheetCount: sheetNames.length,
-    sheetNames,
+    sheetCount: sheetsWithContent.length,
+    sheetNames: sheetsWithContent,
     rowCount: totalRows,
     ...(warnings.length > 0 && { warnings }),
   };
 }
 
 /**
- * Extract text from a CSV buffer
- * @param buffer - CSV file as ArrayBuffer
- * @returns Extracted text
+ * Extract text from a CSV buffer (xlsx handles CSV natively)
  */
-export function extractCSV(buffer: ArrayBuffer): ExcelExtractionResult {
-  // xlsx handles CSV natively
-  return extractExcel(buffer);
-}
+export const extractCSV = extractExcel;

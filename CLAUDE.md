@@ -21,10 +21,10 @@ Reports:
   - bugs: reports/bugs-excel-scroll-fix.md
 
 ## Last Session (2025-12-25)
-- Fixed Medium #1: RAGChat scroll trigger - added `wasTypingRef` to track typing state transitions, scroll now only fires when `isTyping` goes false→true
-- Fixed Medium #2: Empty workbook warning - added `warnings?: string[]` to `ExcelExtractionResult`, empty workbooks now return warning message
-- Updated `extractors/index.ts` to propagate Excel/CSV warnings
-- Type check passed
+- Fixed medium priority bugs and committed `530576d`
+- RAGChat scroll: added `wasTypingRef` to track typing transitions
+- Excel extractor: added `warnings` field for empty workbooks
+- Low priority bugs still pending
 
 ## Key Files
 - `src/server.ts` - Bun HTTP server

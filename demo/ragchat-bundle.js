@@ -496,7 +496,7 @@ var RAGBundle = (() => {
       topK,
       documentId
     });
-    const lastMessageCountRef = useRef(messages.length);
+    const lastMessageCountRef = useRef(0);
     const wasTypingRef = useRef(isTyping);
     useEffect(() => {
       const messageCountIncreased = messages.length > lastMessageCountRef.current;

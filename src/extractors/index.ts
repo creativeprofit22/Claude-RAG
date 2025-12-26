@@ -5,7 +5,7 @@
 
 import { extractPDF, type PDFExtractionResult } from './pdf.js';
 import { extractDOCX, type DOCXExtractionResult } from './docx.js';
-import { extractExcel, extractCSV, type ExcelExtractionResult } from './excel.js';
+import { extractExcel, type ExcelExtractionResult } from './excel.js';
 import { SUPPORTED_EXTENSIONS, SUPPORTED_MIME_TYPES, type SupportedMimeType } from '../shared/file-types.js';
 
 // Re-export for backwards compatibility
@@ -20,31 +20,27 @@ export type ExtractionResult = {
 };
 
 /**
+ * Extension to MIME type mapping
+ * Single source of truth for file extension lookups
+ */
+const EXTENSION_TO_MIME: Record<string, SupportedMimeType> = {
+  pdf: 'application/pdf',
+  docx: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+  txt: 'text/plain',
+  md: 'text/markdown',
+  html: 'text/html',
+  htm: 'text/html',
+  xlsx: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+  xls: 'application/vnd.ms-excel',
+  csv: 'text/csv',
+};
+
+/**
  * Get MIME type from file extension
  */
 export function getMimeType(filename: string): SupportedMimeType | null {
   const ext = filename.toLowerCase().split('.').pop();
-  switch (ext) {
-    case 'pdf':
-      return 'application/pdf';
-    case 'docx':
-      return 'application/vnd.openxmlformats-officedocument.wordprocessingml.document';
-    case 'txt':
-      return 'text/plain';
-    case 'md':
-      return 'text/markdown';
-    case 'html':
-    case 'htm':
-      return 'text/html';
-    case 'xlsx':
-      return 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet';
-    case 'xls':
-      return 'application/vnd.ms-excel';
-    case 'csv':
-      return 'text/csv';
-    default:
-      return null;
-  }
+  return ext ? (EXTENSION_TO_MIME[ext] ?? null) : null;
 }
 
 /**
@@ -166,7 +162,8 @@ export async function extractText(
     }
 
     case 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet':
-    case 'application/vnd.ms-excel': {
+    case 'application/vnd.ms-excel':
+    case 'text/csv': {
       const result = extractExcel(buffer);
       return {
         text: result.text,
@@ -174,17 +171,6 @@ export async function extractText(
         metadata: {
           sheetCount: result.sheetCount,
           sheetNames: result.sheetNames,
-          rowCount: result.rowCount,
-        },
-      };
-    }
-
-    case 'text/csv': {
-      const result = extractCSV(buffer);
-      return {
-        text: result.text,
-        warnings: result.warnings,
-        metadata: {
           rowCount: result.rowCount,
         },
       };
