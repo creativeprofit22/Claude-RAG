@@ -120,6 +120,28 @@ Then open `http://localhost:YOUR_NUMBER` in your browser.
 
 ---
 
+## Want better answers? Use Claude (optional)
+
+By default, the app uses Gemini to answer questions. But if you have a **Claude Pro subscription**, you can use Claude instead for higher quality responses.
+
+### Setup Claude Code CLI
+
+1. Install it:
+```bash
+npm install -g @anthropic-ai/claude-code
+```
+
+2. Log in (opens browser):
+```bash
+claude login
+```
+
+That's it! The app will automatically detect Claude and use it for responses.
+
+> **Note**: Claude Code CLI requires a Claude Pro, Team, or Enterprise subscription. If you don't have one, Gemini works great too!
+
+---
+
 ## Troubleshooting
 
 **"npm not found" or "node not found"**
