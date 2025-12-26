@@ -138,7 +138,7 @@ claude login
 
 That's it! The app will automatically detect Claude and use it for responses.
 
-> **Note**: Claude Code CLI requires a Claude Pro, Team, or Enterprise subscription. If you don't have one, Gemini works great too!
+> **Note**: Claude Code CLI requires a Claude Pro, Max, Team, or Enterprise subscription. If you don't have one, Gemini works great too!
 
 ---
 
