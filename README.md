@@ -1,368 +1,181 @@
 # Claude RAG
 
-A context retrieval library for Claude Code CLI that leverages your existing Claude subscription - no Anthropic API key required.
+**Chat with your documents using AI.** Upload PDFs, Word docs, or text files and ask questions about them.
 
-## Overview
+---
 
-This system provides semantic search over your documents using Google Gemini embeddings, then uses **Claude Code CLI** (your existing subscription) to generate responses. This means you get Claude Opus 4.5 quality responses without paying per-token API costs.
+## What is this?
 
-**Key Benefits:**
-- **Zero Claude API costs** - Uses your Claude Pro/Team subscription via Claude Code CLI
-- **High-quality embeddings** - Google Gemini embeddings for accurate retrieval
-- **Local vector storage** - LanceDB for fast, efficient similarity search
-- **Gemini fallback** - Can use Gemini for responses if Claude Code CLI unavailable
-
-## Architecture
+You have documents. You want to ask questions about them. This app lets you do that.
 
 ```
-┌─────────────┐     ┌──────────────┐     ┌─────────────┐
-│   Query     │────▶│   Gemini     │────▶│  LanceDB    │
-│             │     │  Embeddings  │     │  Vector DB  │
-└─────────────┘     └──────────────┘     └─────────────┘
-                                               │
-                   ┌───────────────────────────┘
-                   │
-                   ▼
-       ┌───────────────────────┐
-       │  Retrieved Chunks     │
-       │  (Relevant Context)   │
-       └───────────────────────┘
-                   │
-      ┌────────────┴────────────┐
-      │                         │
-      ▼                         ▼
-┌─────────────────┐     ┌─────────────────┐
-│  Claude Code    │     │    Gemini       │
-│  CLI (Default)  │     │   (Fallback)    │
-│                 │     │                 │
-│  Your existing  │     │  RAG_RESPONDER  │
-│  subscription   │     │  =gemini        │
-└─────────────────┘     └─────────────────┘
-          │                     │
-          └──────────┬──────────┘
-                     │
-                     ▼
-           ┌─────────────────┐
-           │  Final Answer   │
-           └─────────────────┘
+You: "What does the contract say about payment terms?"
+App: "According to section 4.2, payment is due within 30 days..."
 ```
 
-### How It Works
+It runs on your computer. Your files stay private.
 
-1. **Embedding**: Your query is embedded using Google Gemini's embedding model
-2. **Retrieval**: LanceDB finds the most similar document chunks
-3. **Response Generation**:
-   - **Claude Mode (default)**: Spawns Claude Code CLI with the query + retrieved context
-   - **Gemini Mode (fallback)**: Uses Gemini API for response generation
+---
 
-## Prerequisites
+## Get Started (3 steps)
 
-### Required
-- **Node.js** 18+
-- **Google AI API key** - For embeddings (free tier available)
-  - Get one at https://aistudio.google.com/apikey
+### Step 1: Install
 
-### Recommended (for Claude responses)
-- **Claude Code CLI** installed and authenticated
-  - Install: `npm install -g @anthropic-ai/claude-code`
-  - Authenticate: `claude login`
-  - Requires Claude Pro, Team, or Enterprise subscription
-
-### Alternative (Gemini fallback)
-- Same Google AI API key works for both embeddings and responses
-
-## Quick Start
+Open your terminal (Command Prompt on Windows, Terminal on Mac) and run:
 
 ```bash
-# One-liner setup (recommended)
-npx degit creativeprofit22/Claude-RAG my-rag-app && cd my-rag-app && npm install
-
-# Or clone manually
-git clone https://github.com/creativeprofit22/Claude-RAG.git my-rag-app
+npx degit creativeprofit22/Claude-RAG my-rag-app
 cd my-rag-app
-rm -rf .git  # Fresh start
 npm install
 ```
 
-Then:
-1. Copy `.env.example` to `.env` and add your `GEMINI_API_KEY`
-2. Run `npm run dev` to start the server
-3. Open http://localhost:3000 for the demo
+### Step 2: Add your API key
 
-## Installation (as library)
+You need a free Google AI key to make it work.
 
-```bash
-npm install claude-rag
-```
+1. Go to https://aistudio.google.com/apikey
+2. Click "Create API Key"
+3. Copy the key (starts with `AIza...`)
 
-## Environment Variables
-
-Create a `.env` file or export these environment variables:
+Now create a file called `.env` in your project folder:
 
 ```bash
-# Required: Google AI API key for embeddings (and optionally responses)
-# Get one at https://aistudio.google.com/apikey
-export GOOGLE_AI_API_KEY="your-google-ai-api-key"
-
-# Optional: Response provider (default: claude)
-# - "claude": Use Claude Code CLI (requires subscription + CLI installed)
-# - "gemini": Use Gemini API (uses same GOOGLE_AI_API_KEY)
-export RAG_RESPONDER="claude"
-
-# Optional: Custom Gemini embedding model (default: gemini-embedding-001)
-export GEMINI_EMBEDDING_MODEL="gemini-embedding-001"
-
-# Optional: Embedding output dimensionality (default: 1024)
-# Supported: 256, 512, 768, 1024, 1536, 3072
-export GEMINI_EMBEDDING_DIM="1024"
-
-# Optional: Custom database path (default: ./data/vectors)
-export RAG_DB_PATH="./data/vectors"
+GOOGLE_AI_API_KEY=paste-your-key-here
 ```
 
-## Usage
-
-### CLI
-
-The CLI provides a simple interface for the RAG system:
+### Step 3: Run it
 
 ```bash
-# Add a document to the system
-npx tsx src/cli.ts add ./docs/readme.md
-
-# Query using Claude Code CLI (default)
-npx tsx src/cli.ts query "How do I configure authentication?"
-
-# Query using Gemini instead
-RAG_RESPONDER=gemini npx tsx src/cli.ts query "How do I configure authentication?"
-
-# Query with custom chunk count
-npx tsx src/cli.ts query "What are the main features?" --topK 10
-
-# List all documents
-npx tsx src/cli.ts list
-
-# Delete a document
-npx tsx src/cli.ts delete doc_1234567890
-
-# Check system status
-npx tsx src/cli.ts status
-
-# Enable verbose logging
-npx tsx src/cli.ts query "How does X work?" --verbose
+npm run dev
 ```
 
-### Programmatic API
+Open your browser to **http://localhost:3000**
 
-```typescript
-import { query, addDocument, listDocuments, deleteDocument } from 'claude-rag';
+That's it! Upload documents and start chatting.
 
-// Add a document
-const result = await addDocument(
-  "Your document text here...",
-  { name: "document.txt", source: "/path/to/document.txt" }
-);
-console.log(`Added ${result.chunks} chunks with ID: ${result.documentId}`);
+---
 
-// Query with Claude Code CLI (default)
-const response = await query("What is this about?");
-console.log(response.answer);
+## Options
 
-// Query with Gemini fallback
-const geminiResponse = await query("Explain the architecture", {
-  responder: 'gemini'
-});
-console.log(geminiResponse.answer);
-
-// Query with custom settings
-const customResponse = await query("What are the key features?", {
-  topK: 10,
-  documentId: "specific-doc-id"
-});
-
-// List documents
-const docs = await listDocuments();
-
-// Delete a document
-await deleteDocument("doc_1234567890");
-```
-
-### Query Options
-
-```typescript
-interface QueryOptions {
-  topK?: number;          // Number of chunks to retrieve (default: 5)
-  documentId?: string;    // Filter to specific document
-  responder?: 'claude' | 'gemini';  // Response provider (default: claude)
-  stream?: boolean;       // Enable streaming response
-  systemPrompt?: string;  // Custom system prompt
-}
-```
-
-## React Components
-
-Drop-in chat UI for any React project:
+Put these in your `.env` file if needed:
 
 ```bash
-npm install claude-rag
+# Your API key (required)
+GOOGLE_AI_API_KEY=AIza...
+
+# Change the port (optional, default is 3000)
+PORT=8080
 ```
 
-### Quick Start
+---
+
+## Need a different port?
+
+If port 3000 is already in use:
+
+```bash
+PORT=8080 npm run dev
+```
+
+Now open **http://localhost:8080** instead.
+
+---
+
+## What files can I upload?
+
+- PDF files
+- Word documents (.docx)
+- Text files (.txt)
+- Excel spreadsheets (.xlsx, .csv)
+
+---
+
+## How it works (simple version)
+
+1. You upload a document
+2. The app breaks it into small pieces
+3. When you ask a question, it finds the relevant pieces
+4. AI reads those pieces and answers your question
+
+---
+
+## Troubleshooting
+
+**"npm not found"**
+→ Install Node.js first: https://nodejs.org (download the LTS version)
+
+**"Port 3000 already in use"**
+→ Use a different port: `PORT=8080 npm run dev`
+
+**"Invalid API key"**
+→ Make sure you copied the full key starting with `AIza`
+
+**App won't start**
+→ Make sure you created the `.env` file with your API key
+
+---
+
+## For Developers
+
+<details>
+<summary>Click to expand technical details</summary>
+
+### Architecture
+
+```
+Query → Gemini Embeddings → LanceDB → Relevant Chunks → Claude/Gemini → Response
+```
+
+### Tech Stack
+
+- **Embeddings**: Google Gemini
+- **Vector DB**: LanceDB (local)
+- **Responses**: Claude Code CLI (your subscription) or Gemini (fallback)
+- **Server**: Bun
+- **UI**: React
+
+### Environment Variables
+
+```bash
+GOOGLE_AI_API_KEY=xxx        # Required - for embeddings
+PORT=3000                    # Optional - server port
+RAG_DB_PATH=./data/vectors   # Optional - database location
+GEMINI_EMBEDDING_DIM=1024    # Optional - embedding dimensions
+```
+
+### React Components
 
 ```tsx
 import { RAGChat } from 'claude-rag/react';
 import 'claude-rag/react/styles.css';
 
-function App() {
-  return (
-    <div style={{ height: '600px' }}>
-      <RAGChat
-        endpoint="http://localhost:3000/api/rag/query"
-        title="Document Assistant"
-        accentColor="#6366f1"
-      />
-    </div>
-  );
-}
+<RAGChat endpoint="/api/rag/query" />
 ```
 
-### RAGChat Props
+### API Endpoints
 
-| Prop | Type | Default | Description |
-|------|------|---------|-------------|
-| `endpoint` | `string` | `/api/rag/query` | API endpoint URL |
-| `title` | `string` | `RAG Assistant` | Header title |
-| `placeholder` | `string` | `Ask a question...` | Input placeholder |
-| `accentColor` | `string` | `#6366f1` | Theme color (hex) |
-| `showSources` | `boolean` | `true` | Show source citations |
-| `systemPrompt` | `string` | - | Custom system prompt |
-| `topK` | `number` | - | Number of chunks to retrieve |
-| `documentId` | `string` | - | Filter to specific document |
-| `headers` | `Record<string, string>` | - | Custom API headers |
+| Endpoint | Method | Description |
+|----------|--------|-------------|
+| `/api/rag/query` | POST | Ask a question |
+| `/api/rag/upload` | POST | Upload a document |
+| `/api/rag/documents` | GET | List all documents |
+| `/api/rag/documents/:id` | DELETE | Delete a document |
+| `/api/responders` | GET | Check available AI responders |
 
-### Custom Implementation
-
-Use the hook for full control:
-
-```tsx
-import { useRAGChat, MessageBubble, ChatInput } from 'claude-rag/react';
-
-function CustomChat() {
-  const { messages, isTyping, sendMessage, clearChat } = useRAGChat({
-    endpoint: '/api/rag/query',
-  });
-
-  return (
-    <div>
-      {messages.map(msg => (
-        <MessageBubble key={msg.id} message={msg} />
-      ))}
-      <ChatInput onSendMessage={sendMessage} disabled={isTyping} />
-    </div>
-  );
-}
-```
-
-### Exported Components
-
-| Component | Description |
-|-----------|-------------|
-| `RAGChat` | Complete drop-in chat interface |
-| `ChatHeader` | Header with title and clear button |
-| `ChatInput` | Input field with send button |
-| `MessageBubble` | Message display with sources |
-| `TypingIndicator` | Animated typing dots |
-| `useRAGChat` | Hook for custom implementations |
-
-## Project Structure
-
-```
-claude-rag/
-├── src/
-│   ├── index.ts           # Main entry point and query function
-│   ├── embeddings.ts      # Google Gemini embedding generation
-│   ├── database.ts        # LanceDB vector storage
-│   ├── responder.ts       # Claude CLI response generation
-│   ├── responder-gemini.ts # Gemini fallback response generation
-│   ├── server.ts          # Bun HTTP server
-│   ├── cli.ts             # Command-line interface
-│   ├── config.ts          # Configuration and defaults
-│   ├── types.ts           # TypeScript type definitions
-│   ├── react/             # React UI components
-│   │   ├── index.ts       # React exports
-│   │   ├── RAGChat.tsx    # Drop-in chat component
-│   │   ├── styles.css     # Standalone styles
-│   │   ├── types.ts       # React-specific types
-│   │   ├── components/    # Individual UI components
-│   │   └── hooks/         # React hooks
-│   └── utils/
-│       └── logger.ts      # Logging utility
-├── data/
-│   └── vectors/           # LanceDB storage (gitignored)
-├── package.json
-├── tsconfig.json
-└── README.md
-```
-
-## Cost Breakdown
-
-| Component | Cost | Notes |
-|-----------|------|-------|
-| **Embeddings** | Free tier / Low cost | Google AI free tier: 1,500 requests/day |
-| **Vector Storage** | Free | LanceDB is local, no cloud costs |
-| **Claude Responses** | $0 (subscription) | Uses Claude Code CLI with your existing subscription |
-| **Gemini Responses** | Free tier / Low cost | Fallback option, uses same API key |
-
-**This design maximizes your existing Claude subscription value** - you're already paying for Claude Pro/Team, so why pay per-token API costs too?
-
-## Default Settings
-
-| Setting | Default Value | Description |
-|---------|---------------|-------------|
-| Top K | 5 | Number of chunks to retrieve |
-| Chunk Size | 100 words | Size of document chunks |
-| Chunk Overlap | 20 words | Overlap between chunks |
-| Responder | claude | Claude Code CLI (or gemini fallback) |
-
-## Response Format
+### Programmatic Usage
 
 ```typescript
-interface QueryResult {
-  answer: string;              // The generated response
-  sources: Source[];           // Referenced document chunks
-  responder: 'claude' | 'gemini';  // Which responder was used
-  timing: {
-    embedding: number;         // Embedding generation time (ms)
-    search: number;            // Vector search time (ms)
-    response: number;          // Response generation time (ms)
-    total: number;             // Total processing time (ms)
-  };
-}
+import { query, addDocument } from 'claude-rag';
+
+await addDocument("Your text here", { name: "doc.txt" });
+const result = await query("What is this about?");
+console.log(result.answer);
 ```
 
-## Troubleshooting
+</details>
 
-### Claude Code CLI not found
-```bash
-# Install globally
-npm install -g @anthropic-ai/claude-code
-
-# Authenticate
-claude login
-```
-
-### Fallback to Gemini automatically
-If Claude Code CLI fails or isn't installed, set the fallback:
-```bash
-export RAG_RESPONDER="gemini"
-```
-
-### Embedding errors
-Ensure your Google AI API key is valid:
-```bash
-curl "https://generativelanguage.googleapis.com/v1/models?key=$GOOGLE_AI_API_KEY"
-```
+---
 
 ## License
 
-MIT
+MIT - do whatever you want with it.
