@@ -25,7 +25,7 @@ function isAcceptableFile(file: File): boolean {
 
 export function FileDropZone({
   onFilesSelected,
-  accept = SUPPORTED_EXTENSIONS.join(','),
+  accept = [...SUPPORTED_EXTENSIONS, ...SUPPORTED_MIME_TYPES].join(','),
   multiple = true,
   disabled = false,
   className = '',
@@ -62,7 +62,7 @@ export function FileDropZone({
     const invalidCount = files.length - validFiles.length;
 
     if (invalidCount > 0) {
-      setError(`${invalidCount} file(s) skipped. Supported: PDF, DOCX, TXT, MD, HTML`);
+      setError(`${invalidCount} file(s) skipped. Supported: PDF, DOCX, TXT, MD, HTML, XLSX, XLS, CSV`);
     } else {
       setError(null);
     }
@@ -142,7 +142,7 @@ export function FileDropZone({
             {isDragging ? 'Drop files here' : 'Drop files here or click to select'}
           </span>
           <span className="rag-upload-dropzone-subtitle">
-            PDF, DOCX, TXT, MD, HTML supported
+            PDF, DOCX, Excel, CSV, TXT, MD, HTML
           </span>
         </div>
       </div>

@@ -113,19 +113,51 @@ window.uploadFiles = async function() {
     uploadStatus.textContent = `Uploading ${i + 1}/${selectedFiles.length}: ${file.name}`;
 
     try {
-      const text = await file.text();
-      const res = await fetch(`${API_BASE}/api/rag/upload`, {
+      // Use FormData for binary file support (PDF, XLSX, DOCX, etc.)
+      const formData = new FormData();
+      formData.append('file', file);
+      formData.append('name', file.name);
+
+      const res = await fetch(`${API_BASE}/api/rag/upload/stream`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ text, name: file.name })
+        body: formData
       });
 
-      if (res.ok) {
+      if (!res.ok) {
+        errorCount++;
+        continue;
+      }
+
+      // Read SSE stream for progress (simplified - just wait for completion)
+      const reader = res.body.getReader();
+      const decoder = new TextDecoder();
+      let buffer = '';
+      let uploadSucceeded = false;
+
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+
+        buffer += decoder.decode(value, { stream: true });
+        const lines = buffer.split('\n');
+        buffer = lines.pop() || '';
+
+        for (const line of lines) {
+          if (line.startsWith('event: complete')) {
+            uploadSucceeded = true;
+          } else if (line.startsWith('event: error')) {
+            uploadSucceeded = false;
+          }
+        }
+      }
+
+      if (uploadSucceeded) {
         successCount++;
       } else {
         errorCount++;
       }
     } catch (err) {
+      console.error('Upload error:', err);
       errorCount++;
     }
   }

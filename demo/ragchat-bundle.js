@@ -1819,7 +1819,7 @@ var RAGBundle = (() => {
   }
   function FileDropZone({
     onFilesSelected,
-    accept = SUPPORTED_EXTENSIONS.join(","),
+    accept = [...SUPPORTED_EXTENSIONS, ...SUPPORTED_MIME_TYPES].join(","),
     multiple = true,
     disabled = false,
     className = ""
@@ -1850,7 +1850,7 @@ var RAGBundle = (() => {
       const validFiles = files.filter(isAcceptableFile);
       const invalidCount = files.length - validFiles.length;
       if (invalidCount > 0) {
-        setError(`${invalidCount} file(s) skipped. Supported: PDF, DOCX, TXT, MD, HTML`);
+        setError(`${invalidCount} file(s) skipped. Supported: PDF, DOCX, TXT, MD, HTML, XLSX, XLS, CSV`);
       } else {
         setError(null);
       }
@@ -1917,7 +1917,7 @@ var RAGBundle = (() => {
             /* @__PURE__ */ jsx("div", { className: `rag-upload-dropzone-icon ${isDragging ? "active" : ""}`, children: isDragging ? /* @__PURE__ */ jsx(FileText, { size: 32 }) : /* @__PURE__ */ jsx(Upload, { size: 32 }) }),
             /* @__PURE__ */ jsxs("div", { className: "rag-upload-dropzone-text", children: [
               /* @__PURE__ */ jsx("span", { className: "rag-upload-dropzone-title", children: isDragging ? "Drop files here" : "Drop files here or click to select" }),
-              /* @__PURE__ */ jsx("span", { className: "rag-upload-dropzone-subtitle", children: "PDF, DOCX, TXT, MD, HTML supported" })
+              /* @__PURE__ */ jsx("span", { className: "rag-upload-dropzone-subtitle", children: "PDF, DOCX, Excel, CSV, TXT, MD, HTML" })
             ] })
           ] }),
           error && /* @__PURE__ */ jsxs("div", { className: "rag-upload-dropzone-error", children: [
