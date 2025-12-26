@@ -21,7 +21,14 @@ It runs on your computer. Your files stay private.
 
 ### Step 1: Install
 
-Open your terminal (Command Prompt on Windows, Terminal on Mac) and run:
+First, you need **Node.js** installed. Download it from https://nodejs.org (pick the LTS version).
+
+Then open your terminal:
+- **Windows**: Press `Win + R`, type `cmd`, press Enter
+- **Mac**: Press `Cmd + Space`, type `Terminal`, press Enter
+- **Linux/WSL**: Open your terminal app
+
+Run these commands:
 
 ```bash
 npx degit creativeprofit22/Claude-RAG my-rag-app
@@ -64,20 +71,24 @@ Put these in your `.env` file if needed:
 GOOGLE_AI_API_KEY=AIza...
 
 # Change the port (optional, default is 3000)
-PORT=8080
+# Pick any number you want: 3000, 4000, 8080, 9000, etc.
+PORT=3000
 ```
 
 ---
 
 ## Need a different port?
 
-If port 3000 is already in use:
+If port 3000 is busy, pick any other number you like:
 
 ```bash
+# Examples - use whichever port you want
+PORT=4000 npm run dev
 PORT=8080 npm run dev
+PORT=9000 npm run dev
 ```
 
-Now open **http://localhost:8080** instead.
+Then open `http://localhost:YOUR_NUMBER` in your browser.
 
 ---
 
@@ -101,17 +112,24 @@ Now open **http://localhost:8080** instead.
 
 ## Troubleshooting
 
-**"npm not found"**
+**"npm not found" or "node not found"**
 → Install Node.js first: https://nodejs.org (download the LTS version)
+→ After installing, close and reopen your terminal
 
 **"Port 3000 already in use"**
-→ Use a different port: `PORT=8080 npm run dev`
+→ Something else is using that port. Pick a different number:
+→ `PORT=4000 npm run dev` (or any number you like)
 
 **"Invalid API key"**
 → Make sure you copied the full key starting with `AIza`
+→ Check there are no extra spaces before or after the key
 
 **App won't start**
-→ Make sure you created the `.env` file with your API key
+→ Make sure you created the `.env` file in the project folder
+→ Make sure it has `GOOGLE_AI_API_KEY=your-key-here`
+
+**"Permission denied" (Linux/Mac)**
+→ Try: `sudo npm install`
 
 ---
 
