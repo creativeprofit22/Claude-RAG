@@ -36,7 +36,7 @@ cd my-rag-app
 npm install
 ```
 
-### Step 2: Add your API key
+### Step 2: Get your API key
 
 You need a free Google AI key to make it work.
 
@@ -44,8 +44,15 @@ You need a free Google AI key to make it work.
 2. Click "Create API Key"
 3. Copy the key (starts with `AIza...`)
 
-Now create a file called `.env` in your project folder:
+You can add it **two ways**:
 
+**Option A: In the app (easiest)**
+- Just run the app (Step 3)
+- Click the Settings gear icon
+- Paste your key there
+
+**Option B: In a file**
+- Create a file called `.env` in your project folder:
 ```bash
 GOOGLE_AI_API_KEY=paste-your-key-here
 ```
