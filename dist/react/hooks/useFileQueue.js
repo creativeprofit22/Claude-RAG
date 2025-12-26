@@ -1,0 +1,171 @@
+/**
+ * Hook for managing a queue of files for upload
+ */
+import { useState, useCallback, useRef } from 'react';
+import { useUploadStream } from './useUploadStream.js';
+const generateId = () => `file_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
+const INITIAL_PROGRESS = { stage: 'idle', percent: 0 };
+/**
+ * Update file state to completed status
+ */
+function markFileComplete(files, fileId, result) {
+    return files.map((f) => f.id === fileId
+        ? {
+            ...f,
+            status: 'complete',
+            progress: { stage: 'complete', percent: 100 },
+            result,
+        }
+        : f);
+}
+/**
+ * Update file state to error status
+ */
+function markFileError(files, fileId, errorMessage) {
+    return files.map((f) => f.id === fileId
+        ? {
+            ...f,
+            status: 'error',
+            progress: { stage: 'error', percent: 0 },
+            error: errorMessage,
+        }
+        : f);
+}
+/**
+ * Hook for managing a queue of files to upload sequentially
+ */
+export function useFileQueue(options = {}) {
+    const { endpoint, headers, onFileComplete, onAllComplete, onError, } = options;
+    const [files, setFiles] = useState([]);
+    const [isUploading, setIsUploading] = useState(false);
+    const cancelRef = useRef(false);
+    const currentFileIdRef = useRef(null);
+    const lastErrorRef = useRef(null);
+    // Ref to get current files state to avoid stale closure in startUpload
+    const filesRef = useRef(files);
+    filesRef.current = files;
+    const { upload, cancel } = useUploadStream({
+        endpoint,
+        headers,
+        onProgress: (progress) => {
+            const fileId = currentFileIdRef.current;
+            if (fileId) {
+                setFiles((prev) => prev.map((f) => (f.id === fileId ? { ...f, progress } : f)));
+            }
+        },
+        onError: (error) => {
+            lastErrorRef.current = error;
+        },
+        onWarning: (message) => {
+            const fileId = currentFileIdRef.current;
+            if (fileId) {
+                setFiles((prev) => prev.map((f) => (f.id === fileId ? { ...f, warning: message } : f)));
+            }
+        },
+    });
+    // Add files to the queue (skips duplicates by name)
+    const addFiles = useCallback((newFiles) => {
+        setFiles((prev) => {
+            const existingNames = new Set(prev.map((f) => f.name));
+            const uniqueFiles = newFiles.filter((file) => !existingNames.has(file.name));
+            if (uniqueFiles.length === 0)
+                return prev;
+            const queuedFiles = uniqueFiles.map((file) => ({
+                id: generateId(),
+                file,
+                name: file.name,
+                status: 'queued',
+                progress: INITIAL_PROGRESS,
+                // Preview generated lazily when needed to avoid memory overhead
+            }));
+            return [...prev, ...queuedFiles];
+        });
+    }, []);
+    // Remove a file from the queue
+    const removeFile = useCallback((id) => {
+        setFiles((prev) => prev.filter((f) => f.id !== id));
+    }, []);
+    // Update file name (preserves original extension if new name lacks one)
+    const updateFileName = useCallback((id, name) => {
+        setFiles((prev) => prev.map((f) => {
+            if (f.id !== id)
+                return f;
+            // Preserve original extension if new name doesn't have one
+            const originalExt = f.file.name.includes('.') ? f.file.name.slice(f.file.name.lastIndexOf('.')) : '';
+            const newHasExt = name.includes('.');
+            const finalName = newHasExt ? name : name + originalExt;
+            return { ...f, name: finalName };
+        }));
+    }, []);
+    // Clear completed files
+    const clearCompleted = useCallback(() => {
+        setFiles((prev) => prev.filter((f) => f.status !== 'complete'));
+    }, []);
+    // Clear all files
+    const clearAll = useCallback(() => {
+        if (!isUploading) {
+            setFiles([]);
+        }
+    }, [isUploading]);
+    // Start uploading files sequentially
+    const startUpload = useCallback(async (uploadOptions) => {
+        setIsUploading(true);
+        cancelRef.current = false;
+        const results = [];
+        // Use ref to get current files state, avoiding stale closure
+        const pendingFiles = filesRef.current.filter((f) => f.status === 'queued');
+        for (const queuedFile of pendingFiles) {
+            if (cancelRef.current)
+                break;
+            // Track current file for progress/error callbacks
+            currentFileIdRef.current = queuedFile.id;
+            lastErrorRef.current = null;
+            // Mark file as uploading
+            setFiles((prev) => prev.map((f) => f.id === queuedFile.id
+                ? { ...f, status: 'uploading', progress: { stage: 'reading', percent: 0 } }
+                : f));
+            // Upload the file
+            const result = await upload(queuedFile.file, {
+                name: queuedFile.name,
+                ...uploadOptions,
+            });
+            if (result) {
+                // Success
+                results.push(result);
+                setFiles((prev) => markFileComplete(prev, queuedFile.id, result));
+                onFileComplete?.({ ...queuedFile, status: 'complete', result }, result);
+            }
+            else {
+                // Error or cancelled - use actual error message
+                const errorMessage = lastErrorRef.current || 'Upload failed';
+                setFiles((prev) => markFileError(prev, queuedFile.id, errorMessage));
+                onError?.({ ...queuedFile, status: 'error', error: errorMessage }, errorMessage);
+            }
+            currentFileIdRef.current = null;
+        }
+        setIsUploading(false);
+        if (results.length > 0) {
+            onAllComplete?.(results);
+        }
+    }, [upload, onFileComplete, onAllComplete, onError]);
+    // Cancel current upload
+    const cancelUpload = useCallback(() => {
+        cancelRef.current = true;
+        cancel();
+    }, [cancel]);
+    return {
+        files,
+        addFiles,
+        removeFile,
+        updateFileName,
+        clearCompleted,
+        clearAll,
+        startUpload,
+        cancelUpload,
+        isUploading,
+        hasFiles: files.length > 0,
+        completedCount: files.filter((f) => f.status === 'complete').length,
+        errorCount: files.filter((f) => f.status === 'error').length,
+    };
+}
+//# sourceMappingURL=useFileQueue.js.map

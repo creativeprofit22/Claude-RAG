@@ -1,0 +1,237 @@
+import { spawn } from 'child_process';
+import { checkClaudeCodeAvailable } from './utils/cli.js';
+import { DEFAULT_SYSTEM_PROMPT } from './constants.js';
+import { classifyCliError, cliNotFoundError } from './utils/responder-errors.js';
+/** Default timeout for Claude CLI subprocess (2 minutes) */
+const CLI_TIMEOUT_MS = Number(process.env.CLAUDE_CLI_TIMEOUT_MS) || 120_000;
+/**
+ * Grace period before SIGKILL after SIGTERM (5 seconds).
+ * Allows process to clean up resources gracefully before forced termination.
+ * If SIGTERM doesn't stop the process within this window, SIGKILL is sent.
+ */
+const FORCE_KILL_DELAY_MS = 5000;
+/**
+ * Spawn Claude CLI process with stdin prompt and timeout
+ */
+function spawnClaudeProcess(prompt, timeoutMs = CLI_TIMEOUT_MS) {
+    const claudeProcess = spawn('claude', ['--print'], {
+        stdio: ['pipe', 'pipe', 'pipe'],
+        env: { ...process.env }
+    });
+    claudeProcess.stdin.write(prompt);
+    claudeProcess.stdin.end();
+    // Set up timeout to prevent hanging processes
+    const timeoutId = setTimeout(() => {
+        claudeProcess.kill('SIGTERM');
+        // Force kill if SIGTERM doesn't work within grace period
+        setTimeout(() => {
+            if (!claudeProcess.killed) {
+                claudeProcess.kill('SIGKILL');
+            }
+        }, FORCE_KILL_DELAY_MS);
+    }, timeoutMs);
+    const cleanup = () => {
+        clearTimeout(timeoutId);
+    };
+    return { process: claudeProcess, cleanup };
+}
+/**
+ * Build the full prompt for Claude Code CLI
+ */
+function buildPrompt(query, context, systemPrompt) {
+    return `${systemPrompt}
+
+Context (pre-filtered for relevance):
+${context}
+
+Question: ${query}
+
+Please provide a comprehensive answer based on the context above.`;
+}
+/**
+ * Estimate token counts based on text length.
+ * Claude Code CLI doesn't provide token usage, so we estimate.
+ *
+ * Note: This is a rough approximation. Actual tokenization varies:
+ * - English prose: ~3.5-4 chars/token
+ * - Code: ~2.5-3 chars/token (more symbols)
+ * - Non-ASCII text: typically fewer chars/token
+ *
+ * Using 4 chars/token as conservative estimate for English text.
+ */
+function estimateTokens(text) {
+    return Math.ceil(text.length / 4);
+}
+/**
+ * Generate a response using Claude Code CLI based on pre-filtered context.
+ */
+export async function generateResponse(query, context, sources, options = {}) {
+    const { systemPrompt = DEFAULT_SYSTEM_PROMPT } = options;
+    // Check if Claude Code is available
+    const isAvailable = await checkClaudeCodeAvailable();
+    if (!isAvailable) {
+        throw cliNotFoundError();
+    }
+    const fullPrompt = buildPrompt(query, context, systemPrompt);
+    return new Promise((resolve, reject) => {
+        const { process: claudeProcess, cleanup } = spawnClaudeProcess(fullPrompt);
+        let stdout = '';
+        let stderr = '';
+        let timedOut = false;
+        claudeProcess.stdout.on('data', (data) => {
+            stdout += data.toString();
+        });
+        claudeProcess.stderr.on('data', (data) => {
+            stderr += data.toString();
+        });
+        claudeProcess.on('close', (code, signal) => {
+            cleanup();
+            // Check if process was killed due to timeout
+            if (signal === 'SIGTERM' || signal === 'SIGKILL') {
+                timedOut = true;
+                reject(new Error('Claude CLI timed out. The request may be too complex or the CLI is unresponsive.'));
+                return;
+            }
+            if (code !== 0) {
+                // Sanitize stderr to avoid leaking internal details to users
+                const sanitizedError = sanitizeStderr(stderr);
+                reject(classifyCliError(sanitizedError, stdout, code));
+                return;
+            }
+            resolve({
+                answer: stdout.trim(),
+                sources,
+                tokensUsed: {
+                    input: estimateTokens(fullPrompt),
+                    output: estimateTokens(stdout)
+                }
+            });
+        });
+        claudeProcess.on('error', (error) => {
+            cleanup();
+            if (error.code === 'ENOENT') {
+                reject(cliNotFoundError());
+                return;
+            }
+            reject(classifyCliError(error.message, '', 1));
+        });
+    });
+}
+/**
+ * Sanitize stderr to avoid leaking internal details (paths, stack traces, etc.)
+ */
+function sanitizeStderr(stderr) {
+    // Remove file paths that might reveal server structure
+    let sanitized = stderr.replace(/\/[^\s:]+\.(ts|js|json)/g, '[path]');
+    // Remove stack traces
+    sanitized = sanitized.replace(/\s+at\s+.+\(.*\)/g, '');
+    // Truncate if too long
+    if (sanitized.length > 500) {
+        sanitized = sanitized.slice(0, 500) + '... [truncated]';
+    }
+    return sanitized.trim() || 'CLI error';
+}
+/**
+ * Wait for either a chunk or process completion
+ */
+function waitForChunk(state) {
+    return new Promise((resolve) => {
+        if (state.chunkQueue.length > 0 || state.processComplete) {
+            resolve();
+            return;
+        }
+        state.resolveWait = resolve;
+    });
+}
+/**
+ * Set up event handlers for streaming Claude process
+ */
+function setupStreamHandlers(claudeProcess, cleanup, state, fullAnswer, resolve, reject) {
+    let stderr = '';
+    claudeProcess.stdout.on('data', (data) => {
+        const chunk = data.toString();
+        fullAnswer.value += chunk;
+        state.chunkQueue.push(chunk);
+        const waitResolve = state.resolveWait;
+        state.resolveWait = null;
+        waitResolve?.();
+    });
+    claudeProcess.stderr.on('data', (data) => {
+        stderr += data.toString();
+    });
+    claudeProcess.on('close', (code, signal) => {
+        cleanup();
+        state.processComplete = true;
+        const waitResolve = state.resolveWait;
+        state.resolveWait = null;
+        waitResolve?.();
+        // Check if process was killed due to timeout
+        if (signal === 'SIGTERM' || signal === 'SIGKILL') {
+            reject(new Error('Claude CLI timed out. The request may be too complex or the CLI is unresponsive.'));
+            return;
+        }
+        if (code !== 0) {
+            const sanitizedError = sanitizeStderr(stderr);
+            reject(classifyCliError(sanitizedError, fullAnswer.value, code));
+            return;
+        }
+        resolve();
+    });
+    claudeProcess.on('error', (err) => {
+        cleanup();
+        state.processComplete = true;
+        const waitResolve = state.resolveWait;
+        state.resolveWait = null;
+        waitResolve?.();
+        if (err.code === 'ENOENT') {
+            reject(cliNotFoundError());
+        }
+        else {
+            reject(classifyCliError(err.message, '', 1));
+        }
+    });
+}
+/**
+ * Streaming version for real-time responses.
+ * Yields text chunks as they arrive from Claude Code CLI stdout,
+ * returns full RAGResponse at the end.
+ */
+export async function* streamResponse(query, context, sources, options = {}) {
+    const { systemPrompt = DEFAULT_SYSTEM_PROMPT } = options;
+    const isAvailable = await checkClaudeCodeAvailable();
+    if (!isAvailable) {
+        throw cliNotFoundError();
+    }
+    const fullPrompt = buildPrompt(query, context, systemPrompt);
+    const fullAnswer = { value: '' };
+    const state = {
+        chunkQueue: [],
+        processComplete: false,
+        resolveWait: null
+    };
+    const processPromise = new Promise((resolve, reject) => {
+        const { process: claudeProcess, cleanup } = spawnClaudeProcess(fullPrompt);
+        setupStreamHandlers(claudeProcess, cleanup, state, fullAnswer, resolve, reject);
+    });
+    try {
+        while (!state.processComplete || state.chunkQueue.length > 0) {
+            await waitForChunk(state);
+            while (state.chunkQueue.length > 0) {
+                yield state.chunkQueue.shift();
+            }
+        }
+        await processPromise;
+        return {
+            answer: fullAnswer.value.trim(),
+            sources,
+            tokensUsed: {
+                input: estimateTokens(fullPrompt),
+                output: estimateTokens(fullAnswer.value)
+            }
+        };
+    }
+    finally {
+        await processPromise.catch(() => { });
+    }
+}
+//# sourceMappingURL=responder.js.map

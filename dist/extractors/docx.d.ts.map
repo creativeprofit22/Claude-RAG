@@ -1,0 +1,1 @@
+{"version":3,"file":"docx.d.ts","sourceRoot":"","sources":["../../src/extractors/docx.ts"],"names":[],"mappings":"AAAA;;;GAGG;AAIH,MAAM,WAAW,oBAAoB;IACnC,IAAI,EAAE,MAAM,CAAC;IACb,IAAI,CAAC,EAAE,MAAM,CAAC;IACd,QAAQ,EAAE,MAAM,EAAE,CAAC;CACpB;AAED;;;;GAIG;AACH,wBAAsB,WAAW,CAAC,MAAM,EAAE,WAAW,GAAG,OAAO,CAAC,oBAAoB,CAAC,CAUpF"}

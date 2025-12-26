@@ -1,0 +1,49 @@
+/**
+ * Claude RAG - React Components
+ *
+ * Drop-in chat interface and components for Claude RAG.
+ *
+ * @example
+ * ```tsx
+ * import { RAGChat } from 'claude-rag/react';
+ * import 'claude-rag/react/styles.css';
+ *
+ * function App() {
+ *   return (
+ *     <div style={{ height: '600px' }}>
+ *       <RAGChat
+ *         endpoint="http://localhost:3000/api/rag/query"
+ *         title="Document Assistant"
+ *       />
+ *     </div>
+ *   );
+ * }
+ * ```
+ */
+export { RAGChat } from './RAGChat.js';
+export type { RAGChatProps } from './RAGChat.js';
+export { RAGInterface } from './RAGInterface.js';
+export type { RAGInterfaceProps, RAGInterfaceView } from './RAGInterface.js';
+export { DocumentLibrary } from './components/documents/DocumentLibrary.js';
+export type { DocumentLibraryProps } from './components/documents/DocumentLibrary.js';
+export { ChatHeader } from './components/ChatHeader.js';
+export { ChatInput } from './components/ChatInput.js';
+export { MessageBubble } from './components/MessageBubble.js';
+export { TypingIndicator } from './components/TypingIndicator.js';
+export { CategoryBadge, CategoryFilter } from './components/categories/index.js';
+export type { CategoryBadgeProps, CategoryFilterProps } from './components/categories/index.js';
+export { UploadModal, FileDropZone, FileQueue, FilePreview, ProgressIndicator } from './components/upload/index.js';
+export type { UploadModalProps, FileDropZoneProps, FileQueueProps, FilePreviewProps, ProgressIndicatorProps } from './components/upload/index.js';
+export { AdminDashboard } from './components/admin/index.js';
+export type { AdminDashboardProps } from './components/admin/index.js';
+export { SettingsModal } from './components/settings/SettingsModal.js';
+export type { SettingsModalProps } from './components/settings/SettingsModal.js';
+export { ApiKeyConfigBar } from './components/settings/ApiKeyConfigBar.js';
+export type { ApiKeyConfigBarProps } from './components/settings/ApiKeyConfigBar.js';
+export { useRAGChat } from './hooks/useRAGChat.js';
+export { useDocuments } from './hooks/useDocuments.js';
+export { useCategories } from './hooks/useCategories.js';
+export { useUploadStream, useFileQueue, useApiKeyConfig } from './hooks/index.js';
+export type { UploadProgress, UploadResult, UploadOptions, UploadStage, QueuedFile, FileStatus } from './hooks/index.js';
+export type { ChatMessage, MessageSource, RAGQueryResponse, RAGChatConfig, RAGChatState, RAGChatActions, Category, DocumentSummary, DocumentDetails, DocumentLibraryState, AdminStats, AdminHealth, } from './types.js';
+//# sourceMappingURL=index.d.ts.map
