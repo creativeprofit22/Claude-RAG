@@ -101,6 +101,7 @@ Then open `http://localhost:YOUR_NUMBER` in your browser.
 
 ## What files can I upload?
 
+- MD files
 - PDF files
 - Word documents (.docx)
 - Text files (.txt)
