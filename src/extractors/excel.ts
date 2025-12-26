@@ -18,7 +18,13 @@ export interface ExcelExtractionResult {
  * @returns Extracted text with sheet metadata
  */
 export function extractExcel(buffer: ArrayBuffer): ExcelExtractionResult {
-  const workbook = XLSX.read(buffer, { type: 'array' });
+  let workbook: XLSX.WorkBook;
+  try {
+    workbook = XLSX.read(buffer, { type: 'array' });
+  } catch (err) {
+    const message = err instanceof Error ? err.message : 'Unknown error';
+    throw new Error(`Failed to parse spreadsheet: ${message}`);
+  }
 
   const sheetNames = workbook.SheetNames;
   const textParts: string[] = [];

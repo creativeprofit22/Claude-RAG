@@ -481,7 +481,7 @@ var RAGBundle = (() => {
     className = "",
     emptyState
   }) {
-    const messagesEndRef = useRef(null);
+    const messagesContainerRef = useRef(null);
     const {
       messages,
       isTyping,
@@ -500,9 +500,12 @@ var RAGBundle = (() => {
     useEffect(() => {
       const shouldScroll = messages.length > lastMessageCountRef.current || isTyping;
       lastMessageCountRef.current = messages.length;
-      if (shouldScroll && messagesEndRef.current) {
+      if (shouldScroll && messagesContainerRef.current) {
         requestAnimationFrame(() => {
-          messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+          const container = messagesContainerRef.current;
+          if (container) {
+            container.scrollTop = container.scrollHeight;
+          }
         });
       }
     }, [messages.length, isTyping]);
@@ -543,7 +546,7 @@ var RAGBundle = (() => {
           }
         )
       ] }),
-      /* @__PURE__ */ jsx("div", { className: "rag-chat-messages", children: messages.length === 0 ? emptyState || defaultEmptyState : /* @__PURE__ */ jsxs(Fragment2, { children: [
+      /* @__PURE__ */ jsx("div", { ref: messagesContainerRef, className: "rag-chat-messages", children: messages.length === 0 ? emptyState || defaultEmptyState : /* @__PURE__ */ jsxs(Fragment2, { children: [
         messages.map((message) => /* @__PURE__ */ jsx(
           MessageBubble,
           {
@@ -553,8 +556,7 @@ var RAGBundle = (() => {
           },
           message.id
         )),
-        isTyping && /* @__PURE__ */ jsx(TypingIndicator, { accentColor }),
-        /* @__PURE__ */ jsx("div", { ref: messagesEndRef })
+        isTyping && /* @__PURE__ */ jsx(TypingIndicator, { accentColor })
       ] }) }),
       /* @__PURE__ */ jsx(
         ChatInput,
@@ -1791,13 +1793,19 @@ var RAGBundle = (() => {
   }
 
   // src/shared/file-types.ts
-  var SUPPORTED_EXTENSIONS = [".pdf", ".docx", ".txt", ".md", ".html", ".htm"];
+  var SUPPORTED_EXTENSIONS = [".pdf", ".docx", ".txt", ".md", ".html", ".htm", ".xlsx", ".xls", ".csv"];
   var SUPPORTED_MIME_TYPES = [
     "application/pdf",
     "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
     "text/plain",
     "text/markdown",
-    "text/html"
+    "text/html",
+    "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+    // .xlsx
+    "application/vnd.ms-excel",
+    // .xls
+    "text/csv"
+    // .csv
   ];
 
   // src/react/components/upload/FileDropZone.tsx
