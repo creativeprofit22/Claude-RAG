@@ -5,6 +5,7 @@
 
 import { extractPDF, type PDFExtractionResult } from './pdf.js';
 import { extractDOCX, type DOCXExtractionResult } from './docx.js';
+import { extractExcel, extractCSV, type ExcelExtractionResult } from './excel.js';
 import { SUPPORTED_EXTENSIONS, SUPPORTED_MIME_TYPES, type SupportedMimeType } from '../shared/file-types.js';
 
 // Re-export for backwards compatibility
@@ -35,6 +36,12 @@ export function getMimeType(filename: string): SupportedMimeType | null {
     case 'html':
     case 'htm':
       return 'text/html';
+    case 'xlsx':
+      return 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet';
+    case 'xls':
+      return 'application/vnd.ms-excel';
+    case 'csv':
+      return 'text/csv';
     default:
       return null;
   }
@@ -158,11 +165,35 @@ export async function extractText(
       return { text };
     }
 
+    case 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet':
+    case 'application/vnd.ms-excel': {
+      const result = extractExcel(buffer);
+      return {
+        text: result.text,
+        metadata: {
+          sheetCount: result.sheetCount,
+          sheetNames: result.sheetNames,
+          rowCount: result.rowCount,
+        },
+      };
+    }
+
+    case 'text/csv': {
+      const result = extractCSV(buffer);
+      return {
+        text: result.text,
+        metadata: {
+          rowCount: result.rowCount,
+        },
+      };
+    }
+
     default:
-      throw new Error(`Unsupported file type: ${effectiveMimeType}. Supported types: PDF, DOCX, TXT, MD, HTML`);
+      throw new Error(`Unsupported file type: ${effectiveMimeType}. Supported types: PDF, DOCX, TXT, MD, HTML, XLSX, XLS, CSV`);
   }
 }
 
 // Re-export types
 export type { PDFExtractionResult } from './pdf.js';
 export type { DOCXExtractionResult } from './docx.js';
+export type { ExcelExtractionResult } from './excel.js';

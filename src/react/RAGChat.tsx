@@ -49,7 +49,7 @@ export function RAGChat({
   className = '',
   emptyState,
 }: RAGChatProps) {
-  const messagesEndRef = useRef<HTMLDivElement>(null);
+  const messagesContainerRef = useRef<HTMLDivElement>(null);
 
   const {
     messages,
@@ -77,10 +77,13 @@ export function RAGChat({
     const shouldScroll = messages.length > lastMessageCountRef.current || isTyping;
     lastMessageCountRef.current = messages.length;
 
-    if (shouldScroll && messagesEndRef.current) {
-      // Use requestAnimationFrame to batch scroll with render cycle
+    if (shouldScroll && messagesContainerRef.current) {
+      // Scroll container directly to avoid scrollIntoView affecting the whole page
       requestAnimationFrame(() => {
-        messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+        const container = messagesContainerRef.current;
+        if (container) {
+          container.scrollTop = container.scrollHeight;
+        }
       });
     }
   }, [messages.length, isTyping]);
@@ -128,7 +131,7 @@ export function RAGChat({
       )}
 
       {/* Messages Area */}
-      <div className="rag-chat-messages">
+      <div ref={messagesContainerRef} className="rag-chat-messages">
         {messages.length === 0 ? (
           emptyState || defaultEmptyState
         ) : (
@@ -142,7 +145,6 @@ export function RAGChat({
               />
             ))}
             {isTyping && <TypingIndicator accentColor={accentColor} />}
-            <div ref={messagesEndRef} />
           </>
         )}
       </div>

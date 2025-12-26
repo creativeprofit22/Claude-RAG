@@ -3,7 +3,7 @@
  * Used by both React components and server-side extractors
  */
 
-export const SUPPORTED_EXTENSIONS = ['.pdf', '.docx', '.txt', '.md', '.html', '.htm'] as const;
+export const SUPPORTED_EXTENSIONS = ['.pdf', '.docx', '.txt', '.md', '.html', '.htm', '.xlsx', '.xls', '.csv'] as const;
 
 export const SUPPORTED_MIME_TYPES = [
   'application/pdf',
@@ -11,6 +11,9 @@ export const SUPPORTED_MIME_TYPES = [
   'text/plain',
   'text/markdown',
   'text/html',
+  'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', // .xlsx
+  'application/vnd.ms-excel', // .xls
+  'text/csv', // .csv
 ] as const;
 
 export type SupportedExtension = typeof SUPPORTED_EXTENSIONS[number];
