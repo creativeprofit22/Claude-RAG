@@ -9,6 +9,7 @@ import { extractText, isSupported, getMimeType } from './extractors/index.js';
 import { checkGeminiReady } from './responder-gemini.js';
 import { logger } from './utils/logger.js';
 import { checkClaudeCodeAvailable } from './utils/cli.js';
+import { resetGeminiClient } from './utils/gemini-client.js';
 import { readFileSync, existsSync, realpathSync, statSync } from 'fs';
 import { join, extname, resolve, normalize } from 'path';
 import {
@@ -28,6 +29,10 @@ import {
 import type { AdminStats, AdminHealth } from './react/types.js';
 
 const PORT = process.env.PORT || 3000;
+
+// Google AI API key validation constants
+const GOOGLE_AI_KEY_PREFIX = 'AIza';
+const GOOGLE_AI_KEY_LENGTH = 39;
 
 // TTL-memoized checkClaudeCodeAvailable to avoid repeated subprocess spawns
 const CLAUDE_CHECK_TTL_MS = 30_000; // 30 seconds
@@ -285,6 +290,17 @@ const ROUTES: Record<string, RouteConfig> = {
     path: '/api/rag/admin/health',
     method: 'GET',
     description: 'Get system health status'
+  },
+  // Gemini API key configuration
+  geminiKeyConfig: {
+    path: '/api/rag/config/gemini-key',
+    method: 'POST',
+    description: 'Set Gemini API key'
+  },
+  geminiKeyStatus: {
+    path: '/api/rag/config/gemini-key/status',
+    method: 'GET',
+    description: 'Check if Gemini API key is configured'
   }
 };
 
@@ -328,6 +344,9 @@ const ROUTE_HANDLERS: Record<string, RouteHandler> = {
   [`GET:${ROUTES.adminDashboard.path}`]: () => handleAdminDashboard(),
   [`GET:${ROUTES.adminStats.path}`]: () => handleAdminStats(),
   [`GET:${ROUTES.adminHealth.path}`]: () => handleAdminHealth(),
+  // Gemini API key configuration handlers
+  [`POST:${ROUTES.geminiKeyConfig.path}`]: ({ req }) => handleSetGeminiKey(req),
+  [`GET:${ROUTES.geminiKeyStatus.path}`]: () => handleGeminiKeyStatus(),
 };
 
 /**
@@ -1250,6 +1269,52 @@ async function handleAdminDashboard(): Promise<Response> {
     logger.error('Admin dashboard failed:', { error: errorMessage });
     return errorResponse(`Failed to fetch admin dashboard: ${errorMessage}`, 500);
   }
+}
+
+// ============================================
+// Gemini API Key Configuration Handlers
+// ============================================
+
+/**
+ * POST /api/rag/config/gemini-key - Set Gemini API key
+ */
+async function handleSetGeminiKey(req: Request): Promise<Response> {
+  const parsed = await parseJsonBody(req);
+  if (!parsed.ok) return parsed.error;
+  const body = parsed.data;
+
+  if (!body.apiKey || typeof body.apiKey !== 'string') {
+    return errorResponse('Missing required field: apiKey');
+  }
+
+  const apiKey = (body.apiKey as string).trim();
+
+  // Basic validation: Google AI keys start with "AIza" and are 39 chars
+  if (!apiKey.startsWith(GOOGLE_AI_KEY_PREFIX) || apiKey.length !== GOOGLE_AI_KEY_LENGTH) {
+    return errorResponse(`Invalid API key format. Google AI keys start with "${GOOGLE_AI_KEY_PREFIX}" and are ${GOOGLE_AI_KEY_LENGTH} characters.`);
+  }
+
+  // Set the environment variable and reset the client
+  process.env.GOOGLE_AI_API_KEY = apiKey;
+  resetGeminiClient();
+
+  logger.info('Gemini API key configured via API');
+
+  return jsonResponse({
+    success: true,
+    message: 'Gemini API key configured successfully'
+  });
+}
+
+/**
+ * GET /api/rag/config/gemini-key/status - Check if key is configured
+ */
+async function handleGeminiKeyStatus(): Promise<Response> {
+  const configured = !!process.env.GOOGLE_AI_API_KEY;
+  return jsonResponse({
+    configured,
+    message: configured ? 'Gemini API key is configured' : 'Gemini API key not configured'
+  });
 }
 
 /**

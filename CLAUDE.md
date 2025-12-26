@@ -13,18 +13,24 @@ Query → Gemini Embeddings → LanceDB → Chunks → Claude Code CLI → Respo
 ```
 
 ## Pipeline State
-Phase: debugging
-Feature: Excel/CSV Support & Chat Scroll Fix
-Tier: low
-Tier-Status: pending
-Reports:
-  - bugs: reports/bugs-excel-scroll-fix.md
+Phase: complete
+Feature: In-App Gemini API Key Input
 
-## Last Session (2025-12-25)
-- Fixed medium priority bugs and committed `530576d`
-- RAGChat scroll: added `wasTypingRef` to track typing transitions
-- Excel extractor: added `warnings` field for empty workbooks
-- Low priority bugs still pending
+## Last Session (2025-12-26)
+Refactors completed (all 6):
+1. **Magic numbers extracted** - GOOGLE_AI_KEY_PREFIX/LENGTH constants in server.ts
+2. **Wrapper function removed** - handleConfigured replaced with direct checkStatus
+3. **respondersEndpoint prop added** - ApiKeyConfigBar now passes through
+4. **Duplicate hooks consolidated** - apiKeyState prop for props drilling
+5. **Aria-describedby added** - SettingsModal input linked to description
+6. **Cross-tab sync added** - localStorage storage event listener
+
+Reports: validation-gemini-api-key.md, refactor-gemini-api-key.md
+
+## Previous Session (2025-12-26)
+- Validated Gemini API key feature (6-agent parallel validation)
+- Fixed: headers useMemo, AbortController cleanup, fragile endpoint URL
+- Fixed: localStorage try-catch, non-JSON response handling
 
 ## Key Files
 - `src/server.ts` - Bun HTTP server

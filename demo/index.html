@@ -53,6 +53,9 @@
       </div>
     </div>
 
+    <!-- Gemini API Key Config (compact bar) -->
+    <div id="api-config-root" style="margin-bottom: 1rem;"></div>
+
     <div class="chat-wrapper">
       <div class="upload-section">
         <h3>Add Documents</h3>
@@ -87,7 +90,7 @@
       <div id="chat-root" style="flex: 1; display: flex; flex-direction: column; min-height: 0;"></div>
     </div>
 
-    <!-- Admin Dashboard -->
+    <!-- Admin Dashboard at bottom -->
     <div id="admin-root" style="margin-top: 1rem;"></div>
 
     <footer class="demo-footer">
@@ -108,8 +111,8 @@
 
   <script type="module">
     import { initDemo } from '/demo/demo.js';
-    // Bundle exports RAGChat, RAGInterface, AdminDashboard via RAGBundle global
-    initDemo(RAGBundle.RAGInterface, RAGBundle.AdminDashboard);
+    // Bundle exports RAGChat, RAGInterface, AdminDashboard, ApiKeyConfigBar via RAGBundle global
+    initDemo(RAGBundle.RAGInterface, RAGBundle.AdminDashboard, RAGBundle.ApiKeyConfigBar);
   </script>
 </body>
 </html>

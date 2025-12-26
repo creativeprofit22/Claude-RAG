@@ -286,8 +286,26 @@ export function renderAdmin(AdminDashboard) {
   );
 }
 
+// API config bar root
+let apiConfigRoot = null;
+
+// Render API key config bar
+export function renderApiConfig(ApiKeyConfigBar) {
+  const container = document.getElementById('api-config-root');
+  if (!container || !ApiKeyConfigBar) return;
+
+  if (!apiConfigRoot) {
+    apiConfigRoot = ReactDOM.createRoot(container);
+  }
+  apiConfigRoot.render(
+    React.createElement(ApiKeyConfigBar, {
+      endpoint: `${API_BASE}/api/rag`
+    })
+  );
+}
+
 // Initialize the demo
-export function initDemo(RAGInterface, AdminDashboard) {
+export function initDemo(RAGInterface, AdminDashboard, ApiKeyConfigBar) {
   // Add event listeners for controls
   ['title', 'accentColor', 'responder', 'showSources'].forEach(id => {
     document.getElementById(id).addEventListener('change', () => {
@@ -301,6 +319,7 @@ export function initDemo(RAGInterface, AdminDashboard) {
   checkHealth();
   renderChat(RAGInterface);
   renderAdmin(AdminDashboard);
+  renderApiConfig(ApiKeyConfigBar);
 
   // Refresh health every 30 seconds
   setInterval(checkHealth, 30000);

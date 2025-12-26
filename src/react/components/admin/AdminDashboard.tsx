@@ -17,13 +17,17 @@ import {
   Layers,
   Cpu,
   Activity,
+  Settings,
 } from 'lucide-react';
+import { SettingsModal } from '../settings/SettingsModal.js';
 import type { AdminStats, AdminHealth } from '../../types.js';
 import { formatBytes, formatRelativeTime } from '../../utils/formatters.js';
 
 export interface AdminDashboardProps {
   /** Base API endpoint (default: /api/rag) */
   endpoint?: string;
+  /** Custom headers for API requests */
+  headers?: Record<string, string>;
   /** Accent color for charts and indicators */
   accentColor?: string;
   /** Auto-refresh interval in ms (0 to disable) */
@@ -95,6 +99,7 @@ function ServiceStatusItem({ icon, label, isUp, statusText, meta }: ServiceStatu
 
 export function AdminDashboard({
   endpoint = '/api/rag',
+  headers = {},
   accentColor = '#6366f1',
   refreshInterval = 30000,
 }: AdminDashboardProps) {
@@ -103,6 +108,7 @@ export function AdminDashboard({
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [lastRefresh, setLastRefresh] = useState<Date>(new Date());
+  const [isSettingsOpen, setIsSettingsOpen] = useState(false);
 
   const fetchData = useCallback(async (signal?: AbortSignal) => {
     try {
@@ -179,16 +185,34 @@ export function AdminDashboard({
             </p>
           </div>
         </div>
-        <button
-          className="rag-admin-refresh-btn"
-          onClick={handleRefresh}
-          disabled={isLoading}
-          style={{ '--accent': accentColor } as React.CSSProperties}
-        >
-          <RefreshCw size={16} className={isLoading ? 'spin' : ''} />
-          Refresh
-        </button>
+        <div className="rag-admin-header-actions">
+          <button
+            className="rag-admin-settings-btn"
+            onClick={() => setIsSettingsOpen(true)}
+            aria-label="Settings"
+          >
+            <Settings size={16} />
+          </button>
+          <button
+            className="rag-admin-refresh-btn"
+            onClick={handleRefresh}
+            disabled={isLoading}
+            style={{ '--accent': accentColor } as React.CSSProperties}
+          >
+            <RefreshCw size={16} className={isLoading ? 'spin' : ''} />
+            Refresh
+          </button>
+        </div>
       </div>
+
+      {/* Settings Modal */}
+      <SettingsModal
+        isOpen={isSettingsOpen}
+        onClose={() => setIsSettingsOpen(false)}
+        onConfigured={handleRefresh}
+        endpoint={endpoint}
+        headers={headers}
+      />
 
       {/* Error Banner */}
       {error && (

@@ -22,6 +22,7 @@ var RAGBundle = (() => {
   var browser_entry_exports = {};
   __export(browser_entry_exports, {
     AdminDashboard: () => AdminDashboard,
+    ApiKeyConfigBar: () => ApiKeyConfigBar,
     CategoryBadge: () => CategoryBadge,
     CategoryFilter: () => CategoryFilter,
     ChatHeader: () => ChatHeader,
@@ -34,8 +35,10 @@ var RAGBundle = (() => {
     ProgressIndicator: () => ProgressIndicator,
     RAGChat: () => RAGChat,
     RAGInterface: () => RAGInterface,
+    SettingsModal: () => SettingsModal,
     TypingIndicator: () => TypingIndicator,
     UploadModal: () => UploadModal,
+    useApiKeyConfig: () => useApiKeyConfig,
     useCategories: () => useCategories,
     useDocuments: () => useDocuments,
     useFileQueue: () => useFileQueue,
@@ -123,6 +126,7 @@ var RAGBundle = (() => {
   var Edit2 = createIconComponent(lucide.Edit2);
   var ExternalLink = createIconComponent(lucide.ExternalLink);
   var Eye = createIconComponent(lucide.Eye);
+  var EyeOff = createIconComponent(lucide.EyeOff);
   var File = createIconComponent(lucide.File);
   var FileCode = createIconComponent(lucide.FileCode);
   var FileJson = createIconComponent(lucide.FileJson);
@@ -136,6 +140,7 @@ var RAGBundle = (() => {
   var RefreshCw = createIconComponent(lucide.RefreshCw);
   var Search = createIconComponent(lucide.Search);
   var Send = createIconComponent(lucide.Send);
+  var Settings = createIconComponent(lucide.Settings);
   var Sparkles = createIconComponent(lucide.Sparkles);
   var Trash2 = createIconComponent(lucide.Trash2);
   var Upload = createIconComponent(lucide.Upload);
@@ -3194,6 +3199,313 @@ var RAGBundle = (() => {
     ] });
   }
 
+  // src/react/hooks/useApiKeyConfig.ts
+  var STORAGE_KEY = "rag-gemini-api-key";
+  var EMPTY_HEADERS = {};
+  function useApiKeyConfig(options = {}) {
+    const { endpoint = "/api/rag", headers } = options;
+    const stableHeaders = useMemo(() => headers ?? EMPTY_HEADERS, [headers]);
+    const [apiKey, setApiKey] = useState("");
+    const [isConfigured, setIsConfigured] = useState(false);
+    const [isLoading, setIsLoading] = useState(false);
+    const [error, setError] = useState(null);
+    const abortRef = useRef(null);
+    useEffect(() => {
+      try {
+        const stored = localStorage.getItem(STORAGE_KEY);
+        if (stored) {
+          setApiKey(stored);
+        }
+      } catch {
+      }
+    }, []);
+    const checkStatus = useCallback(async () => {
+      abortRef.current?.abort();
+      abortRef.current = new AbortController();
+      try {
+        const res = await fetch(`${endpoint}/config/gemini-key/status`, {
+          headers: stableHeaders,
+          signal: abortRef.current.signal
+        });
+        if (res.ok) {
+          const data = await res.json();
+          setIsConfigured(data.configured);
+        }
+      } catch (err) {
+        if (err instanceof Error && err.name !== "AbortError") {
+          console.error("Failed to check API key status:", err);
+        }
+      }
+    }, [endpoint, stableHeaders]);
+    useEffect(() => {
+      checkStatus();
+      return () => abortRef.current?.abort();
+    }, [checkStatus]);
+    useEffect(() => {
+      const handleStorage = (e) => {
+        if (e.key === STORAGE_KEY) {
+          setApiKey(e.newValue || "");
+          checkStatus();
+        }
+      };
+      window.addEventListener("storage", handleStorage);
+      return () => window.removeEventListener("storage", handleStorage);
+    }, [checkStatus]);
+    const saveApiKey = useCallback(async (key) => {
+      setIsLoading(true);
+      setError(null);
+      try {
+        const res = await fetch(`${endpoint}/config/gemini-key`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            ...stableHeaders
+          },
+          body: JSON.stringify({ apiKey: key })
+        });
+        let data;
+        try {
+          data = await res.json();
+        } catch {
+          data = { error: `Server error: ${res.status} ${res.statusText}` };
+        }
+        if (!res.ok) {
+          setError(data.error || "Failed to save API key");
+          return false;
+        }
+        try {
+          localStorage.setItem(STORAGE_KEY, key);
+        } catch {
+        }
+        setApiKey(key);
+        setIsConfigured(true);
+        return true;
+      } catch (err) {
+        setError(err instanceof Error ? err.message : "Failed to save API key");
+        return false;
+      } finally {
+        setIsLoading(false);
+      }
+    }, [endpoint, stableHeaders]);
+    const clearLocalKey = useCallback(() => {
+      try {
+        localStorage.removeItem(STORAGE_KEY);
+      } catch {
+      }
+      setApiKey("");
+    }, []);
+    return {
+      apiKey,
+      isConfigured,
+      isLoading,
+      error,
+      saveApiKey,
+      clearLocalKey,
+      checkStatus
+    };
+  }
+
+  // src/react/components/settings/SettingsModal.tsx
+  function SettingsModal({
+    isOpen,
+    onClose,
+    onConfigured,
+    endpoint = "/api/rag",
+    respondersEndpoint = "/api/responders",
+    headers = {},
+    apiKeyState
+  }) {
+    const { handleBackdropClick } = useModal({ onClose, isOpen });
+    const internalHookState = useApiKeyConfig({ endpoint, headers });
+    const { apiKey, isConfigured, isLoading, error, saveApiKey } = apiKeyState ?? internalHookState;
+    const [inputKey, setInputKey] = useState("");
+    const [showKey, setShowKey] = useState(false);
+    const [testResult, setTestResult] = useState(null);
+    const [testLoading, setTestLoading] = useState(false);
+    const abortRef = useRef(null);
+    const isMountedRef = useRef(true);
+    useEffect(() => {
+      isMountedRef.current = true;
+      return () => {
+        isMountedRef.current = false;
+        abortRef.current?.abort();
+      };
+    }, []);
+    useEffect(() => {
+      if (isOpen) {
+        setInputKey(apiKey);
+        setTestResult(null);
+      }
+    }, [isOpen, apiKey]);
+    const handleTestConnection = useCallback(async () => {
+      if (!inputKey.trim()) return;
+      abortRef.current?.abort();
+      abortRef.current = new AbortController();
+      setTestLoading(true);
+      setTestResult(null);
+      try {
+        const saved = await saveApiKey(inputKey.trim());
+        if (!saved) {
+          if (isMountedRef.current) setTestResult("error");
+          return;
+        }
+        const res = await fetch(respondersEndpoint, {
+          headers,
+          signal: abortRef.current.signal
+        });
+        if (!isMountedRef.current) return;
+        if (res.ok) {
+          const data = await res.json();
+          if (data.available?.gemini?.ready) {
+            setTestResult("success");
+          } else {
+            setTestResult("error");
+          }
+        } else {
+          setTestResult("error");
+        }
+      } catch (err) {
+        if (err instanceof Error && err.name === "AbortError") return;
+        if (isMountedRef.current) setTestResult("error");
+      } finally {
+        if (isMountedRef.current) setTestLoading(false);
+      }
+    }, [inputKey, saveApiKey, respondersEndpoint, headers]);
+    const handleSave = useCallback(async () => {
+      if (!inputKey.trim()) return;
+      const success = await saveApiKey(inputKey.trim());
+      if (success) {
+        onConfigured?.();
+        onClose();
+      }
+    }, [inputKey, saveApiKey, onConfigured, onClose]);
+    if (!isOpen) return null;
+    return /* @__PURE__ */ jsx(
+      "div",
+      {
+        className: "rag-upload-modal-overlay",
+        onClick: handleBackdropClick,
+        role: "dialog",
+        "aria-modal": "true",
+        "aria-labelledby": "settings-modal-title",
+        children: /* @__PURE__ */ jsxs("div", { className: "rag-upload-modal", style: { maxWidth: "28rem" }, children: [
+          /* @__PURE__ */ jsxs("div", { className: "rag-upload-modal-header", children: [
+            /* @__PURE__ */ jsxs("div", { className: "rag-upload-modal-title-row", children: [
+              /* @__PURE__ */ jsx(Settings, { size: 20 }),
+              /* @__PURE__ */ jsx("h2", { id: "settings-modal-title", children: "Settings" })
+            ] }),
+            /* @__PURE__ */ jsx(
+              "button",
+              {
+                type: "button",
+                onClick: onClose,
+                className: "rag-upload-modal-close",
+                "aria-label": "Close",
+                children: /* @__PURE__ */ jsx(X, { size: 20 })
+              }
+            )
+          ] }),
+          /* @__PURE__ */ jsx("div", { className: "rag-upload-modal-content", children: /* @__PURE__ */ jsxs("div", { className: "rag-settings-section", children: [
+            /* @__PURE__ */ jsxs("label", { className: "rag-settings-label", children: [
+              "Gemini API Key",
+              isConfigured && /* @__PURE__ */ jsxs("span", { className: "rag-settings-configured", children: [
+                /* @__PURE__ */ jsx(CheckCircle, { size: 12 }),
+                "Configured"
+              ] })
+            ] }),
+            /* @__PURE__ */ jsxs("p", { id: "gemini-key-description", className: "rag-settings-description", children: [
+              "Enter your Google AI API key for embeddings and fallback responses. Get one at",
+              " ",
+              /* @__PURE__ */ jsx(
+                "a",
+                {
+                  href: "https://aistudio.google.com/apikey",
+                  target: "_blank",
+                  rel: "noopener noreferrer",
+                  className: "rag-settings-link",
+                  children: "aistudio.google.com"
+                }
+              )
+            ] }),
+            /* @__PURE__ */ jsxs("div", { className: "rag-settings-input-wrapper", children: [
+              /* @__PURE__ */ jsx(
+                "input",
+                {
+                  type: showKey ? "text" : "password",
+                  value: inputKey,
+                  onChange: (e) => setInputKey(e.target.value),
+                  placeholder: "AIza...",
+                  className: "rag-settings-input",
+                  disabled: isLoading,
+                  "aria-describedby": "gemini-key-description"
+                }
+              ),
+              /* @__PURE__ */ jsx(
+                "button",
+                {
+                  type: "button",
+                  onClick: () => setShowKey(!showKey),
+                  className: "rag-settings-toggle",
+                  "aria-label": showKey ? "Hide key" : "Show key",
+                  children: showKey ? /* @__PURE__ */ jsx(EyeOff, { size: 16 }) : /* @__PURE__ */ jsx(Eye, { size: 16 })
+                }
+              )
+            ] }),
+            /* @__PURE__ */ jsx(
+              "button",
+              {
+                type: "button",
+                onClick: handleTestConnection,
+                disabled: !inputKey.trim() || testLoading,
+                className: "rag-settings-test-btn",
+                children: testLoading ? /* @__PURE__ */ jsxs(Fragment2, { children: [
+                  /* @__PURE__ */ jsx(Loader2, { size: 14, className: "spin" }),
+                  "Testing..."
+                ] }) : "Test Connection"
+              }
+            ),
+            testResult === "success" && /* @__PURE__ */ jsxs("div", { className: "rag-settings-result success", children: [
+              /* @__PURE__ */ jsx(CheckCircle, { size: 14 }),
+              "Connection successful! Gemini API is ready."
+            ] }),
+            testResult === "error" && /* @__PURE__ */ jsxs("div", { className: "rag-settings-result error", children: [
+              /* @__PURE__ */ jsx(AlertCircle, { size: 14 }),
+              "Connection failed. Check your API key."
+            ] }),
+            error && /* @__PURE__ */ jsxs("div", { className: "rag-settings-result error", children: [
+              /* @__PURE__ */ jsx(AlertCircle, { size: 14 }),
+              error
+            ] })
+          ] }) }),
+          /* @__PURE__ */ jsxs("div", { className: "rag-upload-modal-footer", children: [
+            /* @__PURE__ */ jsx(
+              "button",
+              {
+                type: "button",
+                onClick: onClose,
+                className: "rag-upload-modal-btn secondary",
+                children: "Cancel"
+              }
+            ),
+            /* @__PURE__ */ jsx(
+              "button",
+              {
+                type: "button",
+                onClick: handleSave,
+                className: "rag-upload-modal-btn primary",
+                disabled: !inputKey.trim() || isLoading,
+                children: isLoading ? /* @__PURE__ */ jsxs(Fragment2, { children: [
+                  /* @__PURE__ */ jsx(Loader2, { size: 16, className: "spin" }),
+                  "Saving..."
+                ] }) : "Save"
+              }
+            )
+          ] })
+        ] })
+      }
+    );
+  }
+
   // src/react/utils/formatters.ts
   function formatRelativeTime(timestamp) {
     if (!timestamp || timestamp <= 0 || !Number.isFinite(timestamp)) {
@@ -3243,6 +3555,7 @@ var RAGBundle = (() => {
   }
   function AdminDashboard({
     endpoint = "/api/rag",
+    headers = {},
     accentColor = "#6366f1",
     refreshInterval = 3e4
   }) {
@@ -3251,6 +3564,7 @@ var RAGBundle = (() => {
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState(null);
     const [lastRefresh, setLastRefresh] = useState(/* @__PURE__ */ new Date());
+    const [isSettingsOpen, setIsSettingsOpen] = useState(false);
     const fetchData = useCallback(async (signal) => {
       try {
         setError(null);
@@ -3309,20 +3623,41 @@ var RAGBundle = (() => {
             ] })
           ] })
         ] }),
-        /* @__PURE__ */ jsxs(
-          "button",
-          {
-            className: "rag-admin-refresh-btn",
-            onClick: handleRefresh,
-            disabled: isLoading,
-            style: { "--accent": accentColor },
-            children: [
-              /* @__PURE__ */ jsx(RefreshCw, { size: 16, className: isLoading ? "spin" : "" }),
-              "Refresh"
-            ]
-          }
-        )
+        /* @__PURE__ */ jsxs("div", { className: "rag-admin-header-actions", children: [
+          /* @__PURE__ */ jsx(
+            "button",
+            {
+              className: "rag-admin-settings-btn",
+              onClick: () => setIsSettingsOpen(true),
+              "aria-label": "Settings",
+              children: /* @__PURE__ */ jsx(Settings, { size: 16 })
+            }
+          ),
+          /* @__PURE__ */ jsxs(
+            "button",
+            {
+              className: "rag-admin-refresh-btn",
+              onClick: handleRefresh,
+              disabled: isLoading,
+              style: { "--accent": accentColor },
+              children: [
+                /* @__PURE__ */ jsx(RefreshCw, { size: 16, className: isLoading ? "spin" : "" }),
+                "Refresh"
+              ]
+            }
+          )
+        ] })
       ] }),
+      /* @__PURE__ */ jsx(
+        SettingsModal,
+        {
+          isOpen: isSettingsOpen,
+          onClose: () => setIsSettingsOpen(false),
+          onConfigured: handleRefresh,
+          endpoint,
+          headers
+        }
+      ),
       error && /* @__PURE__ */ jsxs("div", { className: "rag-admin-error", children: [
         /* @__PURE__ */ jsx(AlertCircle, { size: 16 }),
         error,
@@ -3480,6 +3815,50 @@ var RAGBundle = (() => {
           ] }, doc.documentId)) })
         ] })
       ] })
+    ] });
+  }
+
+  // src/react/components/settings/ApiKeyConfigBar.tsx
+  function ApiKeyConfigBar({
+    endpoint = "/api/rag",
+    respondersEndpoint = "/api/responders",
+    headers = {}
+  }) {
+    const { apiKey, isConfigured, isLoading, error, saveApiKey, clearLocalKey, checkStatus } = useApiKeyConfig({ endpoint, headers });
+    const [isModalOpen, setIsModalOpen] = useState(false);
+    return /* @__PURE__ */ jsxs(Fragment2, { children: [
+      /* @__PURE__ */ jsxs("div", { className: "rag-api-config-bar", children: [
+        /* @__PURE__ */ jsx("div", { className: "rag-api-config-info", children: isConfigured ? /* @__PURE__ */ jsxs(Fragment2, { children: [
+          /* @__PURE__ */ jsx(CheckCircle, { size: 14, className: "rag-api-config-icon configured" }),
+          /* @__PURE__ */ jsx("span", { className: "rag-api-config-text", children: "Gemini API configured" })
+        ] }) : /* @__PURE__ */ jsxs(Fragment2, { children: [
+          /* @__PURE__ */ jsx(AlertCircle, { size: 14, className: "rag-api-config-icon not-configured" }),
+          /* @__PURE__ */ jsx("span", { className: "rag-api-config-text", children: "Gemini API not configured" })
+        ] }) }),
+        /* @__PURE__ */ jsxs(
+          "button",
+          {
+            className: "rag-api-config-btn",
+            onClick: () => setIsModalOpen(true),
+            children: [
+              /* @__PURE__ */ jsx(Settings, { size: 14 }),
+              isConfigured ? "Update API Key" : "Configure API Key"
+            ]
+          }
+        )
+      ] }),
+      /* @__PURE__ */ jsx(
+        SettingsModal,
+        {
+          isOpen: isModalOpen,
+          onClose: () => setIsModalOpen(false),
+          onConfigured: checkStatus,
+          endpoint,
+          respondersEndpoint,
+          headers,
+          apiKeyState: { apiKey, isConfigured, isLoading, error, saveApiKey, clearLocalKey, checkStatus }
+        }
+      )
     ] });
   }
   return __toCommonJS(browser_entry_exports);

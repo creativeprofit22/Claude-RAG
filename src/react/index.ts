@@ -50,11 +50,17 @@ export type { UploadModalProps, FileDropZoneProps, FileQueueProps, FilePreviewPr
 export { AdminDashboard } from './components/admin/index.js';
 export type { AdminDashboardProps } from './components/admin/index.js';
 
+// Settings
+export { SettingsModal } from './components/settings/SettingsModal.js';
+export type { SettingsModalProps } from './components/settings/SettingsModal.js';
+export { ApiKeyConfigBar } from './components/settings/ApiKeyConfigBar.js';
+export type { ApiKeyConfigBarProps } from './components/settings/ApiKeyConfigBar.js';
+
 // Hooks for custom implementations
 export { useRAGChat } from './hooks/useRAGChat.js';
 export { useDocuments } from './hooks/useDocuments.js';
 export { useCategories } from './hooks/useCategories.js';
-export { useUploadStream, useFileQueue } from './hooks/index.js';
+export { useUploadStream, useFileQueue, useApiKeyConfig } from './hooks/index.js';
 export type { UploadProgress, UploadResult, UploadOptions, UploadStage, QueuedFile, FileStatus } from './hooks/index.js';
 
 // Types
