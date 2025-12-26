@@ -31,6 +31,9 @@ export function useModal({ onClose }: UseModalOptions): UseModalReturn {
       }
     };
 
+    // passive: true signals we won't call preventDefault(), allowing browser
+    // optimizations. Safe for ESC handling since we only close the modal,
+    // we don't need to prevent default ESC behavior (there isn't any).
     document.addEventListener('keydown', handleKeyDown, { passive: true });
     // Prevent body scroll when modal is open
     document.body.style.overflow = 'hidden';

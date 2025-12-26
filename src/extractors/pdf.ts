@@ -5,7 +5,12 @@
 
 import pdfParse from 'pdf-parse';
 
-/** Minimum characters per page to consider PDF as text-based (not scanned) */
+/**
+ * Minimum characters per page to consider PDF as text-based (not scanned).
+ * Heuristic: A typical text page has 2000-3000 chars. Scanned PDFs with OCR
+ * errors or image-only pages yield <50 chars. 100 chars threshold catches
+ * scanned docs while allowing sparse pages (tables, diagrams with captions).
+ */
 const MIN_CHARS_PER_PAGE = 100;
 
 export interface PDFExtractionResult {

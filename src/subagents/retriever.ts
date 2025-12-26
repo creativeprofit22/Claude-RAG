@@ -4,6 +4,13 @@ import type { Chunk } from '../utils/chunks.js';
 
 const GEMINI_MODEL = process.env.GEMINI_RETRIEVER_MODEL || 'gemini-2.0-flash';
 
+/**
+ * Low temperature for deterministic chunk selection.
+ * We want consistent, reproducible filtering rather than creative responses.
+ * 0.1 allows minimal variation for edge cases while keeping output stable.
+ */
+const RETRIEVER_TEMPERATURE = 0.1;
+
 // Re-export Chunk as RetrievedChunk for backward compatibility
 export type RetrievedChunk = Chunk;
 
@@ -261,7 +268,7 @@ export async function filterAndRankChunks(
       config: {
         systemInstruction: buildSystemPrompt(),
         maxOutputTokens: 1024,
-        temperature: 0.1 // Low temperature for more deterministic output
+        temperature: RETRIEVER_TEMPERATURE
       }
     });
 

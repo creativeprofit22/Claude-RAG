@@ -51,7 +51,11 @@ export function useAPIResource<T>(options: UseAPIResourceOptions<T>): UseAPIReso
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  // Stabilize headers to prevent infinite rerenders from inline objects
+  // Stabilize headers to prevent infinite rerenders from inline objects.
+  // Problem: Inline `headers={{ key: 'value' }}` creates new object each render,
+  // causing useCallback/useEffect to re-run infinitely.
+  // Solution: JSON.stringify creates a primitive key for useMemo comparison,
+  // so stableHeaders only updates when actual header content changes.
   const headersJson = JSON.stringify(headers);
   const stableHeaders = useMemo(() => headers, [headersJson]);
 

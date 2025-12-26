@@ -8,7 +8,12 @@ import { join } from 'path';
 
 const DB_PATH = process.env.RAG_DB_PATH || join(process.cwd(), 'data', 'vectors');
 const TABLE_NAME = 'documents';
-/** Default maximum chunks to fetch per document query */
+/**
+ * Default maximum chunks to fetch per document query.
+ * Set high (10K) to ensure all chunks are returned for most documents.
+ * Typical documents have 10-500 chunks; 10K accommodates very large docs
+ * (e.g., 2000-page PDFs) while preventing unbounded memory usage.
+ */
 const DEFAULT_CHUNK_LIMIT = 10000;
 
 /**

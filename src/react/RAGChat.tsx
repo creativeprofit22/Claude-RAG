@@ -66,8 +66,10 @@ export function RAGChat({
     documentId,
   });
 
-  // Auto-scroll to bottom when messages change
-  // Use a ref to track the last message count to avoid race conditions on rapid updates
+  // Auto-scroll to bottom when messages change.
+  // Uses hybrid ref+deps pattern: ref tracks count between renders for comparison,
+  // deps array triggers effect when relevant values change. This prevents scrolling
+  // on every render while still catching new messages and typing state changes.
   const lastMessageCountRef = useRef(messages.length);
 
   useEffect(() => {

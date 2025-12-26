@@ -41,27 +41,27 @@ Files analyzed:
 | 8 | database.ts | `addDocuments` has race condition handling in main flow | Extracted `withTableRaceRetry()` wrapper | M | ✅ |
 | 9 | UploadModal.tsx | Category fetch effect uses setTimeout hack | Replaced with AbortController pattern | S | ✅ |
 
-## Low Priority (Nice-to-Have)
+## Low Priority (Nice-to-Have) ✅ COMPLETED
 
-| # | Location | Issue | Suggested Fix | Effort |
-|---|----------|-------|---------------|--------|
-| 10 | embeddings.ts:22 | Module-level `genaiClient` var without JSDoc explaining singleton pattern | Add brief doc comment explaining why it's module-scoped | S |
-| 11 | responder.ts:13 | `spawnClaudeProcess` hardcodes 5000ms force-kill delay | Extract to constant with doc explaining the timeout escalation | S |
-| 12 | database.ts:12 | `DEFAULT_CHUNK_LIMIT = 10000` is arbitrary-looking magic number | Add comment explaining why 10000 was chosen | S |
-| 13 | useAPIResource.ts:55-56 | `headersJson` + `stableHeaders` useMemo is clever but not obvious | Add comment explaining the JSON.stringify stabilization pattern | S |
-| 14 | RAGChat.tsx:71-84 | Scroll effect uses both ref and dependency array tracking | Simplify: either use ref-only approach or dependency-only | S |
-| 15 | pdf.ts:9 | `MIN_CHARS_PER_PAGE = 100` is magic number for scanned PDF detection | Document the heuristic reasoning | S |
-| 16 | useModal.ts:34 | `{ passive: true }` option on keydown listener is unusual | Document why passive is appropriate for ESC key handling | S |
-| 17 | subagents/retriever.ts:256-257 | Temperature `0.1` is magic number | Extract to constant with doc explaining low-temp rationale | S |
+| # | Location | Issue | Suggested Fix | Effort | Status |
+|---|----------|-------|---------------|--------|--------|
+| 10 | embeddings.ts:22 | Module-level `genaiClient` var without JSDoc explaining singleton pattern | Add brief doc comment explaining why it's module-scoped | S | ✅ N/A (refactored to shared client in High #2) |
+| 11 | responder.ts:13 | `spawnClaudeProcess` hardcodes 5000ms force-kill delay | Extract to constant with doc explaining the timeout escalation | S | ✅ |
+| 12 | database.ts:12 | `DEFAULT_CHUNK_LIMIT = 10000` is arbitrary-looking magic number | Add comment explaining why 10000 was chosen | S | ✅ |
+| 13 | useAPIResource.ts:55-56 | `headersJson` + `stableHeaders` useMemo is clever but not obvious | Add comment explaining the JSON.stringify stabilization pattern | S | ✅ |
+| 14 | RAGChat.tsx:71-84 | Scroll effect uses both ref and dependency array tracking | Simplify: either use ref-only approach or dependency-only | S | ✅ (documented hybrid pattern rationale) |
+| 15 | pdf.ts:9 | `MIN_CHARS_PER_PAGE = 100` is magic number for scanned PDF detection | Document the heuristic reasoning | S | ✅ |
+| 16 | useModal.ts:34 | `{ passive: true }` option on keydown listener is unusual | Document why passive is appropriate for ESC key handling | S | ✅ |
+| 17 | subagents/retriever.ts:256-257 | Temperature `0.1` is magic number | Extract to constant with doc explaining low-temp rationale | S | ✅ |
 
 ## Summary
 - High: 3 refactors (3 Small, 0 Medium, 0 Large) - pending
 - Medium: 6 refactors (2 Small, 4 Medium, 0 Large) - **COMPLETED** ✅
-- Low: 8 refactors (8 Small, 0 Medium, 0 Large) - pending
-- Total: 17 refactors (6 completed)
+- Low: 8 refactors (8 Small, 0 Medium, 0 Large) - **COMPLETED** ✅
+- Total: 17 refactors (14 completed, 3 high priority pending)
 
 ### Key Themes
 1. **DRY violations in Gemini client usage** - Two files maintain separate singletons
 2. ~~**Long functions needing extraction** - Several 50+ line functions with nested logic~~ ✅
-3. **Magic numbers** - Multiple numeric constants without documentation
+3. ~~**Magic numbers** - Multiple numeric constants without documentation~~ ✅
 4. ~~**HTML entity handling** - Brittle regex chain that should be abstracted~~ ✅

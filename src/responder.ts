@@ -8,6 +8,13 @@ import type { ChunkSource } from './utils/chunks.js';
 const CLI_TIMEOUT_MS = Number(process.env.CLAUDE_CLI_TIMEOUT_MS) || 120_000;
 
 /**
+ * Grace period before SIGKILL after SIGTERM (5 seconds).
+ * Allows process to clean up resources gracefully before forced termination.
+ * If SIGTERM doesn't stop the process within this window, SIGKILL is sent.
+ */
+const FORCE_KILL_DELAY_MS = 5000;
+
+/**
  * Spawn Claude CLI process with stdin prompt and timeout
  */
 function spawnClaudeProcess(prompt: string, timeoutMs: number = CLI_TIMEOUT_MS): { process: ChildProcess; cleanup: () => void } {
@@ -21,12 +28,12 @@ function spawnClaudeProcess(prompt: string, timeoutMs: number = CLI_TIMEOUT_MS):
   // Set up timeout to prevent hanging processes
   const timeoutId = setTimeout(() => {
     claudeProcess.kill('SIGTERM');
-    // Force kill if SIGTERM doesn't work after 5 seconds
+    // Force kill if SIGTERM doesn't work within grace period
     setTimeout(() => {
       if (!claudeProcess.killed) {
         claudeProcess.kill('SIGKILL');
       }
-    }, 5000);
+    }, FORCE_KILL_DELAY_MS);
   }, timeoutMs);
 
   const cleanup = () => {
