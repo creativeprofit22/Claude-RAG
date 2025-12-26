@@ -5,6 +5,8 @@ import { useEffect, useCallback, useRef } from 'react';
 interface UseModalOptions {
   /** Callback when modal should close */
   onClose: () => void;
+  /** Whether the modal is currently open (controls scroll lock) */
+  isOpen?: boolean;
 }
 
 interface UseModalReturn {
@@ -18,12 +20,15 @@ interface UseModalReturn {
  * - Body scroll lock while open
  * - Backdrop click detection
  */
-export function useModal({ onClose }: UseModalOptions): UseModalReturn {
+export function useModal({ onClose, isOpen = true }: UseModalOptions): UseModalReturn {
   // Use ref for onClose to avoid event listener re-registration on every render
   const onCloseRef = useRef(onClose);
   onCloseRef.current = onClose;
 
   useEffect(() => {
+    // Only apply scroll lock and ESC handler when modal is open
+    if (!isOpen) return;
+
     // Use a stable handler that reads from ref to avoid event listener accumulation
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === 'Escape') {
@@ -42,7 +47,7 @@ export function useModal({ onClose }: UseModalOptions): UseModalReturn {
       document.removeEventListener('keydown', handleKeyDown);
       document.body.style.overflow = '';
     };
-  }, []); // Empty deps - handler is stable via ref
+  }, [isOpen]); // Re-run when isOpen changes
 
   // Handle backdrop click (close if clicked on backdrop, not modal content)
   const handleBackdropClick = useCallback(

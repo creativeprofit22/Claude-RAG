@@ -4,7 +4,7 @@
 
 import React, { useState, useCallback, useRef } from 'react';
 import { Upload, FileText, AlertCircle } from 'lucide-react';
-import { SUPPORTED_EXTENSIONS, SUPPORTED_MIME_TYPES } from '../../../extractors/index.js';
+import { SUPPORTED_EXTENSIONS, SUPPORTED_MIME_TYPES } from '../../../shared/file-types.js';
 
 export interface FileDropZoneProps {
   onFilesSelected: (files: File[]) => void;

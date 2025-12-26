@@ -28,7 +28,7 @@ export function UploadModal({
   headers = {},
   className = '',
 }: UploadModalProps): React.ReactElement | null {
-  const { handleBackdropClick } = useModal({ onClose });
+  const { handleBackdropClick } = useModal({ onClose, isOpen });
 
   // Category management - use stable endpoint reference to prevent race conditions
   const { categories, isLoading: categoriesLoading, refetch: refetchCategories } = useCategories({

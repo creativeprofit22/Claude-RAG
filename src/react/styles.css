@@ -443,6 +443,7 @@
 
 /* Document Search */
 .rag-doc-search {
+  flex-shrink: 0;
   display: flex;
   align-items: center;
   gap: 0.75rem;
@@ -578,10 +579,12 @@
 
 /* Document List */
 .rag-doc-list {
+  flex: 1;
   display: grid;
   grid-template-columns: repeat(1, 1fr);
   gap: 0.75rem;
   padding: 1rem;
+  align-content: start;
 }
 
 @media (min-width: 640px) {
@@ -768,6 +771,7 @@
 
 /* Document List Empty State */
 .rag-doc-list-empty {
+  flex: 1;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -1185,6 +1189,8 @@
   flex: 1;
   min-height: 0;
   overflow-y: auto;
+  display: flex;
+  flex-direction: column;
 }
 
 .rag-library-content::-webkit-scrollbar {
@@ -1210,7 +1216,7 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  height: 100%;
+  flex: 1;
   min-height: 300px;
   text-align: center;
   padding: 2rem;

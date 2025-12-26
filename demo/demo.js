@@ -203,43 +203,72 @@ window.askQuestion = function(question) {
   }
 };
 
-// Render chat component - exported for use by init module
-export function renderChat(RAGChat) {
+// Render interface component - exported for use by init module
+export function renderChat(RAGInterface) {
   const title = document.getElementById('title').value;
   const accentColor = document.getElementById('accentColor').value;
   const responder = document.getElementById('responder').value;
   const showSources = document.getElementById('showSources').value === 'true';
 
+  // RAGInterface uses base endpoint, adds /query internally
   const endpoint = responder === 'auto'
-    ? `${API_BASE}/api/rag/query`
-    : `${API_BASE}/api/rag/query?responder=${responder}`;
+    ? `${API_BASE}/api/rag`
+    : `${API_BASE}/api/rag?responder=${responder}`;
 
   // Create root only once to preserve state across re-renders
   if (!chatRoot) {
     chatRoot = ReactDOM.createRoot(document.getElementById('chat-root'));
   }
   chatRoot.render(
-    React.createElement(RAGChat, {
+    React.createElement(RAGInterface, {
       endpoint,
-      title,
+      chatTitle: title,
+      documentsTitle: 'Document Library',
       accentColor,
       showSources,
+      showDocumentLibrary: true,
       placeholder: 'Ask about your documents...'
     })
   );
 }
 
+// Admin dashboard root
+let adminRoot = null;
+
+// Render admin dashboard
+export function renderAdmin(AdminDashboard) {
+  const adminContainer = document.getElementById('admin-root');
+  if (!adminContainer || !AdminDashboard) return;
+
+  const accentColor = document.getElementById('accentColor').value;
+
+  if (!adminRoot) {
+    adminRoot = ReactDOM.createRoot(adminContainer);
+  }
+  adminRoot.render(
+    React.createElement(AdminDashboard, {
+      endpoint: `${API_BASE}/api/rag`,
+      accentColor,
+      refreshInterval: 30000
+    })
+  );
+}
+
 // Initialize the demo
-export function initDemo(RAGChat) {
+export function initDemo(RAGInterface, AdminDashboard) {
   // Add event listeners for controls
   ['title', 'accentColor', 'responder', 'showSources'].forEach(id => {
-    document.getElementById(id).addEventListener('change', () => renderChat(RAGChat));
+    document.getElementById(id).addEventListener('change', () => {
+      renderChat(RAGInterface);
+      renderAdmin(AdminDashboard);
+    });
   });
-  document.getElementById('title').addEventListener('input', () => renderChat(RAGChat));
+  document.getElementById('title').addEventListener('input', () => renderChat(RAGInterface));
 
   // Initialize
   checkHealth();
-  renderChat(RAGChat);
+  renderChat(RAGInterface);
+  renderAdmin(AdminDashboard);
 
   // Refresh health every 30 seconds
   setInterval(checkHealth, 30000);

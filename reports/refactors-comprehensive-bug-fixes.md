@@ -22,13 +22,13 @@ Files analyzed:
 - src/react/RAGChat.tsx
 - src/react/components/upload/UploadModal.tsx
 
-## High Priority (Tech Debt / DRY)
+## High Priority (Tech Debt / DRY) ✅ COMPLETED
 
-| # | Location | Issue | Suggested Fix | Effort |
-|---|----------|-------|---------------|--------|
-| 1 | embeddings.ts:43-72 + 80-108 | DRY violation: `generateEmbedding` and `generateQueryEmbedding` are ~95% identical, differing only in `taskType` | Extract shared logic into helper function with `taskType` parameter | S |
-| 2 | responder.ts + embeddings.ts | Duplicate Gemini client pattern: both files create their own `genaiClient` singletons with identical API key validation | Use shared `gemini-client.ts` singleton in `embeddings.ts` instead of duplicating | S |
-| 3 | server.ts:1315-1320 | CORS preflight handler returns empty body for 403, but other error paths return JSON | Consistent error response format - either all JSON or document the exception | S |
+| # | Location | Issue | Suggested Fix | Effort | Status |
+|---|----------|-------|---------------|--------|--------|
+| 1 | embeddings.ts:43-72 + 80-108 | DRY violation: `generateEmbedding` and `generateQueryEmbedding` are ~95% identical, differing only in `taskType` | Extract shared logic into helper function with `taskType` parameter | S | ✅ `generateEmbeddingCore()` extracted |
+| 2 | responder.ts + embeddings.ts | Duplicate Gemini client pattern: both files create their own `genaiClient` singletons with identical API key validation | Use shared `gemini-client.ts` singleton in `embeddings.ts` instead of duplicating | S | ✅ All files use shared client |
+| 3 | server.ts:1315-1320 | CORS preflight handler returns empty body for 403, but other error paths return JSON | Consistent error response format - either all JSON or document the exception | S | ✅ Documented intentional exception |
 
 ## Medium Priority (Code Clarity) ✅ COMPLETED
 
@@ -55,13 +55,13 @@ Files analyzed:
 | 17 | subagents/retriever.ts:256-257 | Temperature `0.1` is magic number | Extract to constant with doc explaining low-temp rationale | S | ✅ |
 
 ## Summary
-- High: 3 refactors (3 Small, 0 Medium, 0 Large) - pending
+- High: 3 refactors (3 Small, 0 Medium, 0 Large) - **COMPLETED** ✅
 - Medium: 6 refactors (2 Small, 4 Medium, 0 Large) - **COMPLETED** ✅
 - Low: 8 refactors (8 Small, 0 Medium, 0 Large) - **COMPLETED** ✅
-- Total: 17 refactors (14 completed, 3 high priority pending)
+- Total: **17/17 refactors COMPLETED** ✅
 
-### Key Themes
-1. **DRY violations in Gemini client usage** - Two files maintain separate singletons
+### Key Themes (All Resolved)
+1. ~~**DRY violations in Gemini client usage** - Two files maintain separate singletons~~ ✅
 2. ~~**Long functions needing extraction** - Several 50+ line functions with nested logic~~ ✅
 3. ~~**Magic numbers** - Multiple numeric constants without documentation~~ ✅
 4. ~~**HTML entity handling** - Brittle regex chain that should be abstracted~~ ✅

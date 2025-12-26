@@ -5,6 +5,10 @@
 
 import { extractPDF, type PDFExtractionResult } from './pdf.js';
 import { extractDOCX, type DOCXExtractionResult } from './docx.js';
+import { SUPPORTED_EXTENSIONS, SUPPORTED_MIME_TYPES, type SupportedMimeType } from '../shared/file-types.js';
+
+// Re-export for backwards compatibility
+export { SUPPORTED_EXTENSIONS, SUPPORTED_MIME_TYPES, type SupportedMimeType } from '../shared/file-types.js';
 
 export type ExtractionResult = {
   text: string;
@@ -13,23 +17,6 @@ export type ExtractionResult = {
   warnings?: string[];
   metadata?: Record<string, unknown>;
 };
-
-export type SupportedMimeType =
-  | 'application/pdf'
-  | 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
-  | 'text/plain'
-  | 'text/markdown'
-  | 'text/html';
-
-export const SUPPORTED_EXTENSIONS = ['.pdf', '.docx', '.txt', '.md', '.html', '.htm'] as const;
-
-export const SUPPORTED_MIME_TYPES = [
-  'application/pdf',
-  'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
-  'text/plain',
-  'text/markdown',
-  'text/html',
-] as const;
 
 /**
  * Get MIME type from file extension
