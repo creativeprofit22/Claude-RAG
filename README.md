@@ -44,6 +44,8 @@ You need a free Google AI key to make it work.
 2. Click "Create API Key"
 3. Copy the key (starts with `AIza...`)
 
+> **Free tier**: 1,000 requests/day (resets at midnight). That's plenty for personal use!
+
 You can add it **two ways**:
 
 **Option A: In the app (easiest)**
