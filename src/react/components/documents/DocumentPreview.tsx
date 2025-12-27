@@ -37,7 +37,7 @@ export function DocumentPreview({
 
   return (
     <div
-      className="rag-preview-overlay"
+      className="curator-overlay rag-preview-overlay"
       onClick={handleBackdropClick}
       role="dialog"
       aria-modal="true"
@@ -68,7 +68,7 @@ export function DocumentPreview({
           <button
             type="button"
             onClick={onClose}
-            className="rag-preview-close"
+            className="curator-btn curator-btn-icon rag-preview-close"
             aria-label="Close preview"
           >
             <X size={20} />

@@ -157,13 +157,13 @@ export function DocumentLibrary({
 
       {/* Error Banner */}
       {displayError && (
-        <div className="rag-library-error" role="alert">
+        <div className="curator-error-banner" role="alert">
           <AlertCircle size={16} aria-hidden="true" />
           <span>{displayError}</span>
           <button
             type="button"
             onClick={dismissError}
-            className="rag-library-error-dismiss"
+            className="curator-error-dismiss"
             aria-label="Dismiss error"
           >
             <X size={14} />

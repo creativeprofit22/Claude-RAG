@@ -33,3 +33,8 @@ Thumbs.db
 
 # TypeScript cache
 *.tsbuildinfo
+
+# Demo token copies (local testing only)
+demo/tokens/
+demo/fonts/
+

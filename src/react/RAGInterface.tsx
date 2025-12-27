@@ -102,11 +102,13 @@ export function RAGInterface({
     <div className={`rag-interface ${className}`}>
       {/* Tab Navigation */}
       {showDocumentLibrary && (
-        <nav className="rag-interface-tabs" role="tablist">
+        <nav className="rag-interface-tabs" role="tablist" aria-label="RAG Interface views">
           <button
             type="button"
             role="tab"
+            id="rag-tab-chat"
             aria-selected={activeView === 'chat'}
+            aria-controls="rag-tabpanel-chat"
             className={`rag-interface-tab ${activeView === 'chat' ? 'rag-interface-tab--active' : ''}`}
             onClick={() => setActiveView('chat')}
             style={activeView === 'chat' ? { borderColor: accentColor, color: accentColor } : undefined}
@@ -125,7 +127,9 @@ export function RAGInterface({
           <button
             type="button"
             role="tab"
+            id="rag-tab-documents"
             aria-selected={activeView === 'documents'}
+            aria-controls="rag-tabpanel-documents"
             className={`rag-interface-tab ${activeView === 'documents' ? 'rag-interface-tab--active' : ''}`}
             onClick={() => setActiveView('documents')}
             style={activeView === 'documents' ? { borderColor: accentColor, color: accentColor } : undefined}
@@ -160,30 +164,44 @@ export function RAGInterface({
       {/* View Content */}
       <div className="rag-interface-content">
         {activeView === 'chat' ? (
-          <RAGChat
-            endpoint={chatEndpoint}
-            headers={headers}
-            title={chatTitle}
-            accentColor={accentColor}
-            placeholder={scopedDocument
-              ? `Ask about "${scopedDocument.documentName}"...`
-              : placeholder}
-            showSources={showSources}
-            systemPrompt={systemPrompt}
-            topK={topK}
-            documentId={scopedDocument?.documentId}
-            responder={responder}
-            emptyState={chatEmptyState}
-          />
+          <div
+            role="tabpanel"
+            id="rag-tabpanel-chat"
+            aria-labelledby="rag-tab-chat"
+            style={{ display: 'contents' }}
+          >
+            <RAGChat
+              endpoint={chatEndpoint}
+              headers={headers}
+              title={chatTitle}
+              accentColor={accentColor}
+              placeholder={scopedDocument
+                ? `Ask about "${scopedDocument.documentName}"...`
+                : placeholder}
+              showSources={showSources}
+              systemPrompt={systemPrompt}
+              topK={topK}
+              documentId={scopedDocument?.documentId}
+              responder={responder}
+              emptyState={chatEmptyState}
+            />
+          </div>
         ) : (
-          <DocumentLibrary
-            endpoint={endpoint}
-            headers={headers}
-            title={documentsTitle}
-            accentColor={accentColor}
-            onDocumentSelect={handleDocumentSelect}
-            emptyState={documentsEmptyState}
-          />
+          <div
+            role="tabpanel"
+            id="rag-tabpanel-documents"
+            aria-labelledby="rag-tab-documents"
+            style={{ display: 'contents' }}
+          >
+            <DocumentLibrary
+              endpoint={endpoint}
+              headers={headers}
+              title={documentsTitle}
+              accentColor={accentColor}
+              onDocumentSelect={handleDocumentSelect}
+              emptyState={documentsEmptyState}
+            />
+          </div>
         )}
       </div>
     </div>

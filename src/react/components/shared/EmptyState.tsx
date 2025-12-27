@@ -38,12 +38,12 @@ export function EmptyState({
   };
 
   return (
-    <div className={`rag-empty-state ${className}`}>
-      <div className="rag-empty-state-icon" style={iconShadow ? { boxShadow: iconShadow } : undefined}>
+    <div className={`curator-empty-state ${className}`}>
+      <div className="curator-empty-state-icon" style={iconShadow ? { boxShadow: iconShadow } : undefined}>
         <Icon size={iconSize} style={iconColor ? { color: iconColor } : undefined} aria-hidden="true" />
       </div>
-      <h3 className="rag-empty-state-title">{title}</h3>
-      <p className="rag-empty-state-description">{description}</p>
+      <h3 className="curator-empty-state-title">{title}</h3>
+      <p className="curator-empty-state-description">{description}</p>
     </div>
   );
 }

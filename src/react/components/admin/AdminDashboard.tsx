@@ -194,7 +194,7 @@ export function AdminDashboard({
             <Settings size={16} />
           </button>
           <button
-            className="rag-admin-refresh-btn"
+            className="curator-btn curator-btn-ghost rag-admin-refresh-btn"
             onClick={handleRefresh}
             disabled={isLoading}
             style={{ '--accent': accentColor } as React.CSSProperties}
@@ -216,10 +216,10 @@ export function AdminDashboard({
 
       {/* Error Banner */}
       {error && (
-        <div className="rag-admin-error">
-          <AlertCircle size={16} />
+        <div className="curator-error-banner" role="alert">
+          <AlertCircle size={16} aria-hidden="true" />
           {error}
-          <button className="rag-admin-error-dismiss" onClick={() => setError(null)}>
+          <button className="curator-error-dismiss" onClick={() => setError(null)} aria-label="Dismiss error">
             <XCircle size={14} />
           </button>
         </div>

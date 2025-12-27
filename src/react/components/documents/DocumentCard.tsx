@@ -41,10 +41,11 @@ export function DocumentCard({
 
   return (
     <div
-      className={`rag-doc-card ${isSelected ? 'rag-doc-card-selected' : ''}`}
+      className={`rag-doc-card ${isSelected ? 'rag-doc-card--selected' : ''}`}
       onClick={handleCardClick}
       role="button"
       tabIndex={0}
+      aria-pressed={isSelected}
       onKeyDown={(e) => {
         if (e.key === 'Enter' || e.key === ' ') {
           e.preventDefault();

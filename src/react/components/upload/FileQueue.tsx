@@ -97,6 +97,14 @@ function FileQueueItem({
             <span
               className={`rag-upload-queue-item-name ${canEdit ? 'editable' : ''}`}
               onClick={handleStartEdit}
+              onKeyDown={(e) => {
+                if (canEdit && (e.key === 'Enter' || e.key === ' ')) {
+                  e.preventDefault();
+                  handleStartEdit();
+                }
+              }}
+              tabIndex={canEdit ? 0 : undefined}
+              role={canEdit ? 'button' : undefined}
               title={file.name}
             >
               {file.name}

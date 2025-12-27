@@ -65,6 +65,7 @@ export function ChatInput({
             boxShadow: hasInput ? `0 4px 14px 0 ${accentColor}40` : undefined,
           }}
           title="Send message"
+          aria-label="Send message"
         >
           <Send size={18} aria-hidden="true" />
         </button>

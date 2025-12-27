@@ -69,10 +69,10 @@ export function CategoryFilter({
             fontSize: '13px',
             fontWeight: selected === null ? 600 : 400,
             border: '1px solid',
-            borderColor: selected === null ? '#6366f1' : '#e5e7eb',
+            borderColor: selected === null ? 'var(--curator-accent, #6366f1)' : 'var(--curator-border-light)',
             borderRadius: '6px',
-            backgroundColor: selected === null ? '#6366f1' : '#ffffff',
-            color: selected === null ? '#ffffff' : '#374151',
+            backgroundColor: selected === null ? 'var(--curator-accent, #6366f1)' : 'var(--curator-bg-surface)',
+            color: selected === null ? 'white' : 'var(--curator-text-secondary)',
             cursor: 'pointer',
             transition: 'all 0.15s ease',
           }}
@@ -93,10 +93,10 @@ export function CategoryFilter({
                 fontSize: '13px',
                 fontWeight: isSelected ? 600 : 400,
                 border: '1px solid',
-                borderColor: isSelected ? category.color : '#e5e7eb',
+                borderColor: isSelected ? category.color : 'var(--curator-border-light)',
                 borderRadius: '6px',
-                backgroundColor: isSelected ? category.color : '#ffffff',
-                color: isSelected ? getContrastColor(category.color) : '#374151',
+                backgroundColor: isSelected ? category.color : 'var(--curator-bg-surface)',
+                color: isSelected ? getContrastColor(category.color) : 'var(--curator-text-secondary)',
                 cursor: 'pointer',
                 transition: 'all 0.15s ease',
               }}
@@ -136,18 +136,18 @@ export function CategoryFilter({
           padding: '8px 12px',
           fontSize: '14px',
           fontWeight: 400,
-          border: '1px solid #e5e7eb',
+          border: '1px solid var(--curator-border-light)',
           borderRadius: '6px',
-          backgroundColor: '#ffffff',
-          color: '#374151',
+          backgroundColor: 'var(--curator-bg-surface)',
+          color: 'var(--curator-text-secondary)',
           cursor: 'pointer',
           transition: 'border-color 0.15s ease',
         }}
         onFocus={(e) => {
-          e.currentTarget.style.borderColor = '#6366f1';
+          e.currentTarget.style.borderColor = 'var(--curator-accent, #6366f1)';
         }}
         onBlur={(e) => {
-          e.currentTarget.style.borderColor = '#e5e7eb';
+          e.currentTarget.style.borderColor = 'var(--curator-border-light)';
         }}
         aria-haspopup="listbox"
         aria-expanded={isOpen}
@@ -166,7 +166,7 @@ export function CategoryFilter({
               <span>{selectedCategory.name}</span>
             </>
           ) : (
-            <span style={{ color: '#9ca3af' }}>{placeholder}</span>
+            <span style={{ color: 'var(--curator-text-muted)' }}>{placeholder}</span>
           )}
         </span>
         <svg
@@ -201,10 +201,10 @@ export function CategoryFilter({
             margin: 0,
             padding: '4px',
             listStyle: 'none',
-            backgroundColor: '#ffffff',
-            border: '1px solid #e5e7eb',
+            backgroundColor: 'var(--curator-bg-surface)',
+            border: '1px solid var(--curator-border-light)',
             borderRadius: '6px',
-            boxShadow: '0 4px 12px rgba(0, 0, 0, 0.1)',
+            boxShadow: 'var(--curator-shadow-lg, 0 4px 12px rgba(0, 0, 0, 0.1))',
             zIndex: 50,
             maxHeight: '240px',
             overflowY: 'auto',
@@ -228,15 +228,15 @@ export function CategoryFilter({
                 fontWeight: selected === null ? 600 : 400,
                 border: 'none',
                 borderRadius: '4px',
-                backgroundColor: selected === null ? '#f3f4f6' : 'transparent',
-                color: '#374151',
+                backgroundColor: selected === null ? 'var(--curator-bg-subtle)' : 'transparent',
+                color: 'var(--curator-text-secondary)',
                 cursor: 'pointer',
                 textAlign: 'left',
                 transition: 'background-color 0.1s ease',
               }}
               onMouseEnter={(e) => {
                 if (selected !== null) {
-                  e.currentTarget.style.backgroundColor = '#f9fafb';
+                  e.currentTarget.style.backgroundColor = 'var(--curator-bg-hover)';
                 }
               }}
               onMouseLeave={(e) => {
@@ -252,7 +252,7 @@ export function CategoryFilter({
                   width: '10px',
                   height: '10px',
                   borderRadius: '2px',
-                  backgroundColor: '#9ca3af',
+                  backgroundColor: 'var(--curator-text-muted)',
                 }}
               />
               <span>{placeholder}</span>
@@ -280,15 +280,15 @@ export function CategoryFilter({
                     fontWeight: isSelected ? 600 : 400,
                     border: 'none',
                     borderRadius: '4px',
-                    backgroundColor: isSelected ? '#f3f4f6' : 'transparent',
-                    color: '#374151',
+                    backgroundColor: isSelected ? 'var(--curator-bg-subtle)' : 'transparent',
+                    color: 'var(--curator-text-secondary)',
                     cursor: 'pointer',
                     textAlign: 'left',
                     transition: 'background-color 0.1s ease',
                   }}
                   onMouseEnter={(e) => {
                     if (!isSelected) {
-                      e.currentTarget.style.backgroundColor = '#f9fafb';
+                      e.currentTarget.style.backgroundColor = 'var(--curator-bg-hover)';
                     }
                   }}
                   onMouseLeave={(e) => {

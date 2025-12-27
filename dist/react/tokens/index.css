@@ -45,6 +45,10 @@
   color-scheme: dark;
 }
 
+:root[data-theme="light"] {
+  color-scheme: light;
+}
+
 /* Base typography defaults */
 html {
   font-family: var(--curator-font-sans);
@@ -83,8 +87,8 @@ html {
   background-color: var(--curator-border-medium);
 }
 
-/* Firefox scrollbar */
-* {
+/* Firefox scrollbar - inherits to all elements */
+html {
   scrollbar-width: thin;
   scrollbar-color: var(--curator-border-light) transparent;
 }

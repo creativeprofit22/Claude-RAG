@@ -46,7 +46,7 @@ export function ChatHeader({
           <button
             type="button"
             onClick={onClearChat}
-            className="rag-chat-header-clear"
+            className="curator-btn curator-btn-icon rag-chat-header-clear"
             title="Clear chat"
           >
             <Trash2 size={16} aria-hidden="true" />

@@ -97,15 +97,15 @@ export function RAGChat({
   }, [messages.length, isTyping]);
 
   const defaultEmptyState = (
-    <div className="rag-empty-state">
+    <div className="curator-empty-state">
       <div
-        className="rag-empty-icon"
+        className="curator-empty-state-icon"
         style={{ boxShadow: `0 0 30px ${accentColor}15` }}
       >
         <Database size={48} style={{ color: accentColor }} aria-hidden="true" />
       </div>
-      <h3 className="rag-empty-title">Start a conversation</h3>
-      <p className="rag-empty-description">
+      <h3 className="curator-empty-state-title">Start a conversation</h3>
+      <p className="curator-empty-state-description">
         Ask questions about your documents. Get instant, accurate answers with source citations.
       </p>
     </div>
@@ -124,13 +124,13 @@ export function RAGChat({
 
       {/* Error Banner */}
       {error && (
-        <div className="rag-error-banner" role="alert">
+        <div className="curator-error-banner" role="alert">
           <AlertCircle size={16} aria-hidden="true" />
           <span>{error}</span>
           <button
             type="button"
             onClick={() => setError(null)}
-            className="rag-error-dismiss"
+            className="curator-error-dismiss"
             aria-label="Dismiss error"
           >
             <X size={14} />

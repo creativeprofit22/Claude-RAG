@@ -120,7 +120,7 @@ export function UploadModal({
 
   return (
     <div
-      className={`rag-upload-modal-overlay ${className}`}
+      className={`curator-overlay rag-upload-modal-overlay ${className}`}
       onClick={handleBackdropClick}
       role="dialog"
       aria-modal="true"

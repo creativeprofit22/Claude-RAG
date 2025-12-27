@@ -131,7 +131,7 @@ export function SettingsModal({
 
   return (
     <div
-      className="rag-upload-modal-overlay"
+      className="curator-overlay rag-upload-modal-overlay"
       onClick={handleBackdropClick}
       role="dialog"
       aria-modal="true"

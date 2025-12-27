@@ -79,7 +79,7 @@ export function Dropdown<T extends string>({
         <span>{currentLabel}</span>
         <ChevronDown
           size={14}
-          className={`rag-dropdown-chevron ${isOpen ? 'rag-dropdown-chevron-open' : ''}`}
+          className={`rag-dropdown-chevron ${isOpen ? 'rag-dropdown-chevron--open' : ''}`}
           aria-hidden="true"
         />
       </button>
@@ -90,7 +90,7 @@ export function Dropdown<T extends string>({
             <button
               key={option.value}
               type="button"
-              className={`rag-dropdown-option ${value === option.value ? 'rag-dropdown-option-active' : ''} ${optionClassName}`}
+              className={`rag-dropdown-option ${value === option.value ? 'rag-dropdown-option--active' : ''} ${optionClassName}`}
               onClick={() => handleSelect(option.value)}
               role="option"
               aria-selected={value === option.value}

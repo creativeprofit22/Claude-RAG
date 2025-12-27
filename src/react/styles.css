@@ -6,10 +6,167 @@
 /* Import Curator Design Tokens */
 @import './tokens/index.css';
 
-/* CSS Custom Properties */
-/* Note: The tokens above now define the --rag-* variables via legacy mapping */
-:root {
-  /* Legacy variables now mapped in tokens/colors.css */
+/* ============================================
+   Shared Patterns (DRY extraction)
+   ============================================ */
+
+/* Modal overlay base - shared by preview, confirm, upload modals */
+.curator-overlay {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: var(--curator-overlay-bg);
+  backdrop-filter: blur(4px);
+  animation: curator-fade-in 0.15s ease-out;
+}
+
+/* Error banner base - shared by chat, library, admin error banners */
+.curator-error-banner {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1rem;
+  background-color: var(--curator-error-bg);
+  border-bottom: 1px solid var(--curator-error-border);
+  color: var(--curator-error-light);
+  font-size: 0.875rem;
+}
+
+.curator-error-dismiss {
+  background: none;
+  border: none;
+  color: inherit;
+  cursor: pointer;
+  padding: 0.25rem;
+  margin-left: auto;
+  opacity: 0.7;
+  transition: var(--curator-transition-opacity);
+}
+
+.curator-error-dismiss:hover {
+  opacity: 1;
+}
+
+/* Dropdown base states - shared by all dropdowns */
+.rag-dropdown-chevron {
+  transition: var(--curator-transition-transform);
+}
+
+.rag-dropdown-chevron--open {
+  transform: rotate(180deg);
+}
+
+.rag-dropdown-option--active {
+  color: var(--curator-text-primary);
+  background-color: var(--curator-bg-subtle);
+}
+
+/* Empty state base - shared by chat, doc-list, library empty states */
+.curator-empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 2rem;
+}
+
+.curator-empty-state-icon {
+  padding: 1rem;
+  border-radius: 1rem;
+  background-color: var(--curator-bg-subtle);
+  border: 1px solid var(--curator-border-light);
+  margin-bottom: 1rem;
+  backdrop-filter: blur(8px);
+}
+
+.curator-empty-state-title {
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: var(--curator-text-primary);
+  margin: 0 0 0.5rem 0;
+}
+
+.curator-empty-state-description {
+  font-size: 0.875rem;
+  color: var(--curator-text-secondary);
+  max-width: 20rem;
+  margin: 0;
+}
+
+/* Button base - shared interactive button patterns */
+.curator-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: var(--curator-transition-all);
+}
+
+.curator-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Ghost button - subtle background with border */
+.curator-btn-ghost {
+  padding: 0.5rem 0.75rem;
+  background-color: var(--curator-bg-subtle);
+  border: 1px solid var(--curator-border-light);
+  border-radius: 0.5rem;
+  color: var(--curator-text-secondary);
+  font-size: 0.8125rem;
+}
+
+.curator-btn-ghost:hover:not(:disabled) {
+  background-color: var(--curator-bg-hover);
+  color: var(--curator-text-primary);
+}
+
+/* Primary button - accent colored */
+.curator-btn-primary {
+  padding: 0.625rem 1rem;
+  background-color: var(--curator-success);
+  border: none;
+  border-radius: 0.5rem;
+  color: white;
+  font-size: 0.875rem;
+}
+
+.curator-btn-primary:hover:not(:disabled) {
+  filter: brightness(1.1);
+}
+
+/* Icon button - minimal, for icon-only buttons */
+.curator-btn-icon {
+  padding: 0.375rem;
+  background: transparent;
+  border: none;
+  border-radius: 0.375rem;
+  color: var(--curator-text-muted);
+}
+
+.curator-btn-icon:hover:not(:disabled) {
+  background-color: var(--curator-bg-hover);
+  color: var(--curator-text-primary);
+}
+
+/* Danger button - destructive actions */
+.curator-btn-danger {
+  padding: 0.5rem 1rem;
+  background-color: var(--curator-error);
+  border: none;
+  border-radius: 0.375rem;
+  color: white;
+  font-size: 0.8125rem;
+}
+
+.curator-btn-danger:hover:not(:disabled) {
+  filter: brightness(0.9);
 }
 
 /* Base container */
@@ -65,18 +222,15 @@
   margin: 0;
 }
 
+/* Extends curator-btn curator-btn-icon */
 .rag-chat-header-clear {
   padding: 0.5rem;
-  border-radius: 0.5rem;
   background-color: var(--curator-bg-subtle);
   border: 1px solid var(--curator-border-light);
-  color: var(--curator-text-secondary);
-  cursor: pointer;
-  transition: var(--curator-transition-all);
+  border-radius: 0.5rem;
 }
 
 .rag-chat-header-clear:hover {
-  background-color: var(--curator-bg-hover);
   color: var(--curator-error);
 }
 
@@ -89,40 +243,6 @@
   display: flex;
   flex-direction: column;
   gap: 0.25rem;
-}
-
-/* Empty state */
-.rag-empty-state {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  height: 100%;
-  text-align: center;
-  padding: 2rem;
-}
-
-.rag-empty-icon {
-  padding: 1rem;
-  border-radius: 1rem;
-  background-color: var(--curator-bg-subtle);
-  border: 1px solid var(--curator-border-light);
-  margin-bottom: 1rem;
-  backdrop-filter: blur(8px);
-}
-
-.rag-empty-title {
-  font-size: 1.125rem;
-  font-weight: 600;
-  color: var(--curator-text-primary);
-  margin: 0 0 0.5rem 0;
-}
-
-.rag-empty-description {
-  font-size: 0.875rem;
-  color: var(--curator-text-secondary);
-  max-width: 20rem;
-  margin: 0;
 }
 
 /* Message bubbles */
@@ -202,6 +322,7 @@
   width: 0.5rem;
   height: 0.5rem;
   border-radius: 50%;
+  background-color: var(--curator-text-muted);
   animation: curator-bounce 1s infinite;
 }
 
@@ -236,6 +357,11 @@
 .rag-sources-toggle:hover {
   background-color: var(--curator-bg-hover);
   color: var(--curator-text-primary);
+}
+
+.rag-sources-toggle:focus-visible {
+  outline: 2px solid var(--curator-accent, #6366f1);
+  outline-offset: 2px;
 }
 
 .rag-sources-list {
@@ -307,12 +433,7 @@
   width: 0.5rem;
   height: 0.5rem;
   border-radius: 50%;
-  animation: curator-bounce 1s infinite;
-}
-
-/* Loading dots use Curator bounce animation */
-.rag-loading-dots span,
-.rag-typing-dot {
+  background-color: var(--curator-text-muted);
   animation: curator-bounce 1s infinite;
 }
 
@@ -381,32 +502,6 @@
 
 .rag-chat-send-button:not(:disabled) {
   color: var(--curator-text-primary);
-}
-
-/* Error banner */
-.rag-error-banner {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  padding: 0.75rem 1rem;
-  background-color: var(--curator-error-bg);
-  border-bottom: 1px solid var(--curator-error-border);
-  color: var(--curator-error-light);
-  font-size: 0.875rem;
-}
-
-.rag-error-dismiss {
-  background: none;
-  border: none;
-  color: inherit;
-  cursor: pointer;
-  padding: 0.25rem;
-  margin-left: auto;
-  opacity: 0.7;
-}
-
-.rag-error-dismiss:hover {
-  opacity: 1;
 }
 
 /* ============================================
@@ -493,7 +588,7 @@
   transition: var(--curator-transition-transform);
 }
 
-.rag-doc-sort-chevron-open {
+.rag-doc-sort-chevron--open {
   transform: rotate(180deg);
 }
 
@@ -529,7 +624,7 @@
   color: var(--curator-text-primary);
 }
 
-.rag-doc-sort-option-active {
+.rag-doc-sort-option--active {
   color: var(--curator-text-primary);
   background-color: var(--curator-bg-subtle);
 }
@@ -547,6 +642,11 @@
 .rag-doc-sort-order:hover {
   background-color: var(--curator-bg-hover);
   color: var(--curator-text-primary);
+}
+
+.rag-doc-sort-order:focus-visible {
+  outline: 2px solid var(--curator-accent, #6366f1);
+  outline-offset: 2px;
 }
 
 /* Document List */
@@ -596,12 +696,12 @@
   border-color: var(--curator-border-medium);
 }
 
-.rag-doc-card-selected {
+.rag-doc-card--selected {
   background-color: var(--curator-gold-subtle);
   border-color: var(--curator-border-gold);
 }
 
-.rag-doc-card-selected:hover {
+.rag-doc-card--selected:hover {
   background-color: var(--curator-gold-hover);
   border-color: var(--curator-gold);
 }
@@ -706,12 +806,12 @@
 }
 
 .rag-doc-card-skeleton .rag-doc-card-icon {
-  background-color: rgba(255, 255, 255, 0.08);
+  background-color: var(--curator-skeleton-base);
 }
 
 .rag-skeleton-line {
   height: 0.75rem;
-  background-color: rgba(255, 255, 255, 0.08);
+  background-color: var(--curator-skeleton-base);
   border-radius: 0.25rem;
   animation: curator-skeleton 1.5s ease-in-out infinite;
 }
@@ -732,61 +832,20 @@
   height: 0.625rem;
 }
 
-/* Skeleton uses Curator animation */
-.rag-skeleton-pulse {
-  animation: curator-skeleton 1.5s ease-in-out infinite;
-}
-
-/* Document List Empty State */
+/* Document List Empty State - overrides for curator-empty-state */
 .rag-doc-list-empty {
   flex: 1;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
   padding: 3rem 2rem;
-  text-align: center;
 }
 
-.rag-doc-list-empty-icon {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 5rem;
-  height: 5rem;
-  background-color: var(--curator-bg-subtle);
-  border: 1px solid var(--curator-border-light);
-  border-radius: 1rem;
-  color: var(--curator-text-muted);
-  margin-bottom: 1rem;
-}
-
-.rag-doc-list-empty-title {
+.rag-doc-list-empty .curator-empty-state-title {
   font-size: 1rem;
-  font-weight: 600;
-  color: var(--curator-text-primary);
-  margin: 0 0 0.5rem 0;
-}
-
-.rag-doc-list-empty-description {
-  font-size: 0.875rem;
-  color: var(--curator-text-secondary);
-  max-width: 20rem;
-  margin: 0;
 }
 
 /* Document Preview Modal */
 .rag-preview-overlay {
-  position: fixed;
-  inset: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
   padding: 1rem;
-  background-color: var(--curator-overlay-bg);
-  backdrop-filter: blur(4px);
   z-index: 100;
-  animation: curator-fade-in 0.15s ease-out;
 }
 
 
@@ -856,6 +915,7 @@
   letter-spacing: 0.05em;
 }
 
+/* Extends curator-btn curator-btn-icon */
 .rag-preview-close {
   flex-shrink: 0;
   padding: 0.5rem;
@@ -863,13 +923,6 @@
   border: 1px solid var(--curator-border-light);
   border-radius: 0.5rem;
   color: var(--curator-text-secondary);
-  cursor: pointer;
-  transition: var(--curator-transition-colors);
-}
-
-.rag-preview-close:hover {
-  background-color: var(--curator-bg-hover);
-  color: var(--curator-text-primary);
 }
 
 .rag-preview-metadata {
@@ -952,7 +1005,7 @@
 
 .rag-preview-skeleton {
   height: 5rem;
-  background-color: rgba(255, 255, 255, 0.05);
+  background-color: var(--curator-skeleton-base);
   border-radius: 0.5rem;
   animation: curator-skeleton 1.5s ease-in-out infinite;
 }
@@ -1089,33 +1142,6 @@
   color: var(--curator-text-primary);
 }
 
-/* Library Error Banner */
-.rag-library-error {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  padding: 0.75rem 1rem;
-  background-color: var(--curator-error-bg);
-  border-bottom: 1px solid var(--curator-error-border);
-  color: var(--curator-error-light);
-  font-size: 0.875rem;
-}
-
-.rag-library-error-dismiss {
-  background: none;
-  border: none;
-  color: inherit;
-  cursor: pointer;
-  padding: 0.25rem;
-  margin-left: auto;
-  opacity: 0.7;
-  transition: var(--curator-transition-opacity);
-}
-
-.rag-library-error-dismiss:hover {
-  opacity: 1;
-}
-
 /* Library Content */
 .rag-library-content {
   flex: 1;
@@ -1125,39 +1151,15 @@
   flex-direction: column;
 }
 
-/* Library Empty State */
+/* Library Empty State - overrides for curator-empty-state */
 .rag-library-empty {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
   flex: 1;
   min-height: 300px;
-  text-align: center;
-  padding: 2rem;
 }
 
-.rag-library-empty-icon {
+.rag-library-empty .curator-empty-state-icon {
   padding: 1.25rem;
-  border-radius: 1rem;
   background-color: var(--curator-bg-hover);
-  border: 1px solid var(--curator-border-light);
-  margin-bottom: 1rem;
-  backdrop-filter: blur(8px);
-}
-
-.rag-library-empty-title {
-  font-size: 1.125rem;
-  font-weight: 600;
-  color: var(--curator-text-primary);
-  margin: 0 0 0.5rem 0;
-}
-
-.rag-library-empty-description {
-  font-size: 0.875rem;
-  color: var(--curator-text-secondary);
-  max-width: 20rem;
-  margin: 0;
 }
 
 /* ============================================
@@ -1165,16 +1167,8 @@
    ============================================ */
 
 .rag-confirm-overlay {
-  position: fixed;
-  inset: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
   padding: 1rem;
-  background-color: var(--curator-overlay-bg);
-  backdrop-filter: blur(4px);
   z-index: 110;
-  animation: curator-fade-in 0.15s ease-out;
 }
 
 .rag-confirm-dialog {
@@ -1223,18 +1217,9 @@
   margin: 0;
 }
 
+/* Extends curator-btn curator-btn-icon */
 .rag-confirm-close {
   flex-shrink: 0;
-  padding: 0.375rem;
-  background: none;
-  border: none;
-  color: var(--curator-text-muted);
-  cursor: pointer;
-  transition: var(--curator-transition-colors);
-}
-
-.rag-confirm-close:hover {
-  color: var(--curator-text-primary);
 }
 
 .rag-confirm-body {
@@ -1257,26 +1242,23 @@
   background-color: var(--curator-bg-subtle);
 }
 
+/* Confirm button overrides - base uses curator-btn + variant */
 .rag-confirm-btn {
   padding: 0.5rem 1rem;
   font-size: 0.8125rem;
-  font-weight: 500;
   border-radius: 0.375rem;
-  cursor: pointer;
-  transition: var(--curator-transition-all);
 }
 
+/* Cancel extends curator-btn-ghost */
 .rag-confirm-btn-cancel {
   background-color: var(--curator-bg-hover);
-  border: 1px solid var(--curator-border-light);
-  color: var(--curator-text-secondary);
 }
 
 .rag-confirm-btn-cancel:hover {
   background-color: var(--curator-bg-elevated);
-  color: var(--curator-text-primary);
 }
 
+/* Confirm extends curator-btn-primary - override colors */
 .rag-confirm-btn-confirm {
   background-color: var(--curator-bg-hover);
   border: 1px solid var(--curator-border-light);
@@ -1285,17 +1267,10 @@
 
 .rag-confirm-btn-confirm:hover {
   background-color: var(--curator-bg-elevated);
+  filter: none;
 }
 
-.rag-confirm-btn-destructive {
-  background-color: var(--curator-error);
-  border: none;
-  color: white;
-}
-
-.rag-confirm-btn-destructive:hover {
-  filter: brightness(0.9);
-}
+/* Destructive extends curator-btn-danger - no additional overrides needed */
 
 /* ============================================
    RAG Interface (Unified Chat + Documents)
@@ -1430,15 +1405,7 @@
 
 /* Modal Overlay */
 .rag-upload-modal-overlay {
-  position: fixed;
-  inset: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background-color: var(--curator-overlay-bg);
-  backdrop-filter: blur(4px);
   z-index: 100;
-  animation: curator-fade-in 0.15s ease-out;
 }
 
 /* Modal Container */
@@ -2152,60 +2119,19 @@
   margin: 0;
 }
 
+/* Extends curator-btn curator-btn-ghost */
 .rag-admin-refresh-btn {
-  display: flex;
-  align-items: center;
   gap: 0.375rem;
   padding: 0.5rem 0.875rem;
   background-color: var(--curator-bg-hover);
-  border: 1px solid var(--curator-border-light);
-  border-radius: 0.5rem;
-  font-size: 0.8125rem;
-  font-weight: 500;
-  color: var(--curator-text-secondary);
-  cursor: pointer;
-  transition: var(--curator-transition-all);
 }
 
 .rag-admin-refresh-btn:hover:not(:disabled) {
   background-color: var(--curator-bg-elevated);
-  color: var(--curator-text-primary);
-}
-
-.rag-admin-refresh-btn:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
 }
 
 .rag-admin-refresh-btn .spin {
-  animation: spin 1s linear infinite;
-}
-
-/* Error Banner */
-.rag-admin-error {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  padding: 0.75rem 1rem;
-  background-color: var(--curator-error-bg);
-  border-bottom: 1px solid var(--curator-error-border);
-  color: var(--curator-error-light);
-  font-size: 0.875rem;
-}
-
-.rag-admin-error-dismiss {
-  background: none;
-  border: none;
-  color: inherit;
-  cursor: pointer;
-  padding: 0.25rem;
-  margin-left: auto;
-  opacity: 0.7;
-  transition: var(--curator-transition-opacity);
-}
-
-.rag-admin-error-dismiss:hover {
-  opacity: 1;
+  animation: curator-spin 1s linear infinite;
 }
 
 /* Health Status Banner */
@@ -2693,7 +2619,7 @@
 }
 
 .rag-settings-test-btn .spin {
-  animation: spin 1s linear infinite;
+  animation: curator-spin 1s linear infinite;
 }
 
 .rag-settings-result {

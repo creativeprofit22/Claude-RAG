@@ -27,6 +27,6 @@ export function ChatInput({ placeholder = 'Ask a question about your documents..
                     } }), _jsx("button", { type: "button", onClick: handleSend, disabled: !hasInput || disabled, className: "rag-chat-send-button", style: {
                         backgroundColor: hasInput ? accentColor : undefined,
                         boxShadow: hasInput ? `0 4px 14px 0 ${accentColor}40` : undefined,
-                    }, title: "Send message", children: _jsx(Send, { size: 18, "aria-hidden": "true" }) })] }) }));
+                    }, title: "Send message", "aria-label": "Send message", children: _jsx(Send, { size: 18, "aria-hidden": "true" }) })] }) }));
 }
 //# sourceMappingURL=ChatInput.js.map

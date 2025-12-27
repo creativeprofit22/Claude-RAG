@@ -29,7 +29,7 @@ export function ConfirmDialog({
 
   return (
     <div
-      className="rag-confirm-overlay"
+      className="curator-overlay rag-confirm-overlay"
       onClick={handleBackdropClick}
       role="dialog"
       aria-modal="true"
@@ -51,7 +51,7 @@ export function ConfirmDialog({
           <button
             type="button"
             onClick={onCancel}
-            className="rag-confirm-close"
+            className="curator-btn curator-btn-icon rag-confirm-close"
             aria-label="Close dialog"
           >
             <X size={18} />
@@ -68,15 +68,15 @@ export function ConfirmDialog({
           <button
             type="button"
             onClick={onCancel}
-            className="rag-confirm-btn rag-confirm-btn-cancel"
+            className="curator-btn curator-btn-ghost rag-confirm-btn rag-confirm-btn-cancel"
           >
             {cancelLabel}
           </button>
           <button
             type="button"
             onClick={onConfirm}
-            className={`rag-confirm-btn ${
-              isDestructive ? 'rag-confirm-btn-destructive' : 'rag-confirm-btn-confirm'
+            className={`curator-btn rag-confirm-btn ${
+              isDestructive ? 'curator-btn-danger rag-confirm-btn-destructive' : 'curator-btn-primary rag-confirm-btn-confirm'
             }`}
           >
             {confirmLabel}
