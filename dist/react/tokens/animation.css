@@ -147,6 +147,58 @@
   }
 }
 
+/* =========================================
+   Exit Animations
+   Paired with entrance animations
+   ========================================= */
+
+/* Fade Out - Simple, dignified exit */
+@keyframes curator-fade-out {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
+  }
+}
+
+/* Slide Down - Modal/panel exit */
+@keyframes curator-slide-down {
+  from {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  to {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+}
+
+/* Scale Out - Subtle zoom exit */
+@keyframes curator-scale-out {
+  from {
+    opacity: 1;
+    transform: scale(1);
+  }
+  to {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+}
+
+/* Shake - Error state feedback */
+@keyframes curator-shake {
+  0%, 100% {
+    transform: translateX(0);
+  }
+  10%, 30%, 50%, 70%, 90% {
+    transform: translateX(-4px);
+  }
+  20%, 40%, 60%, 80% {
+    transform: translateX(4px);
+  }
+}
+
 /* Glow pulse - Gold accent animation */
 @keyframes curator-glow {
   0%, 100% {
@@ -231,6 +283,36 @@
 
 .curator-animate-skeleton {
   animation: curator-skeleton 1.5s var(--curator-ease-in-out) infinite;
+}
+
+.curator-animate-scale-in {
+  animation: curator-scale-in var(--curator-duration-normal) var(--curator-ease-out);
+}
+
+.curator-animate-glow {
+  animation: curator-glow 2s var(--curator-ease-in-out) infinite;
+}
+
+/* Exit animations */
+.curator-animate-fade-out {
+  animation: curator-fade-out var(--curator-duration-fast) var(--curator-ease-out) forwards;
+}
+
+.curator-animate-slide-down {
+  animation: curator-slide-down var(--curator-duration-slow) var(--curator-ease-out) forwards;
+}
+
+.curator-animate-scale-out {
+  animation: curator-scale-out var(--curator-duration-normal) var(--curator-ease-out) forwards;
+}
+
+/* Feedback animations */
+.curator-animate-shake {
+  animation: curator-shake var(--curator-duration-slow) cubic-bezier(0.36, 0.07, 0.19, 0.97);
+}
+
+.curator-animate-bounce {
+  animation: curator-bounce 1.4s infinite ease-in-out;
 }
 
 /* Reduced motion preference */

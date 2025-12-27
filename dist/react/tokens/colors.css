@@ -24,26 +24,28 @@
   --curator-text-primary: oklch(0.985 0.001 106);     /* #fafaf9 - main text */
   --curator-text-secondary: oklch(0.709 0.01 56);     /* #a8a29e - secondary */
   --curator-text-muted: oklch(0.553 0.013 58);        /* #78716c - muted/disabled */
-  --curator-text-faint: oklch(0.45 0.01 55);          /* very subtle text */
+  /* TODO Phase 2: For disabled states, placeholders, or watermark text */
+  --curator-text-faint: oklch(0.45 0.01 55);
 
   /* =========================================
      Accent - Gold/Amber (The Curator Signature)
+     Base colors defined once, variants use oklch(from ...) for DRY
      ========================================= */
   --curator-gold: oklch(0.65 0.18 74);                /* #d97706 - primary gold */
   --curator-gold-bright: oklch(0.72 0.18 74);         /* brighter gold for highlights */
-  --curator-gold-muted: oklch(0.65 0.18 74 / 0.15);   /* gold with transparency */
-  --curator-gold-subtle: oklch(0.65 0.18 74 / 0.08);  /* very subtle gold tint */
+  --curator-gold-muted: oklch(from var(--curator-gold) l c h / 0.15);   /* gold with transparency */
+  --curator-gold-subtle: oklch(from var(--curator-gold) l c h / 0.08);  /* very subtle gold tint */
   --curator-cream: oklch(0.92 0.08 85);               /* #fef3c7 - cream accent */
-  --curator-cream-muted: oklch(0.92 0.08 85 / 0.6);   /* softer cream */
+  --curator-cream-muted: oklch(from var(--curator-cream) l c h / 0.6);  /* softer cream */
 
   /* =========================================
-     Borders - Warm & Subtle
+     Borders - Warm & Subtle (derived from base colors)
      ========================================= */
-  --curator-border-subtle: oklch(0.92 0.08 85 / 0.08);   /* barely visible */
-  --curator-border-light: oklch(0.92 0.08 85 / 0.12);    /* light border */
-  --curator-border-medium: oklch(0.92 0.08 85 / 0.18);   /* standard border */
-  --curator-border-gold: oklch(0.65 0.18 74 / 0.4);      /* gold accent border */
-  --curator-border-gold-strong: oklch(0.65 0.18 74 / 0.6); /* stronger gold */
+  --curator-border-subtle: oklch(from var(--curator-cream) l c h / 0.08);   /* barely visible */
+  --curator-border-light: oklch(from var(--curator-cream) l c h / 0.12);    /* light border */
+  --curator-border-medium: oklch(from var(--curator-cream) l c h / 0.18);   /* standard border */
+  --curator-border-gold: oklch(from var(--curator-gold) l c h / 0.4);       /* gold accent border */
+  --curator-border-gold-strong: oklch(from var(--curator-gold) l c h / 0.6); /* stronger gold */
 
   /* =========================================
      Semantic - Status Colors (Warmed)
@@ -86,7 +88,13 @@
   --curator-shadow-xl: 0 20px 40px var(--curator-shadow-color);
 
   /* =========================================
+     Overlays - Modal/Dialog Backdrops
+     ========================================= */
+  --curator-overlay-bg: oklch(0.1 0.02 50 / 0.7);
+
+  /* =========================================
      Special - Paper Texture Colors
+     TODO Phase 2: For CSS noise/grain overlays on cards/surfaces
      ========================================= */
   --curator-paper-speckle: oklch(0.95 0.02 85 / 0.03);
   --curator-paper-grain: oklch(0.90 0.03 80 / 0.02);

@@ -13,29 +13,41 @@ Query → Gemini Embeddings → LanceDB → Chunks → Claude Code CLI → Respo
 ```
 
 ## Current Focus
-Section: Tab Navigation
-Files: demo/index.html, demo/demo.js, demo/styles.css
+Section: The Curator Design System
+Files: src/react/styles.css, src/react/tokens/*, src/react/fonts/*
 
 ## Pipeline State
-Phase: refactoring
-Feature: Tab Navigation (Chat/Admin sections)
-Reports:
-  - refactors: reports/refactors-tab-navigation.md
-Refactors-Remaining: 14 (High: 0, Medium: 0, Low: 14)
+Phase: build
+Feature: The Curator Design System
+Files:
+  - src/react/tokens/colors.css
+  - src/react/tokens/typography.css
+  - src/react/tokens/animation.css
+  - src/react/tokens/spacing.css
+  - src/react/tokens/index.css
+  - src/react/fonts/Fraunces-*.woff2
+  - src/react/fonts/Satoshi-*.woff2
+  - src/react/styles.css
+Plan: /home/reaver47/.claude/plans/eventual-seeking-ripple.md
+Current-Phase: 1 of 6 complete
 
-## Last Session (2025-12-27)
-Completed remaining Medium refactors:
-- #3: Added JSDoc to renderChat, renderAdmin, renderApiConfig, initDemo
-- #6: Replaced inline SVG with Lucide upload icon + lucide.createIcons()
-- #5, #7, #8: Skipped (not applicable or adds complexity)
-- Committed: 604847c, pushed to origin
-- Stopped at: Low priority refactors (14 remaining)
+## Last Session (2025-12-26)
+Completed Phase 1 (Token Foundation) of The Curator design system:
+- Created tokens/ directory with OKLCH color palette, typography, animation, spacing
+- Downloaded self-hosted fonts (Fraunces serif + Satoshi sans) - 236KB total
+- Migrated styles.css to use new --curator-* variables (~250+ replacements)
+- Fixed font paths in typography.css (../fonts/)
+- Updated package.json copy-assets script
+- Build verified: `npm run build` SUCCESS
+- Stopped at: Ready for Phase 2 (MessageBubble transformation)
 
 ## Key Files
 - `src/server.ts` - Bun HTTP server
 - `src/database.ts` - LanceDB wrapper
 - `src/responder.ts` - Claude CLI integration
 - `src/react/` - React components and hooks
+- `src/react/tokens/` - Curator design tokens (NEW)
+- `src/react/fonts/` - Self-hosted Fraunces + Satoshi (NEW)
 
 ## Environment
 ```

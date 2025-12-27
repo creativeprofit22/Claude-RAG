@@ -18,14 +18,24 @@
 @import './animation.css';
 
 /* =========================================
+   Global Reset
+   ========================================= */
+
+*, *::before, *::after {
+  box-sizing: border-box;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+}
+
+/* =========================================
    Global Base Styles
    Applied once tokens are loaded
    ========================================= */
 
 :root {
-  /* Smooth scrolling */
-  scroll-behavior: smooth;
-
   /* Optimize text rendering */
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
@@ -77,4 +87,11 @@ html {
 * {
   scrollbar-width: thin;
   scrollbar-color: var(--curator-border-light) transparent;
+}
+
+/* Smooth scrolling - respect reduced motion preference */
+@media (prefers-reduced-motion: no-preference) {
+  :root {
+    scroll-behavior: smooth;
+  }
 }

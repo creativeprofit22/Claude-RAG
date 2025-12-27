@@ -54,6 +54,26 @@
 }
 
 /* =========================================
+   Monospace Fonts (External Loading Required)
+
+   JetBrains Mono and Fira Code are NOT self-hosted.
+   They are included in the font stack as optional
+   enhancements when available via:
+   - Google Fonts CDN
+   - User's local system
+   - Host application's font loading
+
+   The stack gracefully falls back to SF Mono,
+   Consolas, or Liberation Mono (system fonts).
+
+   To enable JetBrains Mono, add to your HTML:
+   <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+
+   To enable Fira Code, add to your HTML:
+   <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600&display=swap" rel="stylesheet">
+   ========================================= */
+
+/* =========================================
    Font Stack Variables
    ========================================= */
 
@@ -122,11 +142,17 @@
   /* Heading 3 - Subsections (serif) */
   --curator-type-h3: var(--curator-weight-medium) var(--curator-text-lg)/var(--curator-leading-snug) var(--curator-font-serif);
 
+  /* Heading 4 - Card titles, list headers (serif) */
+  --curator-type-h4: var(--curator-weight-medium) var(--curator-text-base)/var(--curator-leading-snug) var(--curator-font-serif);
+
   /* Body - Message content (serif, relaxed) */
   --curator-type-body: var(--curator-weight-normal) var(--curator-text-base)/var(--curator-leading-relaxed) var(--curator-font-serif);
 
   /* Body Large - Emphasized content (serif) */
   --curator-type-body-lg: var(--curator-weight-normal) var(--curator-text-lg)/var(--curator-leading-relaxed) var(--curator-font-serif);
+
+  /* Body Small - Secondary content, descriptions (serif) */
+  --curator-type-body-sm: var(--curator-weight-normal) var(--curator-text-sm)/var(--curator-leading-relaxed) var(--curator-font-serif);
 
   /* UI - Interface elements (sans) */
   --curator-type-ui: var(--curator-weight-medium) var(--curator-text-base)/var(--curator-leading-normal) var(--curator-font-sans);
@@ -137,13 +163,28 @@
   /* Caption - Meta info, timestamps (sans) */
   --curator-type-caption: var(--curator-weight-normal) var(--curator-text-sm)/var(--curator-leading-normal) var(--curator-font-sans);
 
+  /* Label - Form labels, field names (sans, medium weight) */
+  --curator-type-label: var(--curator-weight-medium) var(--curator-text-sm)/var(--curator-leading-normal) var(--curator-font-sans);
+
+  /* Button - Button text (sans, medium weight) */
+  --curator-type-button: var(--curator-weight-medium) var(--curator-text-sm)/var(--curator-leading-none) var(--curator-font-sans);
+
+  /* Overline - Section labels, categories (sans, uppercase tracking) */
+  --curator-type-overline: var(--curator-weight-semibold) var(--curator-text-xs)/var(--curator-leading-normal) var(--curator-font-sans);
+
   /* Code - Monospace content */
   --curator-type-code: var(--curator-weight-normal) var(--curator-text-sm)/var(--curator-leading-relaxed) var(--curator-font-mono);
 }
 
 /* =========================================
-   Utility Classes
-   Apply typography styles directly
+   Utility Classes (Public API)
+   Apply typography styles directly.
+
+   NOTE: These classes are part of the public API
+   for consumers who want to apply Curator typography
+   without using CSS variables. Currently unused
+   internally but preserved for backwards compatibility
+   and external consumers.
    ========================================= */
 
 .curator-serif {
@@ -167,4 +208,11 @@
 /* UI elements use sans */
 .curator-ui {
   font: var(--curator-type-ui);
+}
+
+/* Overline elements need letter-spacing (not expressible in font shorthand) */
+.curator-overline {
+  font: var(--curator-type-overline);
+  text-transform: uppercase;
+  letter-spacing: var(--curator-tracking-widest);
 }
