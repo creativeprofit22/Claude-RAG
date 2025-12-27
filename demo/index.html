@@ -16,15 +16,15 @@
 
     <div class="demo-controls">
       <div class="control-group">
-        <label>Title</label>
+        <label for="title">Title</label>
         <input type="text" id="title" value="Document Assistant" />
       </div>
       <div class="control-group">
-        <label>Accent Color</label>
+        <label for="accentColor">Accent Color</label>
         <input type="color" id="accentColor" value="#6366f1" />
       </div>
       <div class="control-group">
-        <label>Responder</label>
+        <label for="responder">Responder</label>
         <select id="responder">
           <option value="auto">Auto (Claude/Gemini)</option>
           <option value="claude">Claude Only</option>
@@ -32,7 +32,7 @@
         </select>
       </div>
       <div class="control-group">
-        <label>Show Sources</label>
+        <label for="showSources">Show Sources</label>
         <select id="showSources">
           <option value="true">Yes</option>
           <option value="false">No</option>
@@ -70,18 +70,18 @@
           <div class="file-upload-area" id="dropZone">
             <input type="file" id="fileInput" multiple accept=".pdf,.docx,.txt,.md,.html,.htm,.xlsx,.xls,.csv,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document,text/plain,text/markdown,text/html,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel,text/csv" style="display: none;" />
             <div class="drop-content">
-              <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#6366f1" stroke-width="2">
+              <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#6366f1" stroke-width="2" aria-hidden="true">
                 <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
                 <polyline points="17 8 12 3 7 8"/>
                 <line x1="12" y1="3" x2="12" y2="15"/>
               </svg>
-              <p>Drag & drop files here or <button type="button" class="browse-btn" onclick="document.getElementById('fileInput').click()">browse</button></p>
+              <p>Drag & drop files here or <label for="fileInput" class="browse-btn">browse</label></p>
               <span class="file-types">PDF, DOCX, Excel, CSV, TXT, MD, HTML</span>
             </div>
           </div>
           <div class="selected-files" id="selectedFiles"></div>
           <div class="upload-actions">
-            <button id="uploadBtn" class="btn-primary" onclick="uploadFiles()" disabled>Upload Files</button>
+            <button id="uploadBtn" class="btn-primary" disabled>Upload Files</button>
             <span class="upload-status" id="uploadStatus"></span>
           </div>
         </div>
@@ -89,9 +89,9 @@
         <div class="sample-questions">
           <h4>Try asking:</h4>
           <div class="sample-buttons" id="sampleQuestions">
-            <button class="sample-btn" onclick="askQuestion('What is this document about?')">What is this about?</button>
-            <button class="sample-btn" onclick="askQuestion('Summarize the key points')">Summarize key points</button>
-            <button class="sample-btn" onclick="askQuestion('What are the main topics covered?')">Main topics</button>
+            <button class="sample-btn" data-question="What is this document about?">What is this about?</button>
+            <button class="sample-btn" data-question="Summarize the key points">Summarize key points</button>
+            <button class="sample-btn" data-question="What are the main topics covered?">Main topics</button>
           </div>
         </div>
 

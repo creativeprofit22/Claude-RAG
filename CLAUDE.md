@@ -17,21 +17,19 @@ Section: Tab Navigation
 Files: demo/index.html, demo/demo.js, demo/styles.css
 
 ## Pipeline State
-Phase: debugging
+Phase: refactoring
 Feature: Tab Navigation (Chat/Admin sections)
-Tier: high
-Tier-Status: pending
 Reports:
-  - bugs: reports/bugs-tab-navigation.md
+  - refactors: reports/refactors-tab-navigation.md
+Refactors-Remaining: 19 (High: 0, Medium: 5, Low: 14)
 
 ## Last Session (2025-12-27)
-- Added tab navigation to demo UI - Chat and Admin now separate sections
-- Demo URL: http://localhost:3000/demo (NOT root path)
-- Ran bug hunt checkpoint, found 3 bugs:
-  - **High**: demo.js:246-248 - Query params break URL when responder dropdown used
-  - **Medium**: demo.js:221-235 - askQuestion() crashes if chat not mounted
-  - **Low**: demo.js:224 - No defensive check on property descriptor
-- Stopped at: Ready to fix high-priority bug
+Completed 3 Medium priority refactors:
+- #4: Extracted FILE_ICON_SVG constant (demo.js:32-36)
+- #1: Extracted parseSSEStream() + uploadSingleFile() helpers (demo.js:131-166)
+- #2: Extracted createReactRenderer() factory (demo.js:210-226)
+- Build verified passing
+- Stopped at: Medium #3 (JSDoc), #5-8 remaining
 
 ## Key Files
 - `src/server.ts` - Bun HTTP server

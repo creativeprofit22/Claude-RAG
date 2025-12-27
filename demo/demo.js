@@ -5,7 +5,35 @@
 
 // Derive API base from current location (works in dev and production)
 const API_BASE = window.location.origin;
-let selectedFiles = [];
+
+// State manager for selected files - prevents accidental mutation
+const fileState = {
+  _files: [],
+  add(file) {
+    // Dedupe by name + size + lastModified
+    if (!this._files.some(f => f.name === file.name && f.size === file.size && f.lastModified === file.lastModified)) {
+      this._files.push(file);
+    }
+  },
+  remove(index) {
+    this._files.splice(index, 1);
+  },
+  clear() {
+    this._files = [];
+  },
+  getAll() {
+    return this._files;
+  },
+  get length() {
+    return this._files.length;
+  }
+};
+
+// File icon SVG for document listings
+const FILE_ICON_SVG = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+  <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+  <polyline points="14 2 14 8 20 8"/>
+</svg>`;
 
 // Cache DOM references for status elements (queried once, used repeatedly)
 const statusDom = {
@@ -55,10 +83,7 @@ fileInput.addEventListener('change', (e) => {
 
 function handleFiles(files) {
   for (const file of files) {
-    // Dedupe by name + size + lastModified to allow same-named files from different directories
-    if (!selectedFiles.some(f => f.name === file.name && f.size === file.size && f.lastModified === file.lastModified)) {
-      selectedFiles.push(file);
-    }
+    fileState.add(file);
   }
   renderSelectedFiles();
 }
@@ -77,81 +102,87 @@ function escapeHtml(str) {
 }
 
 function renderSelectedFiles() {
-  selectedFilesDiv.innerHTML = selectedFiles.map((file, i) => `
+  const files = fileState.getAll();
+  selectedFilesDiv.innerHTML = files.map((file, i) => `
     <div class="file-item">
       <span class="file-name">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
-          <polyline points="14 2 14 8 20 8"/>
-        </svg>
+        ${FILE_ICON_SVG}
         ${escapeHtml(file.name)}
       </span>
       <span class="file-size">${formatFileSize(file.size)}</span>
-      <button class="remove-file" onclick="removeFile(${i})">✕</button>
+      <button class="remove-file" data-index="${i}" aria-label="Remove ${escapeHtml(file.name)}">✕</button>
     </div>
   `).join('');
-  uploadBtn.disabled = selectedFiles.length === 0;
+  uploadBtn.disabled = fileState.length === 0;
 }
 
-window.removeFile = function(index) {
-  selectedFiles.splice(index, 1);
-  renderSelectedFiles();
-};
+// Remove file button - event delegation
+selectedFilesDiv.addEventListener('click', (e) => {
+  const btn = e.target.closest('.remove-file');
+  if (btn && btn.dataset.index !== undefined) {
+    fileState.remove(parseInt(btn.dataset.index, 10));
+    renderSelectedFiles();
+  }
+});
 
-window.uploadFiles = async function() {
-  if (selectedFiles.length === 0) return;
+// Upload button click handler
+uploadBtn.addEventListener('click', uploadFiles);
+
+// Parse SSE stream and return true if 'complete' event received
+async function parseSSEStream(response) {
+  const reader = response.body.getReader();
+  const decoder = new TextDecoder();
+  let buffer = '';
+
+  while (true) {
+    const { done, value } = await reader.read();
+    if (done) break;
+
+    buffer += decoder.decode(value, { stream: true });
+    const lines = buffer.split('\n');
+    buffer = lines.pop() || '';
+
+    for (const line of lines) {
+      if (line.startsWith('event: complete')) return true;
+      if (line.startsWith('event: error')) return false;
+    }
+  }
+  return false;
+}
+
+// Upload a single file via FormData, returns true on success
+async function uploadSingleFile(file) {
+  const formData = new FormData();
+  formData.append('file', file);
+  formData.append('name', file.name);
+
+  const res = await fetch(`${API_BASE}/api/rag/upload/stream`, {
+    method: 'POST',
+    body: formData
+  });
+
+  if (!res.ok) return false;
+  return parseSSEStream(res);
+}
+
+async function uploadFiles() {
+  const files = fileState.getAll();
+  if (files.length === 0) return;
 
   uploadBtn.disabled = true;
-  uploadStatus.textContent = `Uploading 0/${selectedFiles.length}...`;
+  uploadStatus.textContent = `Uploading 0/${files.length}...`;
   uploadStatus.className = 'upload-status';
 
   let successCount = 0;
   let errorCount = 0;
 
-  for (let i = 0; i < selectedFiles.length; i++) {
-    const file = selectedFiles[i];
-    uploadStatus.textContent = `Uploading ${i + 1}/${selectedFiles.length}: ${file.name}`;
+  for (let i = 0; i < files.length; i++) {
+    const file = files[i];
+    uploadStatus.textContent = `Uploading ${i + 1}/${files.length}: ${file.name}`;
 
     try {
-      // Use FormData for binary file support (PDF, XLSX, DOCX, etc.)
-      const formData = new FormData();
-      formData.append('file', file);
-      formData.append('name', file.name);
-
-      const res = await fetch(`${API_BASE}/api/rag/upload/stream`, {
-        method: 'POST',
-        body: formData
-      });
-
-      if (!res.ok) {
-        errorCount++;
-        continue;
-      }
-
-      // Read SSE stream for progress (simplified - just wait for completion)
-      const reader = res.body.getReader();
-      const decoder = new TextDecoder();
-      let buffer = '';
-      let uploadSucceeded = false;
-
-      while (true) {
-        const { done, value } = await reader.read();
-        if (done) break;
-
-        buffer += decoder.decode(value, { stream: true });
-        const lines = buffer.split('\n');
-        buffer = lines.pop() || '';
-
-        for (const line of lines) {
-          if (line.startsWith('event: complete')) {
-            uploadSucceeded = true;
-          } else if (line.startsWith('event: error')) {
-            uploadSucceeded = false;
-          }
-        }
-      }
-
-      if (uploadSucceeded) {
+      const success = await uploadSingleFile(file);
+      if (success) {
         successCount++;
       } else {
         errorCount++;
@@ -165,7 +196,7 @@ window.uploadFiles = async function() {
   if (errorCount === 0) {
     uploadStatus.textContent = `Uploaded ${successCount} file(s) successfully`;
     uploadStatus.className = 'upload-status success';
-    selectedFiles = [];
+    fileState.clear();
     renderSelectedFiles();
     checkHealth();
   } else {
@@ -173,11 +204,26 @@ window.uploadFiles = async function() {
     uploadStatus.className = 'upload-status error';
   }
 
-  uploadBtn.disabled = selectedFiles.length === 0;
-};
+  uploadBtn.disabled = fileState.length === 0;
+}
 
-// Create React root once to prevent memory leak and state loss
-let chatRoot = null;
+// Factory to create React renderer with lazy root initialization
+function createReactRenderer(containerId) {
+  let root = null;
+  return (Component, props) => {
+    const container = document.getElementById(containerId);
+    if (!container || !Component) return;
+    if (!root) {
+      root = ReactDOM.createRoot(container);
+    }
+    root.render(React.createElement(Component, props));
+  };
+}
+
+// Lazy React renderers for each mount point
+const renderToChat = createReactRenderer('chat-root');
+const renderToAdmin = createReactRenderer('admin-root');
+const renderToApiConfig = createReactRenderer('api-config-root');
 
 // Check server health
 async function checkHealth() {
@@ -216,8 +262,17 @@ async function checkHealth() {
   }
 }
 
+// Sample question buttons - event delegation
+const sampleQuestionsDiv = document.getElementById('sampleQuestions');
+sampleQuestionsDiv.addEventListener('click', (e) => {
+  const btn = e.target.closest('.sample-btn');
+  if (btn && btn.dataset.question) {
+    askQuestion(btn.dataset.question);
+  }
+});
+
 // Ask a sample question (dispatch to chat input)
-window.askQuestion = function(question) {
+function askQuestion(question) {
   const input = document.querySelector('.rag-chat-input');
   if (!input) return;
 
@@ -244,66 +299,34 @@ export function renderChat(RAGInterface) {
   const responder = document.getElementById('responder').value;
   const showSources = document.getElementById('showSources').value === 'true';
 
-  // RAGInterface uses base endpoint, adds /query internally
-  // Pass responder as separate prop to avoid URL construction issues
-  const endpoint = `${API_BASE}/api/rag`;
-
-  // Create root only once to preserve state across re-renders
-  if (!chatRoot) {
-    chatRoot = ReactDOM.createRoot(document.getElementById('chat-root'));
-  }
-  chatRoot.render(
-    React.createElement(RAGInterface, {
-      endpoint,
-      responder: responder === 'auto' ? undefined : responder,
-      chatTitle: title,
-      documentsTitle: 'Document Library',
-      accentColor,
-      showSources,
-      showDocumentLibrary: true,
-      placeholder: 'Ask about your documents...'
-    })
-  );
+  renderToChat(RAGInterface, {
+    endpoint: `${API_BASE}/api/rag`,
+    responder: responder === 'auto' ? undefined : responder,
+    chatTitle: title,
+    documentsTitle: 'Document Library',
+    accentColor,
+    showSources,
+    showDocumentLibrary: true,
+    placeholder: 'Ask about your documents...'
+  });
 }
-
-// Admin dashboard root
-let adminRoot = null;
 
 // Render admin dashboard
 export function renderAdmin(AdminDashboard) {
-  const adminContainer = document.getElementById('admin-root');
-  if (!adminContainer || !AdminDashboard) return;
-
   const accentColor = document.getElementById('accentColor').value;
 
-  if (!adminRoot) {
-    adminRoot = ReactDOM.createRoot(adminContainer);
-  }
-  adminRoot.render(
-    React.createElement(AdminDashboard, {
-      endpoint: `${API_BASE}/api/rag`,
-      accentColor,
-      refreshInterval: 30000
-    })
-  );
+  renderToAdmin(AdminDashboard, {
+    endpoint: `${API_BASE}/api/rag`,
+    accentColor,
+    refreshInterval: 30000
+  });
 }
-
-// API config bar root
-let apiConfigRoot = null;
 
 // Render API key config bar
 export function renderApiConfig(ApiKeyConfigBar) {
-  const container = document.getElementById('api-config-root');
-  if (!container || !ApiKeyConfigBar) return;
-
-  if (!apiConfigRoot) {
-    apiConfigRoot = ReactDOM.createRoot(container);
-  }
-  apiConfigRoot.render(
-    React.createElement(ApiKeyConfigBar, {
-      endpoint: `${API_BASE}/api/rag`
-    })
-  );
+  renderToApiConfig(ApiKeyConfigBar, {
+    endpoint: `${API_BASE}/api/rag`
+  });
 }
 
 // Tab switching
