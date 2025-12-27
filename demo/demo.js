@@ -292,7 +292,10 @@ function askQuestion(question) {
   }, 0);
 };
 
-// Render interface component - exported for use by init module
+/**
+ * Render the RAG chat interface with current control values
+ * @param {React.ComponentType<{endpoint: string, responder?: string, chatTitle: string, documentsTitle: string, accentColor: string, showSources: boolean, showDocumentLibrary: boolean, placeholder: string}>} RAGInterface - The RAGInterface React component
+ */
 export function renderChat(RAGInterface) {
   const title = document.getElementById('title').value;
   const accentColor = document.getElementById('accentColor').value;
@@ -311,7 +314,10 @@ export function renderChat(RAGInterface) {
   });
 }
 
-// Render admin dashboard
+/**
+ * Render the admin dashboard with current accent color
+ * @param {React.ComponentType<{endpoint: string, accentColor: string, refreshInterval: number}>} AdminDashboard - The AdminDashboard React component
+ */
 export function renderAdmin(AdminDashboard) {
   const accentColor = document.getElementById('accentColor').value;
 
@@ -322,7 +328,10 @@ export function renderAdmin(AdminDashboard) {
   });
 }
 
-// Render API key config bar
+/**
+ * Render the API key configuration bar
+ * @param {React.ComponentType<{endpoint: string}>} ApiKeyConfigBar - The ApiKeyConfigBar React component
+ */
 export function renderApiConfig(ApiKeyConfigBar) {
   renderToApiConfig(ApiKeyConfigBar, {
     endpoint: `${API_BASE}/api/rag`
@@ -341,7 +350,13 @@ function switchTab(tabName) {
   document.getElementById('adminSection').classList.toggle('active', tabName === 'admin');
 }
 
-// Initialize the demo
+/**
+ * Initialize the demo application
+ * Sets up event listeners, initial renders, and health check polling
+ * @param {React.ComponentType} RAGInterface - The RAGInterface React component
+ * @param {React.ComponentType} AdminDashboard - The AdminDashboard React component
+ * @param {React.ComponentType} ApiKeyConfigBar - The ApiKeyConfigBar React component
+ */
 export function initDemo(RAGInterface, AdminDashboard, ApiKeyConfigBar) {
   // Add event listeners for controls
   ['title', 'accentColor', 'responder', 'showSources'].forEach(id => {
