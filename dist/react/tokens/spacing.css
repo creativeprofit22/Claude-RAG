@@ -1,0 +1,131 @@
+/**
+ * The Curator - Spacing Tokens
+ * Consistent spatial rhythm for harmonious layouts
+ *
+ * Spacing Philosophy:
+ * - Based on 4px grid (0.25rem)
+ * - Generous whitespace for scholarly feel
+ * - Consistent component spacing
+ */
+
+:root {
+  /* =========================================
+     Base Spacing Scale
+     4px base unit (0.25rem)
+     ========================================= */
+  --curator-space-0: 0;
+  --curator-space-px: 1px;
+  --curator-space-0-5: 0.125rem;   /* 2px */
+  --curator-space-1: 0.25rem;      /* 4px */
+  --curator-space-1-5: 0.375rem;   /* 6px */
+  --curator-space-2: 0.5rem;       /* 8px */
+  --curator-space-2-5: 0.625rem;   /* 10px */
+  --curator-space-3: 0.75rem;      /* 12px */
+  --curator-space-3-5: 0.875rem;   /* 14px */
+  --curator-space-4: 1rem;         /* 16px */
+  --curator-space-5: 1.25rem;      /* 20px */
+  --curator-space-6: 1.5rem;       /* 24px */
+  --curator-space-7: 1.75rem;      /* 28px */
+  --curator-space-8: 2rem;         /* 32px */
+  --curator-space-9: 2.25rem;      /* 36px */
+  --curator-space-10: 2.5rem;      /* 40px */
+  --curator-space-11: 2.75rem;     /* 44px */
+  --curator-space-12: 3rem;        /* 48px */
+  --curator-space-14: 3.5rem;      /* 56px */
+  --curator-space-16: 4rem;        /* 64px */
+  --curator-space-20: 5rem;        /* 80px */
+  --curator-space-24: 6rem;        /* 96px */
+
+  /* =========================================
+     Semantic Spacing
+     Named for purpose, not size
+     ========================================= */
+
+  /* Component internal padding */
+  --curator-padding-xs: var(--curator-space-1);     /* 4px - tight */
+  --curator-padding-sm: var(--curator-space-2);     /* 8px - compact */
+  --curator-padding-md: var(--curator-space-3);     /* 12px - normal */
+  --curator-padding-lg: var(--curator-space-4);     /* 16px - comfortable */
+  --curator-padding-xl: var(--curator-space-6);     /* 24px - spacious */
+
+  /* Gaps between elements */
+  --curator-gap-xs: var(--curator-space-1);         /* 4px */
+  --curator-gap-sm: var(--curator-space-2);         /* 8px */
+  --curator-gap-md: var(--curator-space-3);         /* 12px */
+  --curator-gap-lg: var(--curator-space-4);         /* 16px */
+  --curator-gap-xl: var(--curator-space-6);         /* 24px */
+
+  /* Section margins */
+  --curator-section-sm: var(--curator-space-4);     /* 16px */
+  --curator-section-md: var(--curator-space-6);     /* 24px */
+  --curator-section-lg: var(--curator-space-8);     /* 32px */
+  --curator-section-xl: var(--curator-space-12);    /* 48px */
+
+  /* =========================================
+     Border Radius Scale
+     ========================================= */
+  --curator-radius-none: 0;
+  --curator-radius-sm: 0.25rem;    /* 4px - subtle */
+  --curator-radius-md: 0.375rem;   /* 6px - buttons */
+  --curator-radius-lg: 0.5rem;     /* 8px - cards */
+  --curator-radius-xl: 0.75rem;    /* 12px - modals */
+  --curator-radius-2xl: 1rem;      /* 16px - large panels */
+  --curator-radius-full: 9999px;   /* pills/circles */
+
+  /* =========================================
+     Component-Specific Spacing
+     ========================================= */
+
+  /* Message bubbles */
+  --curator-message-padding-x: var(--curator-space-4);
+  --curator-message-padding-y: var(--curator-space-3);
+  --curator-message-gap: var(--curator-space-4);
+  --curator-message-radius: var(--curator-radius-xl);
+
+  /* Cards */
+  --curator-card-padding: var(--curator-space-4);
+  --curator-card-gap: var(--curator-space-3);
+  --curator-card-radius: var(--curator-radius-lg);
+
+  /* Buttons */
+  --curator-button-padding-x: var(--curator-space-4);
+  --curator-button-padding-y: var(--curator-space-2-5);
+  --curator-button-radius: var(--curator-radius-md);
+
+  /* Inputs */
+  --curator-input-padding-x: var(--curator-space-4);
+  --curator-input-padding-y: var(--curator-space-3);
+  --curator-input-radius: var(--curator-radius-lg);
+
+  /* Modals */
+  --curator-modal-padding: var(--curator-space-5);
+  --curator-modal-radius: var(--curator-radius-xl);
+
+  /* Header/Footer */
+  --curator-header-padding-x: var(--curator-space-6);
+  --curator-header-padding-y: var(--curator-space-4);
+
+  /* =========================================
+     Z-Index Scale
+     Layering hierarchy
+     ========================================= */
+  --curator-z-base: 0;
+  --curator-z-dropdown: 10;
+  --curator-z-sticky: 20;
+  --curator-z-fixed: 30;
+  --curator-z-modal-backdrop: 40;
+  --curator-z-modal: 50;
+  --curator-z-popover: 60;
+  --curator-z-tooltip: 70;
+  --curator-z-toast: 80;
+
+  /* =========================================
+     Container Widths
+     ========================================= */
+  --curator-container-xs: 20rem;    /* 320px */
+  --curator-container-sm: 24rem;    /* 384px */
+  --curator-container-md: 28rem;    /* 448px */
+  --curator-container-lg: 32rem;    /* 512px */
+  --curator-container-xl: 40rem;    /* 640px */
+  --curator-container-2xl: 48rem;   /* 768px */
+}
