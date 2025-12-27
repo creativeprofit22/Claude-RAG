@@ -17,26 +17,24 @@ Section: The Curator Design System
 Files: src/react/styles.css, src/react/tokens/*, src/react/fonts/*
 
 ## Pipeline State
-Phase: refactoring
+Phase: COMPLETE
 Feature: The Curator Design System - Phase 2 Light Theme
-Files:
-  - src/react/tokens/colors.css
-  - src/react/tokens/index.css
-  - src/react/styles.css
+Status: Validated, all bugs fixed, ready for npm publish
 Reports:
   - validation: reports/validation-curator-phase2-light-theme.md
   - refactor: reports/refactor-hunt-curator-phase2-light-theme.md
-Tier: high
-Tier-Status: pending
-Tier-Counts: high=3, medium=5, low=3
 
 ## Last Session (2025-12-27)
-Refactor-hunt complete on Phase 2 Light Theme:
-- Created refactor report with 11 items (3 High, 5 Medium, 3 Low)
-- High: duplicate modal overlay (3x), error banner (3x), animation lines 315-318
-- Medium: BEM inconsistency, dead :root block, light theme border derivation, empty state pattern, hardcoded tokens
-- Low: gold-hover literal, scrollbar selector, stale TODOs
-- Stopped at: Ready for refactoring phase (high tier first)
+Curator Phase 2 Light Theme - COMPLETE:
+- Refactoring: All tiers complete (High 3/3, Medium 5/5, Low 3/3)
+- D1 Button Classes: Complete (curator-btn variants)
+- Validation: Tests pass (21/21), build passes
+- Bug fixes: HIGH 3/3, MEDIUM 6/6 fixed
+  - CategoryFilter hardcoded colors → CSS variables
+  - FileQueue keyboard support → tabIndex, onKeyDown
+  - Focus states → :focus-visible on sources toggle, sort order
+  - RAGInterface ARIA → aria-controls, tabpanel roles
+  - DocumentCard → aria-pressed for selection
 
 ## Key Files
 - `src/server.ts` - Bun HTTP server

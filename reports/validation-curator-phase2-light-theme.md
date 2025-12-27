@@ -61,19 +61,20 @@ Date: 2025-12-27 (Updated)
 
 ### Bugs
 - **Found:** 3 HIGH, 6 MEDIUM, 9 LOW
-- **Fixed:** 3 HIGH
+- **Fixed:** 3 HIGH, 6 MEDIUM
 
 #### HIGH Priority (Fixed)
 1. `.rag-doc-card-selected:hover` -> `.rag-doc-card--selected:hover` (dead CSS)
 2. Added `aria-label="Send message"` to ChatInput send button
 3. Added `role="alert"` to AdminDashboard error banner
 
-#### MEDIUM Priority (Remaining - Deferred)
-1. CategoryFilter uses hardcoded colors
-2. Missing keyboard support for editable file names
-3. Missing focus states on some buttons
-4. Tab panel missing aria-controls/id attributes
-5. DocumentCard missing aria-pressed for selection
+#### MEDIUM Priority (Fixed)
+1. CategoryFilter hardcoded colors → Replaced with CSS variables
+2. FileQueue missing keyboard support → Added tabIndex, onKeyDown, role
+3. Sources toggle missing focus state → Added :focus-visible
+4. Sort order button missing focus state → Added :focus-visible
+5. RAGInterface tabs missing ARIA → Added aria-controls, tabpanel roles
+6. DocumentCard missing aria-pressed → Added aria-pressed={isSelected}
 
 #### LOW Priority (Acceptable)
 - Unused CSS variables
@@ -107,4 +108,7 @@ Date: 2025-12-27 (Updated)
 ## Summary
 - **All checks passing:** Yes
 - **Build status:** PASS
-- **Ready for next phase:** Yes
+- **Tests:** 21 pass
+- **HIGH bugs:** 3/3 fixed
+- **MEDIUM bugs:** 6/6 fixed
+- **Status:** COMPLETE - Ready for npm publish
