@@ -23,7 +23,7 @@
   "scripts": {
     "build": "tsc && npm run copy-assets",
     "build:demo": "esbuild demo/browser-entry.tsx --bundle --format=iife --global-name=RAGBundle --target=es2020 --outfile=demo/ragchat-bundle.js --alias:react=./demo/react-shim.js --alias:react-dom=./demo/react-shim.js --alias:lucide-react=./demo/lucide-shim.js --alias:react/jsx-runtime=./demo/jsx-runtime-shim.js --alias:react/jsx-dev-runtime=./demo/jsx-runtime-shim.js",
-    "copy-assets": "cp src/react/styles.css dist/react/styles.css",
+    "copy-assets": "cp src/react/styles.css dist/react/styles.css && cp -r src/react/tokens dist/react/tokens && cp -r src/react/fonts dist/react/fonts",
     "dev": "bun run src/server.ts",
     "start": "bun run src/server.ts",
     "dev:tsc": "tsc --watch",
