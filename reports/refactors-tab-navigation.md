@@ -33,33 +33,28 @@ Files analyzed:
 | 10 | styles.css:65,308,337,375 | Repeated dim text color #6b7280 (4 times) | Extract to --text-dim variable | S |
 | 11 | styles.css:120-122 | Status dot colors hard-coded | Use CSS variables --color-success/error/warning | S |
 
-## Low Priority
-| # | Location | Issue | Suggested Fix | Effort |
-|---|----------|-------|---------------|--------|
-| 1 | demo.js:66-70 | Magic number 1024 repeated in formatFileSize | Define BYTES_PER_KB constant | S |
-| 2 | demo.js:137-152 | Deep nesting in SSE parser (4 levels) | Extract to async generator parseSSEEvents() | S |
-| 3 | demo.js:183-217 | Nested try-catch in checkHealth | Extract fetchDocumentCount() helper | S |
-| 4 | demo.js:188-194 | Duplicate status dot class assignment | Create setServerStatus() helper | S |
-| 5 | demo.js:232-237 | Magic timeout value setTimeout(..., 0) | Use queueMicrotask with clarifying comment | S |
-| 6 | demo.js:23-28 | Inconsistent DOM reference patterns | Group all DOM refs in single object | S |
-| 7 | index.html:65,98 | Inline styles on elements | Move to styles.css | S |
-| 8 | index.html:36-39 | Boolean select using strings "true"/"false" | Consider checkbox for better semantics | S |
-| 9 | index.html:89-96 | Sample questions hardcoded | Generate from JavaScript array | M |
-| 10 | index.html:114-118 | CDN dependencies without SRI hashes | Add integrity attributes for security | S |
-| 11 | index.html:73 | SVG missing aria attributes | Add aria-hidden="true" | S |
-| 12 | styles.css:252-263 | .upload-form button duplicates .btn-primary | Remove duplicate rules | S |
-| 13 | styles.css:145,239,282,392 | Inconsistent transition declarations | Standardize to specific properties | S |
-| 14 | styles.css:297 | .browse-btn styled as link, name suggests button | Rename to .file-browse-link | S |
+## Low Priority (Completed 2025-12-27)
+| # | Location | Issue | Status |
+|---|----------|-------|--------|
+| 1 | demo.js | Magic number 1024 in formatFileSize | ✅ Added BYTES_PER_KB constant |
+| 2 | demo.js | Deep nesting in SSE parser | ✅ Already extracted to parseSSEStream() |
+| 3 | demo.js | Nested try-catch in checkHealth | ⏭️ Skipped - separation is intentional |
+| 4 | demo.js | Duplicate status dot assignment | ✅ Already handled via statusDom object |
+| 5 | demo.js | setTimeout(..., 0) | ✅ Replaced with queueMicrotask |
+| 6 | demo.js | Inconsistent DOM refs | ✅ Already grouped in statusDom |
+| 7 | index.html | Inline styles | ✅ Moved to .api-config-container, .chat-root-container |
+| 8 | index.html | Boolean select strings | ⏭️ Skipped - semantic preference only |
+| 9 | index.html | Hardcoded sample questions | ⏭️ Skipped - not worth added complexity |
+| 10 | index.html | CDN without SRI hashes | ✅ Added integrity/crossorigin attributes |
+| 11 | index.html | SVG missing aria | ✅ Already has aria-hidden="true" |
+| 12 | styles.css | .upload-form button duplicates | ✅ Removed dead code |
+| 13 | styles.css | Inconsistent transitions | ⏭️ Skipped - now using CSS variables |
+| 14 | styles.css | .browse-btn naming | ⏭️ Skipped - it's a label, not button |
 
 ## Summary
-- High: 6 refactors
-- Medium: 11 refactors
-- Low: 14 refactors
-- Total: 31 refactors
+All refactoring tiers complete:
+- High: 6/6 ✅ (commit 604847c)
+- Medium: 11/11 ✅ (commit 604847c)
+- Low: 9/14 ✅, 5 skipped as non-essential
 
-## Recommended Attack Order
-1. **CSS Variables** (High #4-6) - Unlocks most CSS fixes, reduces 50+ repetitions
-2. **Accessibility** (High #2-3, Medium #7) - Proper label associations, remove inline handlers
-3. **State encapsulation** (High #1) - Prevents subtle bugs with mutable global
-4. **uploadFiles complexity** (Medium #1) - Highest complexity reduction
-5. **JSDoc types** (Medium #3) - Improves maintainability
+Feature: Tab Navigation - **REFACTORING COMPLETE**

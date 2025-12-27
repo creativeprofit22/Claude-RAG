@@ -62,7 +62,7 @@
     <!-- Chat Section -->
     <div class="demo-section active" id="chatSection">
       <!-- Gemini API Key Config (compact bar) -->
-      <div id="api-config-root" style="margin-bottom: 1rem;"></div>
+      <div id="api-config-root" class="api-config-container"></div>
 
       <div class="chat-wrapper">
         <div class="upload-section">
@@ -91,7 +91,7 @@
           </div>
         </div>
 
-        <div id="chat-root" style="flex: 1; display: flex; flex-direction: column; min-height: 0;"></div>
+        <div id="chat-root" class="chat-root-container"></div>
       </div>
     </div>
 
@@ -107,11 +107,11 @@
   </div>
 
   <!-- React & ReactDOM -->
-  <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
-  <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+  <script src="https://unpkg.com/react@18/umd/react.production.min.js" integrity="sha384-DGyLxAyjq0f9SPpVevD6IgztCFlnMF6oW/XQGmfe+IsZ8TqEiDrcHkMLKI6fiB/Z" crossorigin="anonymous"></script>
+  <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" integrity="sha384-VQePqH/QE94Buf4g/4MI5NrqDYjdqT7JW6KzhieQUlw6w7U7VD59fPqCAunpXEu6" crossorigin="anonymous"></script>
 
   <!-- Lucide Icons (used by RAGChat) -->
-  <script src="https://unpkg.com/lucide@0.468.0"></script>
+  <script src="https://unpkg.com/lucide@0.468.0" integrity="sha384-KzdNYOIKgYfc9X38ZC+BSzHaruXjQGwJ0M2J678awAayEWy/MqqLBOo+fi3dYx6j" crossorigin="anonymous"></script>
 
   <!-- RAGChat bundle (IIFE - creates RAGBundle global) -->
   <script src="/demo/ragchat-bundle.js"></script>

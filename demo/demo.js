@@ -35,6 +35,9 @@ const FILE_ICON_SVG = `<svg width="16" height="16" viewBox="0 0 24 24" fill="non
   <polyline points="14 2 14 8 20 8"/>
 </svg>`;
 
+// Size unit constant for file size formatting
+const BYTES_PER_KB = 1024;
+
 // Cache DOM references for status elements (queried once, used repeatedly)
 const statusDom = {
   dot: document.getElementById('serverStatus'),
@@ -89,9 +92,9 @@ function handleFiles(files) {
 }
 
 function formatFileSize(bytes) {
-  if (bytes < 1024) return bytes + ' B';
-  if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
-  return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
+  if (bytes < BYTES_PER_KB) return bytes + ' B';
+  if (bytes < BYTES_PER_KB * BYTES_PER_KB) return (bytes / BYTES_PER_KB).toFixed(1) + ' KB';
+  return (bytes / (BYTES_PER_KB * BYTES_PER_KB)).toFixed(1) + ' MB';
 }
 
 // Escape HTML to prevent XSS
@@ -282,15 +285,15 @@ function askQuestion(question) {
 
   descriptor.set.call(input, question);
   input.dispatchEvent(new Event('input', { bubbles: true }));
-  // Wait for React to process state update, then click submit button
+  // Queue submit after React processes state update
   // (form.dispatchEvent doesn't trigger React's onSubmit)
-  setTimeout(() => {
+  queueMicrotask(() => {
     const submitBtn = document.querySelector('.rag-chat-send-button');
     if (submitBtn) {
       submitBtn.click();
     }
-  }, 0);
-};
+  });
+}
 
 /**
  * Render the RAG chat interface with current control values

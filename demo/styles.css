@@ -198,6 +198,19 @@ body {
   display: flex;
 }
 
+/* API config container */
+.api-config-container {
+  margin-bottom: 1rem;
+}
+
+/* Chat root container - flex child that fills available space */
+.chat-root-container {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+
 /* Chat container */
 .chat-wrapper {
   flex: 1;
@@ -275,20 +288,6 @@ body {
 }
 
 .btn-primary:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-  transform: none;
-}
-
-.upload-form button {
-  padding: 0.75rem 1.5rem;
-}
-
-.upload-form button:hover {
-  transform: scale(1.02);
-}
-
-.upload-form button:disabled {
   opacity: 0.5;
   cursor: not-allowed;
   transform: none;
