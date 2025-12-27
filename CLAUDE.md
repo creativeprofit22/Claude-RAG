@@ -12,25 +12,26 @@ Reusable RAG component for embedding into projects. Uses Claude Code CLI (user's
 Query → Gemini Embeddings → LanceDB → Chunks → Claude Code CLI → Response
 ```
 
+## Current Focus
+Section: Tab Navigation
+Files: demo/index.html, demo/demo.js, demo/styles.css
+
 ## Pipeline State
-Phase: complete
-Feature: In-App Gemini API Key Input
+Phase: debugging
+Feature: Tab Navigation (Chat/Admin sections)
+Tier: high
+Tier-Status: pending
+Reports:
+  - bugs: reports/bugs-tab-navigation.md
 
-## Last Session (2025-12-26)
-Refactors completed (all 6):
-1. **Magic numbers extracted** - GOOGLE_AI_KEY_PREFIX/LENGTH constants in server.ts
-2. **Wrapper function removed** - handleConfigured replaced with direct checkStatus
-3. **respondersEndpoint prop added** - ApiKeyConfigBar now passes through
-4. **Duplicate hooks consolidated** - apiKeyState prop for props drilling
-5. **Aria-describedby added** - SettingsModal input linked to description
-6. **Cross-tab sync added** - localStorage storage event listener
-
-Reports: validation-gemini-api-key.md, refactor-gemini-api-key.md
-
-## Previous Session (2025-12-26)
-- Validated Gemini API key feature (6-agent parallel validation)
-- Fixed: headers useMemo, AbortController cleanup, fragile endpoint URL
-- Fixed: localStorage try-catch, non-JSON response handling
+## Last Session (2025-12-27)
+- Added tab navigation to demo UI - Chat and Admin now separate sections
+- Demo URL: http://localhost:3000/demo (NOT root path)
+- Ran bug hunt checkpoint, found 3 bugs:
+  - **High**: demo.js:246-248 - Query params break URL when responder dropdown used
+  - **Medium**: demo.js:221-235 - askQuestion() crashes if chat not mounted
+  - **Low**: demo.js:224 - No defensive check on property descriptor
+- Stopped at: Ready to fix high-priority bug
 
 ## Key Files
 - `src/server.ts` - Bun HTTP server

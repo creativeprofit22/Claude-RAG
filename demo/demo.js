@@ -219,20 +219,22 @@ async function checkHealth() {
 // Ask a sample question (dispatch to chat input)
 window.askQuestion = function(question) {
   const input = document.querySelector('.rag-chat-input');
-  if (input) {
-    // Use native setter to update React controlled input
-    const nativeInputValueSetter = Object.getOwnPropertyDescriptor(window.HTMLInputElement.prototype, 'value').set;
-    nativeInputValueSetter.call(input, question);
-    input.dispatchEvent(new Event('input', { bubbles: true }));
-    // Wait for React to process state update, then click submit button
-    // (form.dispatchEvent doesn't trigger React's onSubmit)
-    setTimeout(() => {
-      const submitBtn = document.querySelector('.rag-chat-send-button');
-      if (submitBtn) {
-        submitBtn.click();
-      }
-    }, 0);
-  }
+  if (!input) return;
+
+  // Use native setter to update React controlled input
+  const descriptor = Object.getOwnPropertyDescriptor(window.HTMLInputElement.prototype, 'value');
+  if (!descriptor?.set) return;
+
+  descriptor.set.call(input, question);
+  input.dispatchEvent(new Event('input', { bubbles: true }));
+  // Wait for React to process state update, then click submit button
+  // (form.dispatchEvent doesn't trigger React's onSubmit)
+  setTimeout(() => {
+    const submitBtn = document.querySelector('.rag-chat-send-button');
+    if (submitBtn) {
+      submitBtn.click();
+    }
+  }, 0);
 };
 
 // Render interface component - exported for use by init module
@@ -243,9 +245,8 @@ export function renderChat(RAGInterface) {
   const showSources = document.getElementById('showSources').value === 'true';
 
   // RAGInterface uses base endpoint, adds /query internally
-  const endpoint = responder === 'auto'
-    ? `${API_BASE}/api/rag`
-    : `${API_BASE}/api/rag?responder=${responder}`;
+  // Pass responder as separate prop to avoid URL construction issues
+  const endpoint = `${API_BASE}/api/rag`;
 
   // Create root only once to preserve state across re-renders
   if (!chatRoot) {
@@ -254,6 +255,7 @@ export function renderChat(RAGInterface) {
   chatRoot.render(
     React.createElement(RAGInterface, {
       endpoint,
+      responder: responder === 'auto' ? undefined : responder,
       chatTitle: title,
       documentsTitle: 'Document Library',
       accentColor,
@@ -304,6 +306,18 @@ export function renderApiConfig(ApiKeyConfigBar) {
   );
 }
 
+// Tab switching
+function switchTab(tabName) {
+  // Update tab buttons
+  document.querySelectorAll('.demo-tab').forEach(tab => {
+    tab.classList.toggle('active', tab.dataset.tab === tabName);
+  });
+
+  // Update sections
+  document.getElementById('chatSection').classList.toggle('active', tabName === 'chat');
+  document.getElementById('adminSection').classList.toggle('active', tabName === 'admin');
+}
+
 // Initialize the demo
 export function initDemo(RAGInterface, AdminDashboard, ApiKeyConfigBar) {
   // Add event listeners for controls
@@ -314,6 +328,10 @@ export function initDemo(RAGInterface, AdminDashboard, ApiKeyConfigBar) {
     });
   });
   document.getElementById('title').addEventListener('input', () => renderChat(RAGInterface));
+
+  // Tab switching
+  document.getElementById('chatTab').addEventListener('click', () => switchTab('chat'));
+  document.getElementById('adminTab').addEventListener('click', () => switchTab('admin'));
 
   // Initialize
   checkHealth();

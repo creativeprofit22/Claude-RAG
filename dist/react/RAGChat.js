@@ -28,7 +28,7 @@ import { DEFAULT_ACCENT_COLOR } from './types.js';
  * />
  * ```
  */
-export function RAGChat({ endpoint = '/api/rag/query', headers, placeholder = 'Ask a question about your documents...', title = 'RAG Assistant', accentColor = DEFAULT_ACCENT_COLOR, showSources = true, systemPrompt, topK, documentId, className = '', emptyState, }) {
+export function RAGChat({ endpoint = '/api/rag/query', headers, placeholder = 'Ask a question about your documents...', title = 'RAG Assistant', accentColor = DEFAULT_ACCENT_COLOR, showSources = true, systemPrompt, topK, documentId, responder, className = '', emptyState, }) {
     const messagesContainerRef = useRef(null);
     const { messages, isTyping, error, sendMessage, clearChat, setError, } = useRAGChat({
         endpoint,
@@ -36,6 +36,7 @@ export function RAGChat({ endpoint = '/api/rag/query', headers, placeholder = 'A
         systemPrompt,
         topK,
         documentId,
+        responder,
     });
     // Auto-scroll to bottom when messages change.
     // Uses hybrid ref+deps pattern: refs track previous values between renders,

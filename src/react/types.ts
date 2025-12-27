@@ -53,6 +53,8 @@ export interface RAGChatConfig {
   topK?: number;
   /** Filter to specific document */
   documentId?: string;
+  /** Override responder (claude or gemini) */
+  responder?: 'claude' | 'gemini';
 }
 
 export interface RAGChatState {

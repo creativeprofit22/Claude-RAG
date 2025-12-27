@@ -25,5 +25,5 @@ export interface RAGChatProps extends RAGChatConfig {
  * />
  * ```
  */
-export declare function RAGChat({ endpoint, headers, placeholder, title, accentColor, showSources, systemPrompt, topK, documentId, className, emptyState, }: RAGChatProps): import("react/jsx-runtime").JSX.Element;
+export declare function RAGChat({ endpoint, headers, placeholder, title, accentColor, showSources, systemPrompt, topK, documentId, responder, className, emptyState, }: RAGChatProps): import("react/jsx-runtime").JSX.Element;
 //# sourceMappingURL=RAGChat.d.ts.map

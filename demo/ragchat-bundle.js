@@ -376,7 +376,8 @@ var RAGBundle = (() => {
       headers = {},
       systemPrompt,
       topK,
-      documentId
+      documentId,
+      responder
     } = config;
     const [messages, setMessages] = useState([]);
     const [isTyping, setIsTyping] = useState(false);
@@ -420,7 +421,8 @@ var RAGBundle = (() => {
             query: content.trim(),
             ...systemPrompt && { systemPrompt },
             ...topK && { topK },
-            ...documentId && { documentId }
+            ...documentId && { documentId },
+            ...responder && { responder }
           }),
           signal: abortControllerRef.current.signal
         });
@@ -457,7 +459,7 @@ var RAGBundle = (() => {
       } finally {
         setIsTyping(false);
       }
-    }, [endpoint, stableHeaders, systemPrompt, topK, documentId]);
+    }, [endpoint, stableHeaders, systemPrompt, topK, documentId, responder]);
     const clearChat = useCallback(() => {
       setMessages([]);
       setError(null);
@@ -483,6 +485,7 @@ var RAGBundle = (() => {
     systemPrompt,
     topK,
     documentId,
+    responder,
     className = "",
     emptyState
   }) {
@@ -499,7 +502,8 @@ var RAGBundle = (() => {
       headers,
       systemPrompt,
       topK,
-      documentId
+      documentId,
+      responder
     });
     const lastMessageCountRef = useRef(0);
     const wasTypingRef = useRef(isTyping);
@@ -2922,6 +2926,7 @@ var RAGBundle = (() => {
     showSources = true,
     systemPrompt,
     topK,
+    responder,
     className = "",
     onDocumentSelect,
     chatEmptyState,
@@ -3013,6 +3018,7 @@ var RAGBundle = (() => {
           systemPrompt,
           topK,
           documentId: scopedDocument?.documentId,
+          responder,
           emptyState: chatEmptyState
         }
       ) : /* @__PURE__ */ jsx(

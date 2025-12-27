@@ -1,1 +1,1 @@
-{"version":3,"file":"useRAGChat.d.ts","sourceRoot":"","sources":["../../../src/react/hooks/useRAGChat.ts"],"names":[],"mappings":"AAGA,OAAO,KAAK,EAAe,aAAa,EAAoB,YAAY,EAAE,cAAc,EAAE,MAAM,aAAa,CAAC;AAO9G,wBAAgB,UAAU,CAAC,MAAM,GAAE,aAAkB,GAAG,YAAY,GAAG,cAAc,CAgIpF"}
+{"version":3,"file":"useRAGChat.d.ts","sourceRoot":"","sources":["../../../src/react/hooks/useRAGChat.ts"],"names":[],"mappings":"AAGA,OAAO,KAAK,EAAe,aAAa,EAAoB,YAAY,EAAE,cAAc,EAAE,MAAM,aAAa,CAAC;AAO9G,wBAAgB,UAAU,CAAC,MAAM,GAAE,aAAkB,GAAG,YAAY,GAAG,cAAc,CAkIpF"}

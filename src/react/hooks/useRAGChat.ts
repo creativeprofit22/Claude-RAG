@@ -15,6 +15,7 @@ export function useRAGChat(config: RAGChatConfig = {}): RAGChatState & RAGChatAc
     systemPrompt,
     topK,
     documentId,
+    responder,
   } = config;
 
   const [messages, setMessages] = useState<ChatMessage[]>([]);
@@ -75,6 +76,7 @@ export function useRAGChat(config: RAGChatConfig = {}): RAGChatState & RAGChatAc
           ...(systemPrompt && { systemPrompt }),
           ...(topK && { topK }),
           ...(documentId && { documentId }),
+          ...(responder && { responder }),
         }),
         signal: abortControllerRef.current.signal,
       });
@@ -121,7 +123,7 @@ export function useRAGChat(config: RAGChatConfig = {}): RAGChatState & RAGChatAc
     } finally {
       setIsTyping(false);
     }
-  }, [endpoint, stableHeaders, systemPrompt, topK, documentId]);
+  }, [endpoint, stableHeaders, systemPrompt, topK, documentId, responder]);
 
   const clearChat = useCallback(() => {
     setMessages([]);

@@ -5,7 +5,7 @@ function generateId() {
     return `msg_${Date.now()}_${++idCounter}_${Math.random().toString(36).slice(2, 8)}`;
 }
 export function useRAGChat(config = {}) {
-    const { endpoint = '/api/rag/query', headers = {}, systemPrompt, topK, documentId, } = config;
+    const { endpoint = '/api/rag/query', headers = {}, systemPrompt, topK, documentId, responder, } = config;
     const [messages, setMessages] = useState([]);
     const [isTyping, setIsTyping] = useState(false);
     const [error, setError] = useState(null);
@@ -56,6 +56,7 @@ export function useRAGChat(config = {}) {
                     ...(systemPrompt && { systemPrompt }),
                     ...(topK && { topK }),
                     ...(documentId && { documentId }),
+                    ...(responder && { responder }),
                 }),
                 signal: abortControllerRef.current.signal,
             });
@@ -93,7 +94,7 @@ export function useRAGChat(config = {}) {
         finally {
             setIsTyping(false);
         }
-    }, [endpoint, stableHeaders, systemPrompt, topK, documentId]);
+    }, [endpoint, stableHeaders, systemPrompt, topK, documentId, responder]);
     const clearChat = useCallback(() => {
         setMessages([]);
         setError(null);

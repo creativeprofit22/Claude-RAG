@@ -53,45 +53,56 @@
       </div>
     </div>
 
-    <!-- Gemini API Key Config (compact bar) -->
-    <div id="api-config-root" style="margin-bottom: 1rem;"></div>
-
-    <div class="chat-wrapper">
-      <div class="upload-section">
-        <h3>Add Documents</h3>
-        <div class="file-upload-area" id="dropZone">
-          <input type="file" id="fileInput" multiple accept=".pdf,.docx,.txt,.md,.html,.htm,.xlsx,.xls,.csv,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document,text/plain,text/markdown,text/html,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel,text/csv" style="display: none;" />
-          <div class="drop-content">
-            <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#6366f1" stroke-width="2">
-              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
-              <polyline points="17 8 12 3 7 8"/>
-              <line x1="12" y1="3" x2="12" y2="15"/>
-            </svg>
-            <p>Drag & drop files here or <button type="button" class="browse-btn" onclick="document.getElementById('fileInput').click()">browse</button></p>
-            <span class="file-types">PDF, DOCX, Excel, CSV, TXT, MD, HTML</span>
-          </div>
-        </div>
-        <div class="selected-files" id="selectedFiles"></div>
-        <div class="upload-actions">
-          <button id="uploadBtn" class="btn-primary" onclick="uploadFiles()" disabled>Upload Files</button>
-          <span class="upload-status" id="uploadStatus"></span>
-        </div>
-      </div>
-
-      <div class="sample-questions">
-        <h4>Try asking:</h4>
-        <div class="sample-buttons" id="sampleQuestions">
-          <button class="sample-btn" onclick="askQuestion('What is this document about?')">What is this about?</button>
-          <button class="sample-btn" onclick="askQuestion('Summarize the key points')">Summarize key points</button>
-          <button class="sample-btn" onclick="askQuestion('What are the main topics covered?')">Main topics</button>
-        </div>
-      </div>
-
-      <div id="chat-root" style="flex: 1; display: flex; flex-direction: column; min-height: 0;"></div>
+    <!-- Tab Navigation -->
+    <div class="demo-tabs">
+      <button class="demo-tab active" data-tab="chat" id="chatTab">Chat</button>
+      <button class="demo-tab" data-tab="admin" id="adminTab">Admin</button>
     </div>
 
-    <!-- Admin Dashboard at bottom -->
-    <div id="admin-root" style="margin-top: 1rem;"></div>
+    <!-- Chat Section -->
+    <div class="demo-section active" id="chatSection">
+      <!-- Gemini API Key Config (compact bar) -->
+      <div id="api-config-root" style="margin-bottom: 1rem;"></div>
+
+      <div class="chat-wrapper">
+        <div class="upload-section">
+          <h3>Add Documents</h3>
+          <div class="file-upload-area" id="dropZone">
+            <input type="file" id="fileInput" multiple accept=".pdf,.docx,.txt,.md,.html,.htm,.xlsx,.xls,.csv,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document,text/plain,text/markdown,text/html,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel,text/csv" style="display: none;" />
+            <div class="drop-content">
+              <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#6366f1" stroke-width="2">
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                <polyline points="17 8 12 3 7 8"/>
+                <line x1="12" y1="3" x2="12" y2="15"/>
+              </svg>
+              <p>Drag & drop files here or <button type="button" class="browse-btn" onclick="document.getElementById('fileInput').click()">browse</button></p>
+              <span class="file-types">PDF, DOCX, Excel, CSV, TXT, MD, HTML</span>
+            </div>
+          </div>
+          <div class="selected-files" id="selectedFiles"></div>
+          <div class="upload-actions">
+            <button id="uploadBtn" class="btn-primary" onclick="uploadFiles()" disabled>Upload Files</button>
+            <span class="upload-status" id="uploadStatus"></span>
+          </div>
+        </div>
+
+        <div class="sample-questions">
+          <h4>Try asking:</h4>
+          <div class="sample-buttons" id="sampleQuestions">
+            <button class="sample-btn" onclick="askQuestion('What is this document about?')">What is this about?</button>
+            <button class="sample-btn" onclick="askQuestion('Summarize the key points')">Summarize key points</button>
+            <button class="sample-btn" onclick="askQuestion('What are the main topics covered?')">Main topics</button>
+          </div>
+        </div>
+
+        <div id="chat-root" style="flex: 1; display: flex; flex-direction: column; min-height: 0;"></div>
+      </div>
+    </div>
+
+    <!-- Admin Section -->
+    <div class="demo-section" id="adminSection">
+      <div id="admin-root"></div>
+    </div>
 
     <footer class="demo-footer">
       <p>Server: <a id="serverLink" href="/api/health" target="_blank">-</a> |

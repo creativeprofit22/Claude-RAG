@@ -31,6 +31,8 @@ export interface RAGInterfaceProps {
   systemPrompt?: string;
   /** Number of chunks to retrieve */
   topK?: number;
+  /** Override responder (claude or gemini) */
+  responder?: 'claude' | 'gemini';
   /** Additional CSS class */
   className?: string;
   /** Callback when document is selected for querying */
@@ -71,6 +73,7 @@ export function RAGInterface({
   showSources = true,
   systemPrompt,
   topK,
+  responder,
   className = '',
   onDocumentSelect,
   chatEmptyState,
@@ -169,6 +172,7 @@ export function RAGInterface({
             systemPrompt={systemPrompt}
             topK={topK}
             documentId={scopedDocument?.documentId}
+            responder={responder}
             emptyState={chatEmptyState}
           />
         ) : (

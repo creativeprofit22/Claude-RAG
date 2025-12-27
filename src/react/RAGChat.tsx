@@ -46,6 +46,7 @@ export function RAGChat({
   systemPrompt,
   topK,
   documentId,
+  responder,
   className = '',
   emptyState,
 }: RAGChatProps) {
@@ -64,6 +65,7 @@ export function RAGChat({
     systemPrompt,
     topK,
     documentId,
+    responder,
   });
 
   // Auto-scroll to bottom when messages change.

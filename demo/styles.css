@@ -126,6 +126,47 @@ body {
   50% { opacity: 0.5; }
 }
 
+/* Tab navigation */
+.demo-tabs {
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 1.5rem;
+}
+
+.demo-tab {
+  padding: 0.75rem 1.5rem;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 0.75rem;
+  color: #9ca3af;
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.demo-tab:hover {
+  background: rgba(255, 255, 255, 0.05);
+  color: #fff;
+}
+
+.demo-tab.active {
+  background: linear-gradient(135deg, #6366f1, #8b5cf6);
+  border-color: transparent;
+  color: #fff;
+}
+
+/* Section containers */
+.demo-section {
+  display: none;
+  flex: 1;
+  flex-direction: column;
+}
+
+.demo-section.active {
+  display: flex;
+}
+
 /* Chat container */
 .chat-wrapper {
   flex: 1;

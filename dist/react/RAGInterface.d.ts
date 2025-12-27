@@ -23,6 +23,8 @@ export interface RAGInterfaceProps {
     systemPrompt?: string;
     /** Number of chunks to retrieve */
     topK?: number;
+    /** Override responder (claude or gemini) */
+    responder?: 'claude' | 'gemini';
     /** Additional CSS class */
     className?: string;
     /** Callback when document is selected for querying */
@@ -50,5 +52,5 @@ export interface RAGInterfaceProps {
  * />
  * ```
  */
-export declare function RAGInterface({ endpoint, headers, chatTitle, documentsTitle, accentColor, defaultView, showDocumentLibrary, placeholder, showSources, systemPrompt, topK, className, onDocumentSelect, chatEmptyState, documentsEmptyState, }: RAGInterfaceProps): import("react/jsx-runtime").JSX.Element;
+export declare function RAGInterface({ endpoint, headers, chatTitle, documentsTitle, accentColor, defaultView, showDocumentLibrary, placeholder, showSources, systemPrompt, topK, responder, className, onDocumentSelect, chatEmptyState, documentsEmptyState, }: RAGInterfaceProps): import("react/jsx-runtime").JSX.Element;
 //# sourceMappingURL=RAGInterface.d.ts.map
