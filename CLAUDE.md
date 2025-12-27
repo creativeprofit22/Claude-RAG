@@ -17,24 +17,24 @@ Section: The Curator Design System
 Files: src/react/styles.css, src/react/tokens/*, src/react/fonts/*
 
 ## Pipeline State
-Phase: COMPLETE
+Phase: debugging
 Feature: The Curator Design System - Phase 2 Light Theme
-Status: Validated, all bugs fixed, ready for npm publish
+Files:
+  - src/react/styles.css
+  - src/react/tokens/*.css
+  - src/react/components/**/*.tsx
 Reports:
   - validation: reports/validation-curator-phase2-light-theme.md
   - refactor: reports/refactor-hunt-curator-phase2-light-theme.md
+Tier: low
+Tier-Status: pending
+Tier-Counts: high=3 ✓, medium=6 ✓, low=9
 
 ## Last Session (2025-12-27)
-Curator Phase 2 Light Theme - COMPLETE:
-- Refactoring: All tiers complete (High 3/3, Medium 5/5, Low 3/3)
-- D1 Button Classes: Complete (curator-btn variants)
-- Validation: Tests pass (21/21), build passes
-- Bug fixes: HIGH 3/3, MEDIUM 6/6 fixed
-  - CategoryFilter hardcoded colors → CSS variables
-  - FileQueue keyboard support → tabIndex, onKeyDown
-  - Focus states → :focus-visible on sources toggle, sort order
-  - RAGInterface ARIA → aria-controls, tabpanel roles
-  - DocumentCard → aria-pressed for selection
+- Fixed 6 MEDIUM bugs (accessibility/theme consistency)
+- Updated validation report and CLAUDE.md
+- All committed and pushed to origin
+- Stopped at: LOW priority bugs remaining (9 items)
 
 ## Key Files
 - `src/server.ts` - Bun HTTP server
