@@ -13,24 +13,22 @@ Query → Gemini Embeddings → LanceDB → Chunks → Claude Code CLI → Respo
 ```
 
 ## Current Focus
-Section: M5 Token Migration Complete, Polish Phase
+Section: M6 Complete, Ready for Publish
 Files: src/react/styles.css
 
 ## Pipeline State
-Phase: refactor-hunt
-Feature: M5 Token Migration
-Files-Validated:
-  - src/react/styles.css
-  - src/react/tokens/*.css
-Validation-Report: reports/validation-m5-token-migration.md
+Phase: validated
+Feature: M6 Token Migration
+Validation-Report: reports/validation-m6-token-migration.md
 
 ## Last Session (2025-12-27)
-- Completed M5 Token Migration: 148 hardcoded CSS values → design tokens
-- Replacements: border-radius (40), font-size (52), gap (56)
-- Reduced hardcoded rem values: 217 → 69
-- All 6 validation checks pass (Tests, API, UI, Wiring, Bottlenecks, Bugs)
+- M6 validated: 82 token usages, zero hardcoded 0.375rem/0.25rem
+- All tokens defined in spacing.css
 - Build passes, 21 tests pass
-- Stopped at: Validation complete, ready for refactor-hunt or next polish item
+
+## Next Steps
+1. Publish to npm (version bump, npm publish)
+2. Add dual runtime support (README with Bun alternative, keep npm primary)
 
 ## Key Files
 - `src/server.ts` - Bun HTTP server

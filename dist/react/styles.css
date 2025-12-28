@@ -39,7 +39,7 @@
   border: none;
   color: inherit;
   cursor: pointer;
-  padding: 0.25rem;
+  padding: var(--curator-space-1);
   margin-left: auto;
   opacity: 0.7;
   transition: var(--curator-transition-opacity);
@@ -143,10 +143,10 @@
 
 /* Icon button - minimal, for icon-only buttons */
 .curator-btn-icon {
-  padding: 0.375rem;
+  padding: var(--curator-space-1-5);
   background: transparent;
   border: none;
-  border-radius: 0.375rem;
+  border-radius: var(--curator-radius-md);
   color: var(--curator-text-muted);
 }
 
@@ -160,7 +160,7 @@
   padding: 0.5rem 1rem;
   background-color: var(--curator-error);
   border: none;
-  border-radius: 0.375rem;
+  border-radius: var(--curator-radius-md);
   color: white;
   font-size: var(--curator-text-md);
 }
@@ -171,15 +171,15 @@
 
 /* Size variants - can be combined with color variants */
 .curator-btn-sm {
-  padding: 0.375rem 0.75rem;
+  padding: var(--curator-space-1-5) var(--curator-space-3);
   font-size: var(--curator-text-sm);
   border-radius: var(--curator-radius-md);
 }
 
 .curator-btn-xs {
-  padding: 0.25rem 0.5rem;
+  padding: var(--curator-space-1) var(--curator-space-2);
   font-size: var(--curator-text-sm);
-  border-radius: 0.25rem;
+  border-radius: var(--curator-radius-sm);
 }
 
 /* Input base - shared input field patterns */
@@ -279,7 +279,7 @@
   padding: 1.5rem;
   display: flex;
   flex-direction: column;
-  gap: 0.25rem;
+  gap: var(--curator-space-1);
 }
 
 /* Message bubbles */
@@ -319,13 +319,13 @@
 .rag-message-bubble-user {
   background: linear-gradient(to bottom right, var(--curator-bg-hover), var(--curator-bg-subtle));
   border: 1px solid var(--curator-border-light);
-  border-radius: 1rem 1rem 0.25rem 1rem;
+  border-radius: var(--curator-radius-2xl) var(--curator-radius-2xl) var(--curator-radius-sm) var(--curator-radius-2xl);
 }
 
 .rag-message-bubble-assistant {
   background-color: var(--curator-bg-subtle);
   border: 1px solid var(--curator-border-light);
-  border-radius: 1rem 1rem 1rem 0.25rem;
+  border-radius: var(--curator-radius-2xl) var(--curator-radius-2xl) var(--curator-radius-2xl) var(--curator-radius-sm);
 }
 
 .rag-message-text {
@@ -341,18 +341,18 @@
 .rag-message-time {
   font-size: var(--curator-text-sm);
   color: var(--curator-text-muted);
-  margin-top: 0.25rem;
+  margin-top: var(--curator-space-1);
   padding: 0 0.5rem;
 }
 
 /* Loading dots in message */
 .rag-message-loading {
-  padding: 0.25rem 0;
+  padding: var(--curator-space-1) 0;
 }
 
 .rag-loading-dots {
   display: flex;
-  gap: 0.25rem;
+  gap: var(--curator-space-1);
 }
 
 .rag-loading-dots span {
@@ -381,7 +381,7 @@
   display: flex;
   align-items: center;
   gap: var(--curator-gap-sm);
-  padding: 0.375rem 0.75rem;
+  padding: var(--curator-space-1-5) var(--curator-space-3);
   font-size: var(--curator-text-sm);
   color: var(--curator-text-secondary);
   background-color: var(--curator-bg-subtle);
@@ -419,14 +419,14 @@
   display: flex;
   align-items: center;
   gap: var(--curator-gap-sm);
-  margin-bottom: 0.375rem;
+  margin-bottom: var(--curator-space-1-5);
 }
 
 .rag-source-badge {
-  padding: 0.125rem 0.375rem;
+  padding: var(--curator-space-0-5) var(--curator-space-1-5);
   font-size: 0.625rem;
   font-weight: 600;
-  border-radius: 0.25rem;
+  border-radius: var(--curator-radius-sm);
 }
 
 .rag-source-name {
@@ -456,14 +456,14 @@
   padding: 0.75rem 1rem;
   background-color: var(--curator-bg-subtle);
   border: 1px solid var(--curator-border-light);
-  border-radius: 1rem 1rem 1rem 0.25rem;
+  border-radius: var(--curator-radius-2xl) var(--curator-radius-2xl) var(--curator-radius-2xl) var(--curator-radius-sm);
   max-width: 5rem;
   backdrop-filter: blur(8px);
 }
 
 .rag-typing-dots {
   display: flex;
-  gap: 0.25rem;
+  gap: var(--curator-space-1);
 }
 
 .rag-typing-dot {
@@ -631,13 +631,13 @@
 
 .rag-doc-sort-menu {
   position: absolute;
-  top: calc(100% + 0.25rem);
+  top: calc(100% + var(--curator-space-1));
   right: 0;
   min-width: 100%;
   background-color: var(--curator-bg-surface);
   border: 1px solid var(--curator-border-light);
   border-radius: var(--curator-radius-lg);
-  padding: 0.25rem;
+  padding: var(--curator-space-1);
   z-index: 50;
   box-shadow: var(--curator-shadow-lg);
 }
@@ -651,7 +651,7 @@
   color: var(--curator-text-secondary);
   background: none;
   border: none;
-  border-radius: 0.375rem;
+  border-radius: var(--curator-radius-md);
   cursor: pointer;
   transition: var(--curator-transition-colors);
 }
@@ -765,7 +765,7 @@
   font-size: var(--curator-text-base);
   font-weight: 500;
   color: var(--curator-text-primary);
-  margin: 0 0 0.25rem 0;
+  margin: 0 0 var(--curator-space-1) 0;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -774,10 +774,10 @@
 .rag-doc-card-meta {
   display: flex;
   align-items: center;
-  gap: 0.375rem;
+  gap: var(--curator-space-1-5);
   font-size: var(--curator-text-sm);
   color: var(--curator-text-muted);
-  margin-bottom: 0.25rem;
+  margin-bottom: var(--curator-space-1);
 }
 
 .rag-doc-card-type {
@@ -791,7 +791,7 @@
 .rag-doc-card-chunks {
   display: flex;
   align-items: center;
-  gap: 0.25rem;
+  gap: var(--curator-space-1);
 }
 
 .rag-doc-card-date {
@@ -804,7 +804,7 @@
   top: 0.75rem;
   right: 0.75rem;
   display: flex;
-  gap: 0.25rem;
+  gap: var(--curator-space-1);
   opacity: 0;
   transition: var(--curator-transition-opacity);
 }
@@ -814,10 +814,10 @@
 }
 
 .rag-doc-card-action {
-  padding: 0.375rem;
+  padding: var(--curator-space-1-5);
   background-color: var(--curator-bg-hover);
   border: none;
-  border-radius: 0.375rem;
+  border-radius: var(--curator-radius-md);
   color: var(--curator-text-secondary);
   cursor: pointer;
   transition: var(--curator-transition-colors);
@@ -849,7 +849,7 @@
 .rag-skeleton-line {
   height: 0.75rem;
   background-color: var(--curator-skeleton-base);
-  border-radius: 0.25rem;
+  border-radius: var(--curator-radius-sm);
   animation: curator-skeleton 1.5s ease-in-out infinite;
 }
 
@@ -861,7 +861,7 @@
 .rag-skeleton-line-meta {
   width: 50%;
   height: 0.625rem;
-  margin-bottom: 0.375rem;
+  margin-bottom: var(--curator-space-1-5);
 }
 
 .rag-skeleton-line-date {
@@ -936,7 +936,7 @@
   font-size: 1rem;
   font-weight: 600;
   color: var(--curator-text-primary);
-  margin: 0 0 0.25rem 0;
+  margin: 0 0 var(--curator-space-1) 0;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -947,7 +947,7 @@
   padding: 0.125rem 0.5rem;
   font-size: 0.625rem;
   font-weight: 600;
-  border-radius: 0.25rem;
+  border-radius: var(--curator-radius-sm);
   text-transform: uppercase;
   letter-spacing: 0.05em;
 }
@@ -974,7 +974,7 @@
 .rag-preview-meta-item {
   display: flex;
   align-items: center;
-  gap: 0.375rem;
+  gap: var(--curator-space-1-5);
   font-size: var(--curator-text-sm);
   color: var(--curator-text-secondary);
 }
@@ -1131,7 +1131,7 @@
 .rag-library-upload-btn {
   display: flex;
   align-items: center;
-  gap: 0.375rem;
+  gap: var(--curator-space-1-5);
   padding: 0.5rem 0.875rem;
   border: none;
   border-radius: var(--curator-radius-lg);
@@ -1283,7 +1283,7 @@
 .rag-confirm-btn {
   padding: 0.5rem 1rem;
   font-size: var(--curator-text-md);
-  border-radius: 0.375rem;
+  border-radius: var(--curator-radius-md);
 }
 
 /* Cancel extends curator-btn-ghost */
@@ -1327,7 +1327,7 @@
 .rag-interface-tabs {
   flex-shrink: 0;
   display: flex;
-  gap: 0.25rem;
+  gap: var(--curator-space-1);
   padding: 0.75rem 1rem;
   background: linear-gradient(to right, var(--curator-bg-hover), transparent);
   border-bottom: 1px solid var(--curator-border-light);
@@ -1364,7 +1364,7 @@
   justify-content: center;
   min-width: 1.25rem;
   height: 1.25rem;
-  padding: 0 0.375rem;
+  padding: 0 var(--curator-space-1-5);
   font-size: 0.6875rem;
   font-weight: 600;
   border-radius: 9999px;
@@ -1406,11 +1406,11 @@
 .rag-interface-scope-clear {
   display: flex;
   align-items: center;
-  gap: 0.375rem;
-  padding: 0.375rem 0.625rem;
+  gap: var(--curator-space-1-5);
+  padding: var(--curator-space-1-5) var(--curator-space-2-5);
   background-color: var(--curator-bg-hover);
   border: 1px solid var(--curator-border-light);
-  border-radius: 0.375rem;
+  border-radius: var(--curator-radius-md);
   font-size: var(--curator-text-sm);
   color: var(--curator-text-secondary);
   cursor: pointer;
@@ -1488,10 +1488,10 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 0.375rem;
+  padding: var(--curator-space-1-5);
   background: transparent;
   border: none;
-  border-radius: 0.375rem;
+  border-radius: var(--curator-radius-md);
   color: var(--curator-text-muted);
   cursor: pointer;
   transition: var(--curator-transition-all);
@@ -1653,7 +1653,7 @@
 .rag-upload-dropzone-text {
   display: flex;
   flex-direction: column;
-  gap: 0.25rem;
+  gap: var(--curator-space-1);
 }
 
 .rag-upload-dropzone-title {
@@ -1670,11 +1670,11 @@
 .rag-upload-dropzone-error {
   display: flex;
   align-items: center;
-  gap: 0.375rem;
+  gap: var(--curator-space-1-5);
   margin-top: 0.75rem;
   padding: 0.5rem 0.75rem;
   background-color: var(--curator-error-bg);
-  border-radius: 0.375rem;
+  border-radius: var(--curator-radius-md);
   font-size: var(--curator-text-sm);
   color: var(--curator-error);
 }
@@ -1693,7 +1693,7 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 0 0.25rem;
+  padding: 0 var(--curator-space-1);
 }
 
 .rag-upload-queue-title {
@@ -1793,7 +1793,7 @@
   text-overflow: ellipsis;
   display: flex;
   align-items: center;
-  gap: 0.375rem;
+  gap: var(--curator-space-1-5);
 }
 
 .rag-upload-queue-item-name.editable {
@@ -1815,10 +1815,10 @@
 
 .rag-upload-queue-item-input {
   flex: 1;
-  padding: 0.25rem 0.5rem;
+  padding: var(--curator-space-1) var(--curator-space-2);
   background-color: var(--curator-bg-hover);
   border: 1px solid var(--curator-border-light);
-  border-radius: 0.25rem;
+  border-radius: var(--curator-radius-sm);
   font-size: var(--curator-text-md);
   color: var(--curator-text-primary);
   outline: none;
@@ -1849,10 +1849,10 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 0.25rem;
+  padding: var(--curator-space-1);
   background: transparent;
   border: none;
-  border-radius: 0.25rem;
+  border-radius: var(--curator-radius-sm);
   color: var(--curator-text-muted);
   cursor: pointer;
   transition: var(--curator-transition-all);
@@ -1867,9 +1867,9 @@
 .rag-upload-queue-item-warning {
   display: flex;
   align-items: center;
-  gap: 0.375rem;
-  padding: 0.375rem 0.5rem;
-  border-radius: 0.25rem;
+  gap: var(--curator-space-1-5);
+  padding: var(--curator-space-1-5) var(--curator-space-2);
+  border-radius: var(--curator-radius-sm);
   font-size: var(--curator-text-sm);
 }
 
@@ -1925,7 +1925,7 @@
 .rag-upload-progress-stage {
   display: flex;
   align-items: center;
-  gap: 0.375rem;
+  gap: var(--curator-space-1-5);
   color: var(--curator-text-secondary);
 }
 
@@ -1948,7 +1948,7 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 0 0.25rem;
+  padding: 0 var(--curator-space-1);
 }
 
 .rag-upload-progress-stage-dot {
@@ -2032,38 +2032,38 @@
   display: flex;
   flex-wrap: wrap;
   gap: var(--curator-gap-sm);
-  margin-top: 0.25rem;
+  margin-top: var(--curator-space-1);
   font-size: var(--curator-text-sm);
   color: var(--curator-text-muted);
 }
 
 .rag-upload-preview-type {
-  padding: 0.125rem 0.375rem;
+  padding: var(--curator-space-0-5) var(--curator-space-1-5);
   background-color: var(--curator-bg-hover);
-  border-radius: 0.25rem;
+  border-radius: var(--curator-radius-sm);
 }
 
 .rag-upload-preview-chunks {
   display: flex;
   align-items: center;
-  gap: 0.25rem;
+  gap: var(--curator-space-1);
   color: var(--curator-success);
 }
 
 .rag-upload-preview-loading {
   display: flex;
   align-items: center;
-  gap: 0.25rem;
+  gap: var(--curator-space-1);
   color: var(--curator-text-muted);
 }
 
 .rag-upload-preview-warning {
   display: flex;
   align-items: center;
-  gap: 0.375rem;
+  gap: var(--curator-space-1-5);
   padding: 0.5rem 0.75rem;
   background-color: var(--curator-warning-bg);
-  border-radius: 0.375rem;
+  border-radius: var(--curator-radius-md);
   font-size: var(--curator-text-sm);
   color: var(--curator-warning);
 }
@@ -2073,7 +2073,7 @@
   padding: 0.75rem;
   background-color: var(--curator-bg-deep);
   border: 1px solid var(--curator-border-subtle);
-  border-radius: 0.375rem;
+  border-radius: var(--curator-radius-md);
   overflow: auto;
 }
 
@@ -2158,7 +2158,7 @@
 
 /* Extends curator-btn curator-btn-ghost */
 .rag-admin-refresh-btn {
-  gap: 0.375rem;
+  gap: var(--curator-space-1-5);
   padding: 0.5rem 0.875rem;
   background-color: var(--curator-bg-hover);
 }
@@ -2325,7 +2325,7 @@
 .rag-admin-chart-skeleton-bar {
   height: 1.5rem;
   background-color: var(--curator-bg-hover);
-  border-radius: 0.25rem;
+  border-radius: var(--curator-radius-sm);
   animation: curator-skeleton 1.5s ease-in-out infinite;
 }
 
@@ -2358,7 +2358,7 @@
 .rag-admin-bar-label {
   display: flex;
   align-items: center;
-  gap: 0.375rem;
+  gap: var(--curator-space-1-5);
   min-width: 100px;
   font-size: var(--curator-text-sm);
   color: var(--curator-text-secondary);
@@ -2378,13 +2378,13 @@
   flex: 1;
   height: 1rem;
   background-color: var(--curator-bg-hover);
-  border-radius: 0.25rem;
+  border-radius: var(--curator-radius-sm);
   overflow: hidden;
 }
 
 .rag-admin-bar-fill {
   height: 100%;
-  border-radius: 0.25rem;
+  border-radius: var(--curator-radius-sm);
   transition: width 0.3s ease-out;
 }
 
@@ -2406,7 +2406,7 @@
 .rag-admin-service-item {
   display: flex;
   flex-direction: column;
-  gap: 0.25rem;
+  gap: var(--curator-space-1);
   padding: 0.75rem;
   border-radius: var(--curator-radius-lg);
   transition: var(--curator-transition-colors);
@@ -2431,7 +2431,7 @@
 .rag-admin-service-status {
   display: flex;
   align-items: center;
-  gap: 0.25rem;
+  gap: var(--curator-space-1);
   font-size: var(--curator-text-sm);
   font-weight: 500;
   padding: 0.125rem 0.5rem;
@@ -2550,7 +2550,7 @@
 .rag-settings-configured {
   display: inline-flex;
   align-items: center;
-  gap: 0.25rem;
+  gap: var(--curator-space-1);
   padding: 0.125rem 0.5rem;
   font-size: 0.6875rem;
   font-weight: 500;
@@ -2614,10 +2614,10 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 0.375rem;
+  padding: var(--curator-space-1-5);
   background: transparent;
   border: none;
-  border-radius: 0.25rem;
+  border-radius: var(--curator-radius-sm);
   color: var(--curator-text-muted);
   cursor: pointer;
   transition: var(--curator-transition-all);
@@ -2632,11 +2632,11 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 0.375rem;
+  gap: var(--curator-space-1-5);
   padding: 0.5rem 0.75rem;
   background-color: var(--curator-bg-hover);
   border: 1px solid var(--curator-border-light);
-  border-radius: 0.375rem;
+  border-radius: var(--curator-radius-md);
   font-size: var(--curator-text-md);
   font-weight: 500;
   color: var(--curator-text-secondary);
@@ -2664,7 +2664,7 @@
   align-items: center;
   gap: var(--curator-gap-sm);
   padding: 0.625rem 0.75rem;
-  border-radius: 0.375rem;
+  border-radius: var(--curator-radius-md);
   font-size: var(--curator-text-md);
 }
 
@@ -2745,11 +2745,11 @@
 .rag-api-config-btn {
   display: flex;
   align-items: center;
-  gap: 0.375rem;
-  padding: 0.375rem 0.75rem;
+  gap: var(--curator-space-1-5);
+  padding: var(--curator-space-1-5) var(--curator-space-3);
   background-color: var(--curator-bg-hover);
   border: 1px solid var(--curator-border-light);
-  border-radius: 0.375rem;
+  border-radius: var(--curator-radius-md);
   font-size: var(--curator-text-sm);
   font-weight: 500;
   color: var(--curator-text-secondary);

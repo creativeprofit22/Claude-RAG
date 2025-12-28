@@ -71,6 +71,42 @@ That's it! Upload documents and start chatting.
 
 ---
 
+## Runtime Options
+
+This app works with both **npm** (default) and **Bun** (alternative). Use whichever you prefer.
+
+### npm (default)
+
+```bash
+# Install dependencies
+npm install
+
+# Run the app
+npm run dev
+
+# Build for production
+npm run build
+```
+
+### Bun (alternative)
+
+Bun is a faster JavaScript runtime. If you have it installed:
+
+```bash
+# Install dependencies
+bun install
+
+# Run the app
+bun run dev
+
+# Build for production
+bun run build
+```
+
+> **Note**: Both runtimes use the same `package.json` scripts. The app behavior is identical regardless of which you choose.
+
+---
+
 ## Options
 
 Put these in your `.env` file if needed:
