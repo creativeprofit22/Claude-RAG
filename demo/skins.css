@@ -90,6 +90,15 @@
   /* === CORNER DECORATIONS === */
   --skin-corner-decoration: linear-gradient(135deg, transparent 50%, var(--skin-primary) 50%);
   --skin-corner-decoration-size: 24px;
+
+  /* === LIBRARY-SPECIFIC LAYOUT === */
+  --skin-library-spine-width: 6px;
+  --skin-library-spine-inset: 8px;
+  --skin-library-spine-offset: 0.5rem;
+  --skin-library-panel-indent: 1.5rem;
+  --skin-library-inner-border-inset: 4px;
+  --skin-library-label-size: 0.65rem;
+  --skin-library-bar-label-size: 0.7rem;
 }
 
 
@@ -428,4 +437,223 @@
   background: var(--skin-glass-bg);
   border: 1px solid var(--skin-glass-border);
   border-radius: 8px;
+}
+
+/* ==========================================================================
+   LIBRARY SKIN: Admin Cards & Panels
+   Victorian rare-books aesthetic - notched corners, brass accents, leather feel
+   ========================================================================== */
+
+/* Stat Cards - Main dashboard metrics */
+[data-skin="library"] .rag-admin-stat-card {
+  clip-path: var(--skin-card-clip);
+  background:
+    var(--skin-texture-overlay),
+    linear-gradient(180deg, var(--skin-bg-subtle) 0%, var(--skin-bg-surface) 100%);
+  background-size: var(--skin-texture-size), 100% 100%;
+  border: var(--skin-border-accent-width) solid var(--skin-border-color);
+  border-radius: var(--skin-border-radius);
+  box-shadow:
+    var(--skin-shadow-emboss),
+    var(--skin-shadow-brutal-sm);
+  position: relative;
+}
+
+/* Double border effect for stat cards */
+[data-skin="library"] .rag-admin-stat-card::before {
+  content: '';
+  position: absolute;
+  inset: var(--skin-library-inner-border-inset);
+  border: 1px solid var(--skin-accent-muted);
+  pointer-events: none;
+  z-index: 1;
+}
+
+/* Corner decoration - book spine accent */
+[data-skin="library"] .rag-admin-stat-card::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  right: 0;
+  width: var(--skin-corner-decoration-size);
+  height: var(--skin-corner-decoration-size);
+  background: var(--skin-corner-decoration);
+  opacity: 0.6;
+  pointer-events: none;
+  z-index: 2;
+}
+
+[data-skin="library"] .rag-admin-stat-value {
+  font-family: var(--skin-font-display);
+  color: var(--skin-accent);
+  text-shadow: 1px 1px 0 var(--skin-accent-dark);
+}
+
+[data-skin="library"] .rag-admin-stat-label {
+  font-family: var(--skin-font-body);
+  text-transform: var(--skin-text-transform);
+  letter-spacing: var(--skin-letter-spacing);
+  font-size: var(--skin-library-label-size);
+  color: var(--skin-text-secondary);
+}
+
+[data-skin="library"] .rag-admin-stat-icon {
+  background: linear-gradient(135deg, var(--skin-primary) 0%, var(--skin-primary-bright) 100%);
+  border-radius: var(--skin-border-radius);
+  box-shadow: var(--skin-shadow-emboss);
+}
+
+/* Admin Panels - Content containers */
+[data-skin="library"] .rag-admin-panel {
+  clip-path: var(--skin-card-clip);
+  background:
+    var(--skin-texture-overlay),
+    var(--skin-bg-surface);
+  background-size: var(--skin-texture-size), 100% 100%;
+  border: var(--skin-border-width) solid var(--skin-border-color);
+  border-radius: var(--skin-border-radius);
+  box-shadow:
+    var(--skin-shadow-emboss),
+    var(--skin-shadow-brutal);
+  position: relative;
+}
+
+/* Book spine edge effect */
+[data-skin="library"] .rag-admin-panel::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: var(--skin-library-spine-inset);
+  bottom: var(--skin-library-spine-inset);
+  width: var(--skin-library-spine-width);
+  background: linear-gradient(
+    90deg,
+    var(--skin-primary) 0%,
+    var(--skin-primary-bright) 50%,
+    var(--skin-primary) 100%
+  );
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,0.3),
+    inset 0 -1px 0 rgba(0,0,0,0.2),
+    2px 0 4px rgba(0,0,0,0.2);
+  border-radius: 0 2px 2px 0;
+  pointer-events: none;
+  z-index: 1;
+}
+
+/* Panel title with Victorian flair */
+[data-skin="library"] .rag-admin-panel-title {
+  font-family: var(--skin-font-display);
+  text-transform: var(--skin-text-transform);
+  letter-spacing: 0.05em;
+  color: var(--skin-accent);
+  border-bottom: 2px solid var(--skin-border-color);
+  background: linear-gradient(180deg, var(--skin-bg-subtle) 0%, transparent 100%);
+  padding-left: var(--skin-library-panel-indent);
+  position: relative;
+}
+
+/* Title underline embellishment */
+[data-skin="library"] .rag-admin-panel-title::after {
+  content: '';
+  position: absolute;
+  bottom: -4px;
+  left: var(--skin-library-panel-indent);
+  right: 1rem;
+  height: 1px;
+  background: var(--skin-accent-muted);
+}
+
+/* Recent Items - File list entries */
+[data-skin="library"] .rag-admin-recent-item {
+  border-radius: var(--skin-border-radius);
+  border: 1px solid transparent;
+  transition: background 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+  position: relative;
+  margin-left: var(--skin-library-spine-offset);
+}
+
+[data-skin="library"] .rag-admin-recent-item:hover {
+  background:
+    var(--skin-texture-overlay),
+    var(--skin-bg-hover);
+  background-size: var(--skin-texture-size), 100% 100%;
+  border-color: var(--skin-accent-muted);
+  box-shadow: var(--skin-shadow-emboss);
+}
+
+/* Text truncation - shared pattern */
+[data-skin="library"] .rag-admin-recent-name,
+[data-skin="library"] .rag-admin-bar-label {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* File names with serif elegance */
+[data-skin="library"] .rag-admin-recent-name {
+  font-family: var(--skin-font-display);
+  color: var(--skin-text-primary);
+}
+
+[data-skin="library"] .rag-admin-recent-meta,
+[data-skin="library"] .rag-admin-recent-time {
+  font-family: var(--skin-font-body);
+  color: var(--skin-text-muted);
+  font-style: italic;
+}
+
+/* File type icon styling */
+[data-skin="library"] .rag-admin-recent-icon {
+  color: var(--skin-primary);
+}
+
+/* Bar chart styling for Library */
+[data-skin="library"] .rag-admin-bar-container {
+  background: var(--skin-bg-deep);
+  border: 1px solid var(--skin-border-subtle);
+  border-radius: var(--skin-border-radius);
+}
+
+[data-skin="library"] .rag-admin-bar-fill {
+  background: var(--skin-gradient-btn);
+  border-radius: var(--skin-border-radius);
+  box-shadow: var(--skin-shadow-emboss);
+}
+
+[data-skin="library"] .rag-admin-bar-label {
+  font-family: var(--skin-font-body);
+  text-transform: var(--skin-text-transform);
+  letter-spacing: var(--skin-letter-spacing);
+  font-size: var(--skin-library-bar-label-size);
+}
+
+[data-skin="library"] .rag-admin-bar-count {
+  font-family: var(--skin-font-display);
+  color: var(--skin-accent);
+}
+
+/* Service status items */
+[data-skin="library"] .rag-admin-service-item {
+  border-radius: var(--skin-border-radius);
+  margin-left: var(--skin-library-spine-offset);
+}
+
+[data-skin="library"] .rag-admin-service-item:hover {
+  background: var(--skin-bg-hover);
+  box-shadow: var(--skin-shadow-emboss);
+}
+
+[data-skin="library"] .rag-admin-service-header {
+  font-family: var(--skin-font-display);
+}
+
+/* Status badges with brass accents */
+[data-skin="library"] .rag-admin-service-status {
+  border-radius: var(--skin-border-radius);
+  border: 1px solid currentColor;
+  font-family: var(--skin-font-body);
+  text-transform: var(--skin-text-transform);
+  letter-spacing: 0.05em;
+  font-size: 0.6rem;
 }
