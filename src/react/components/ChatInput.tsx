@@ -2,7 +2,9 @@
 
 import { useState, useRef, KeyboardEvent } from 'react';
 import { Send } from 'lucide-react';
+import { m } from 'framer-motion';
 import { DEFAULT_ACCENT_COLOR } from '../types.js';
+import { useSkinMotion } from '../motion/hooks/useSkinMotion.js';
 
 export interface ChatInputProps {
   placeholder?: string;
@@ -19,6 +21,7 @@ export function ChatInput({
 }: ChatInputProps) {
   const [inputValue, setInputValue] = useState('');
   const inputRef = useRef<HTMLInputElement>(null);
+  const { motion } = useSkinMotion();
 
   const handleSend = () => {
     if (!inputValue.trim() || !onSendMessage || disabled) return;
@@ -55,7 +58,7 @@ export function ChatInput({
               : undefined,
           }}
         />
-        <button
+        <m.button
           type="button"
           onClick={handleSend}
           disabled={!hasInput || disabled}
@@ -66,9 +69,12 @@ export function ChatInput({
           }}
           title="Send message"
           aria-label="Send message"
+          whileHover={hasInput && !disabled ? motion.button.hover : undefined}
+          whileTap={hasInput && !disabled ? motion.button.tap : undefined}
+          transition={motion.transition.fast}
         >
           <Send size={18} aria-hidden="true" />
-        </button>
+        </m.button>
       </div>
     </div>
   );

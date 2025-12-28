@@ -2,8 +2,10 @@
 
 import { FileText, ChevronDown, ChevronUp } from 'lucide-react';
 import { useState } from 'react';
+import { m, AnimatePresence } from 'framer-motion';
 import { DEFAULT_ACCENT_COLOR, type ChatMessage } from '../types.js';
 import { LoadingDots } from './LoadingDots.js';
+import { useSkinMotion } from '../motion/hooks/useSkinMotion.js';
 
 interface MessageBubbleProps {
   message: ChatMessage;
@@ -18,6 +20,7 @@ export function MessageBubble({
 }: MessageBubbleProps) {
   const isUser = message.role === 'user';
   const [sourcesExpanded, setSourcesExpanded] = useState(false);
+  const { motion } = useSkinMotion();
 
   const time = message.timestamp.toLocaleTimeString('en-US', {
     hour: '2-digit',
@@ -28,7 +31,13 @@ export function MessageBubble({
   const hasSources = showSources && sources.length > 0;
 
   return (
-    <div className={`rag-message ${isUser ? 'rag-message-user' : 'rag-message-assistant'}`}>
+    <m.div
+      className={`rag-message ${isUser ? 'rag-message-user' : 'rag-message-assistant'}`}
+      initial="hidden"
+      animate="visible"
+      exit="exit"
+      variants={motion.message}
+    >
       <div className={`rag-message-content ${isUser ? 'rag-message-content-user' : 'rag-message-content-assistant'}`}>
         {/* Message bubble */}
         <div
@@ -63,28 +72,49 @@ export function MessageBubble({
               {sourcesExpanded ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
             </button>
 
-            {sourcesExpanded && (
-              <div className="rag-sources-list">
-                {sources.map((source, i) => (
-                  <div key={`${source.documentId}-${source.chunkIndex}-${i}`} className="rag-source-item">
-                    <div className="rag-source-header">
-                      <span className="rag-source-badge" style={{ backgroundColor: `${accentColor}20`, color: accentColor }}>
-                        [{i + 1}]
-                      </span>
-                      <span className="rag-source-name">{source.documentName}</span>
-                      <span className="rag-source-chunk">Chunk {source.chunkIndex}</span>
-                    </div>
-                    <p className="rag-source-snippet">{source.snippet}</p>
-                  </div>
-                ))}
-              </div>
-            )}
+            <AnimatePresence>
+              {sourcesExpanded && (
+                <m.div
+                  className="rag-sources-list"
+                  initial={{ height: 0, opacity: 0 }}
+                  animate={{ height: 'auto', opacity: 1 }}
+                  exit={{ height: 0, opacity: 0 }}
+                  transition={motion.transition.default}
+                >
+                  {sources.map((source, i) => (
+                    <m.div
+                      key={`${source.documentId}-${source.chunkIndex}-${i}`}
+                      className="rag-source-item"
+                      initial={{ opacity: 0, x: -10 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      transition={{ ...motion.transition.fast, delay: i * motion.stagger.children }}
+                    >
+                      <div className="rag-source-header">
+                        <span className="rag-source-badge" style={{ backgroundColor: `${accentColor}20`, color: accentColor }}>
+                          [{i + 1}]
+                        </span>
+                        <span className="rag-source-name">{source.documentName}</span>
+                        <span className="rag-source-chunk">Chunk {source.chunkIndex}</span>
+                      </div>
+                      <p className="rag-source-snippet">{source.snippet}</p>
+                    </m.div>
+                  ))}
+                </m.div>
+              )}
+            </AnimatePresence>
           </div>
         )}
 
         {/* Timestamp */}
-        <span className="rag-message-time">{time}</span>
+        <m.span
+          className="rag-message-time"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ ...motion.transition.slow, delay: 0.3 }}
+        >
+          {time}
+        </m.span>
       </div>
-    </div>
+    </m.div>
   );
 }
