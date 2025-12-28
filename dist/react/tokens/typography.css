@@ -89,6 +89,7 @@
      ========================================= */
   --curator-text-xs: 0.625rem;      /* 10px - tiny labels */
   --curator-text-sm: 0.75rem;       /* 12px - captions, badges */
+  --curator-text-md: 0.8125rem;     /* 13px - compact UI text */
   --curator-text-base: 0.875rem;    /* 14px - body text */
   --curator-text-lg: 1rem;          /* 16px - emphasized body */
   --curator-text-xl: 1.125rem;      /* 18px - subheadings */

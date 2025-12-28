@@ -13,36 +13,32 @@ Query → Gemini Embeddings → LanceDB → Chunks → Claude Code CLI → Respo
 ```
 
 ## Current Focus
-Section: The Curator Design System
-Files: src/react/styles.css, src/react/tokens/*, src/react/fonts/*
+Section: M5 Token Migration Complete, Polish Phase
+Files: src/react/styles.css
 
 ## Pipeline State
-Phase: debugging
-Feature: The Curator Design System - Phase 2 Light Theme
-Files:
+Phase: refactor-hunt
+Feature: M5 Token Migration
+Files-Validated:
   - src/react/styles.css
   - src/react/tokens/*.css
-  - src/react/components/**/*.tsx
-Reports:
-  - validation: reports/validation-curator-phase2-light-theme.md
-  - refactor: reports/refactor-hunt-curator-phase2-light-theme.md
-Tier: low
-Tier-Status: pending
-Tier-Counts: high=3 ✓, medium=6 ✓, low=9
+Validation-Report: reports/validation-m5-token-migration.md
 
 ## Last Session (2025-12-27)
-- Fixed 6 MEDIUM bugs (accessibility/theme consistency)
-- Updated validation report and CLAUDE.md
-- All committed and pushed to origin
-- Stopped at: LOW priority bugs remaining (9 items)
+- Completed M5 Token Migration: 148 hardcoded CSS values → design tokens
+- Replacements: border-radius (40), font-size (52), gap (56)
+- Reduced hardcoded rem values: 217 → 69
+- All 6 validation checks pass (Tests, API, UI, Wiring, Bottlenecks, Bugs)
+- Build passes, 21 tests pass
+- Stopped at: Validation complete, ready for refactor-hunt or next polish item
 
 ## Key Files
 - `src/server.ts` - Bun HTTP server
 - `src/database.ts` - LanceDB wrapper
 - `src/responder.ts` - Claude CLI integration
 - `src/react/` - React components and hooks
-- `src/react/tokens/` - Curator design tokens (NEW)
-- `src/react/fonts/` - Self-hosted Fraunces + Satoshi (NEW)
+- `src/react/tokens/` - Curator design tokens
+- `src/react/fonts/` - Self-hosted Fraunces + Satoshi
 
 ## Environment
 ```

@@ -214,23 +214,16 @@
    Progressive enhancement - gracefully ignored by older browsers
    ========================================= */
 
-/* Message entry animation */
+/* CSS-only Entry Animations (Progressive Enhancement)
+   Uses @starting-style for entry animations without JS */
 @supports (transition-behavior: allow-discrete) {
+  /* Message entry */
   .rag-message {
     transition: opacity var(--curator-duration-normal) var(--curator-ease-out),
                 transform var(--curator-duration-normal) var(--curator-ease-out);
   }
 
-  @starting-style {
-    .rag-message {
-      opacity: 0;
-      transform: translateY(-8px);
-    }
-  }
-}
-
-/* Modal entry animation */
-@supports (transition-behavior: allow-discrete) {
+  /* Modal entry */
   .rag-preview-modal,
   .rag-confirm-dialog,
   .rag-upload-modal {
@@ -238,22 +231,25 @@
                 transform var(--curator-duration-slow) var(--curator-ease-out);
   }
 
+  /* Card hover lift */
+  .rag-doc-card {
+    transition: transform var(--curator-duration-normal) var(--curator-ease-out),
+                box-shadow var(--curator-duration-normal) var(--curator-ease-out),
+                border-color var(--curator-duration-fast) var(--curator-ease-out);
+  }
+
   @starting-style {
+    .rag-message {
+      opacity: 0;
+      transform: translateY(-8px);
+    }
+
     .rag-preview-modal,
     .rag-confirm-dialog,
     .rag-upload-modal {
       opacity: 0;
       transform: translateY(16px);
     }
-  }
-}
-
-/* Card hover lift effect */
-@supports (transition-behavior: allow-discrete) {
-  .rag-doc-card {
-    transition: transform var(--curator-duration-normal) var(--curator-ease-out),
-                box-shadow var(--curator-duration-normal) var(--curator-ease-out),
-                border-color var(--curator-duration-fast) var(--curator-ease-out);
   }
 }
 
