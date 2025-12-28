@@ -1282,3 +1282,413 @@
 [data-skin="brutalist"] .rag-admin-service-status[data-status="pending"] {
   color: var(--skin-accent);
 }
+
+
+/* ==========================================================================
+   GLASS SKIN: Admin Cards & Panels
+   Frosted morphism aesthetic - blur, transparency, soft gradients
+   ========================================================================== */
+
+/* Shared glass container base */
+[data-skin="glass"] .rag-admin-stat-card,
+[data-skin="glass"] .rag-admin-panel {
+  position: relative;
+  backdrop-filter: var(--skin-glass-blur);
+  -webkit-backdrop-filter: var(--skin-glass-blur);
+  background: var(--skin-glass-bg);
+  border: 1px solid var(--skin-glass-border);
+  border-radius: var(--skin-border-radius);
+  box-shadow:
+    var(--skin-shadow-emboss),
+    var(--skin-shadow-lift);
+}
+
+/* Shared typography - primary text elements */
+[data-skin="glass"] .rag-admin-stat-value,
+[data-skin="glass"] .rag-admin-bar-count {
+  font-family: var(--skin-font-display);
+  color: var(--skin-primary); /* Fallback for unsupported browsers */
+  background: var(--skin-gradient-header);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* Shared typography - labels and headers */
+[data-skin="glass"] .rag-admin-stat-label,
+[data-skin="glass"] .rag-admin-bar-label,
+[data-skin="glass"] .rag-admin-panel-title,
+[data-skin="glass"] .rag-admin-service-header {
+  font-family: var(--skin-font-body);
+  color: var(--skin-text-secondary);
+}
+
+/* Shared text truncation */
+[data-skin="glass"] .rag-admin-recent-name,
+[data-skin="glass"] .rag-admin-bar-label {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Stat Cards - Frosted metrics with gradient shimmer */
+[data-skin="glass"] .rag-admin-stat-card {
+  padding: 1.5rem;
+  overflow: hidden;
+  transition: transform 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease;
+}
+
+[data-skin="glass"] .rag-admin-stat-card:hover {
+  transform: translateY(-2px);
+  border-color: var(--skin-primary-glow);
+  box-shadow:
+    var(--skin-shadow-emboss),
+    0 12px 40px rgba(138, 43, 226, 0.25);
+}
+
+/* Top shimmer highlight */
+[data-skin="glass"] .rag-admin-stat-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(255, 255, 255, 0.4) 50%,
+    transparent 100%
+  );
+  pointer-events: none;
+  z-index: 1;
+}
+
+/* Gradient orb decoration */
+[data-skin="glass"] .rag-admin-stat-card::after {
+  content: '';
+  position: absolute;
+  top: -50%;
+  right: -30%;
+  width: 150px;
+  height: 150px;
+  background: radial-gradient(
+    circle,
+    var(--skin-primary-glow) 0%,
+    transparent 70%
+  );
+  opacity: 0.3;
+  pointer-events: none;
+  z-index: 0;
+  transition: opacity 0.3s ease;
+}
+
+[data-skin="glass"] .rag-admin-stat-card:hover::after {
+  opacity: 0.5;
+}
+
+[data-skin="glass"] .rag-admin-stat-card:focus-visible {
+  outline: 2px solid var(--skin-primary);
+  outline-offset: 2px;
+}
+
+[data-skin="glass"] .rag-admin-stat-value {
+  font-size: 2.5rem;
+  font-weight: 600;
+  line-height: 1;
+  margin-bottom: 0.5rem;
+  position: relative;
+  z-index: 1;
+}
+
+[data-skin="glass"] .rag-admin-stat-label {
+  font-size: 0.75rem;
+  font-weight: 500;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  position: relative;
+  z-index: 1;
+}
+
+[data-skin="glass"] .rag-admin-stat-icon {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  width: 44px;
+  height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--skin-gradient-btn);
+  border-radius: calc(var(--skin-border-radius) / 2);
+  box-shadow: 0 4px 16px var(--skin-primary-glow);
+  color: white;
+  z-index: 1;
+}
+
+/* Admin Panels - Frosted containers with soft glow */
+[data-skin="glass"] .rag-admin-panel {
+  padding: 1.5rem;
+  overflow: hidden;
+}
+
+/* Left edge gradient accent */
+[data-skin="glass"] .rag-admin-panel::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 3px;
+  background: var(--skin-gradient-header);
+  border-radius: 3px 0 0 3px;
+  pointer-events: none;
+  z-index: 1;
+}
+
+/* Ambient glow in corner */
+[data-skin="glass"] .rag-admin-panel::after {
+  content: '';
+  position: absolute;
+  bottom: -40%;
+  left: -20%;
+  width: 200px;
+  height: 200px;
+  background: radial-gradient(
+    circle,
+    rgba(6, 182, 212, 0.15) 0%,
+    transparent 70%
+  );
+  pointer-events: none;
+  z-index: 0;
+}
+
+[data-skin="glass"] .rag-admin-panel-title {
+  font-size: 0.875rem;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--skin-text-primary);
+  margin: 0 0 1rem 0;
+  padding-bottom: 0.75rem;
+  border-bottom: 1px solid var(--skin-border-subtle);
+  position: relative;
+  z-index: 1;
+}
+
+/* Gradient underline accent */
+[data-skin="glass"] .rag-admin-panel-title::after {
+  content: '';
+  position: absolute;
+  bottom: -1px;
+  left: 0;
+  width: 60px;
+  height: 2px;
+  background: var(--skin-gradient-header);
+  border-radius: 1px;
+}
+
+/* Recent Items - Glass hover with soft transitions */
+[data-skin="glass"] .rag-admin-recent-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 16px;
+  margin: 0 -0.5rem;
+  border-radius: calc(var(--skin-border-radius) / 2);
+  border: 1px solid transparent;
+  background: transparent;
+  transition: background 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+  position: relative;
+  z-index: 1;
+  cursor: pointer;
+}
+
+[data-skin="glass"] .rag-admin-recent-item:hover {
+  background: rgba(255, 255, 255, 0.06);
+  border-color: var(--skin-border-subtle);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+}
+
+[data-skin="glass"] .rag-admin-recent-item:focus-visible {
+  outline: 2px solid var(--skin-primary);
+  outline-offset: -2px;
+  background: rgba(255, 255, 255, 0.06);
+}
+
+[data-skin="glass"] .rag-admin-recent-name {
+  font-family: var(--skin-font-body);
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--skin-text-primary);
+}
+
+[data-skin="glass"] .rag-admin-recent-meta,
+[data-skin="glass"] .rag-admin-recent-time {
+  font-family: var(--skin-font-body);
+  font-size: 12px;
+  color: var(--skin-text-muted);
+}
+
+[data-skin="glass"] .rag-admin-recent-icon {
+  width: 20px;
+  height: 20px;
+  color: var(--skin-primary);
+  flex-shrink: 0;
+  opacity: 0.8;
+}
+
+[data-skin="glass"] .rag-admin-recent-item:hover .rag-admin-recent-icon {
+  opacity: 1;
+}
+
+/* Bar Charts - Translucent fills with gradient */
+[data-skin="glass"] .rag-admin-bar-container {
+  position: relative;
+  height: 28px;
+  background: rgba(0, 0, 0, 0.2);
+  border: 1px solid var(--skin-border-subtle);
+  border-radius: calc(var(--skin-border-radius) / 2);
+  overflow: hidden;
+  z-index: 1;
+}
+
+[data-skin="glass"] .rag-admin-bar-fill {
+  position: relative;
+  height: 100%;
+  background: linear-gradient(
+    90deg,
+    var(--skin-primary) 0%,
+    var(--skin-accent) 100%
+  );
+  border-radius: calc(var(--skin-border-radius) / 2);
+  box-shadow: 0 0 20px var(--skin-primary-glow);
+  transition: width 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Glass shimmer on bar fill */
+[data-skin="glass"] .rag-admin-bar-fill::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 50%;
+  background: linear-gradient(
+    180deg,
+    rgba(255, 255, 255, 0.25) 0%,
+    transparent 100%
+  );
+  border-radius: calc(var(--skin-border-radius) / 2) calc(var(--skin-border-radius) / 2) 0 0;
+  pointer-events: none;
+}
+
+[data-skin="glass"] .rag-admin-bar-label {
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: var(--skin-text-secondary);
+}
+
+[data-skin="glass"] .rag-admin-bar-count {
+  font-size: 0.875rem;
+  font-weight: 600;
+}
+
+/* Service Status - Glass badges with subtle glow */
+[data-skin="glass"] .rag-admin-service-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 16px;
+  margin: 0 -0.5rem;
+  border-radius: calc(var(--skin-border-radius) / 2);
+  border: 1px solid transparent;
+  background: transparent;
+  transition: background 0.2s ease, border-color 0.2s ease;
+  position: relative;
+  z-index: 1;
+  cursor: pointer;
+}
+
+[data-skin="glass"] .rag-admin-service-item:last-child {
+  border-bottom: none;
+}
+
+[data-skin="glass"] .rag-admin-service-item:hover {
+  background: rgba(255, 255, 255, 0.04);
+  border-color: var(--skin-border-subtle);
+}
+
+[data-skin="glass"] .rag-admin-service-item:focus-visible {
+  outline: 2px solid var(--skin-primary);
+  outline-offset: -2px;
+  background: rgba(255, 255, 255, 0.04);
+}
+
+[data-skin="glass"] .rag-admin-service-header {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--skin-text-primary);
+}
+
+/* Glass status badges */
+[data-skin="glass"] .rag-admin-service-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 12px;
+  font-family: var(--skin-font-body);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid currentColor;
+  border-radius: 20px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+}
+
+/* Status indicator dot */
+[data-skin="glass"] .rag-admin-service-status::before {
+  content: '';
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: currentColor;
+  box-shadow: 0 0 8px currentColor;
+}
+
+[data-skin="glass"] .rag-admin-service-status[data-status="online"] {
+  --status-color: var(--skin-status-online, #22c55e);
+  color: var(--status-color);
+  border-color: color-mix(in srgb, var(--status-color) 40%, transparent);
+  background: color-mix(in srgb, var(--status-color) 10%, transparent);
+}
+
+[data-skin="glass"] .rag-admin-service-status[data-status="offline"] {
+  --status-color: var(--skin-status-offline, rgba(255, 255, 255, 0.5));
+  color: var(--status-color);
+  border-color: rgba(255, 255, 255, 0.2);
+  background: rgba(255, 255, 255, 0.05);
+}
+
+[data-skin="glass"] .rag-admin-service-status[data-status="error"] {
+  --status-color: var(--skin-status-error, #ef4444);
+  color: var(--status-color);
+  border-color: color-mix(in srgb, var(--status-color) 40%, transparent);
+  background: color-mix(in srgb, var(--status-color) 10%, transparent);
+}
+
+[data-skin="glass"] .rag-admin-service-status[data-status="warning"] {
+  --status-color: var(--skin-status-warning, #f59e0b);
+  color: var(--status-color);
+  border-color: color-mix(in srgb, var(--status-color) 40%, transparent);
+  background: color-mix(in srgb, var(--status-color) 10%, transparent);
+}
+
+[data-skin="glass"] .rag-admin-service-status[data-status="pending"] {
+  --status-color: var(--skin-accent);
+  color: var(--status-color);
+  border-color: color-mix(in srgb, var(--status-color) 40%, transparent);
+  background: color-mix(in srgb, var(--status-color) 10%, transparent);
+}

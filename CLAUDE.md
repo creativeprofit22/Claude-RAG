@@ -13,17 +13,16 @@ Query → Gemini Embeddings → LanceDB → Chunks → Claude Code CLI → Respo
 ```
 
 ## Pipeline State
-Phase: complete
-Feature: Brutalist Skin - Admin Panel Components
-Files: demo/skins.css (lines 959-1280)
-Refactor-Report: reports/refactors-brutalist-admin.md
+Phase: refactor-hunt
+Feature: Glass Skin - Admin Panel Components
+Files-Validated: demo/skins.css (lines 1287-1695)
+Validation-Report: reports/validation-glass-admin.md
 
 ## Last Session (2025-12-28)
-- **Refactoring Complete**: 11/12 refactors executed (1 skipped - subjective)
-- **High Priority**: Status colors extracted, bar-label conflict fixed, dual selectors removed
-- **Medium Priority**: Combined focus states, stripe gradients to variables, typography/container/item base selectors
-- **Low Priority**: Removed redundant border-radius, documented z-index stacking
-- **Line Reduction**: ~50 lines through selector consolidation
+- **Validated**: Glass admin components (stat cards, panels, charts, service status)
+- **Fixes Applied**: 8 total - focus-visible states, color fallbacks, cursor pointers, status variable colors
+- **Performance**: Removed backdrop-filter from status badges
+- **Pattern Consistency**: Now matches Brutalist/Cyberpunk patterns
 
 ## Key Files
 - `src/server.ts` - Bun HTTP server
