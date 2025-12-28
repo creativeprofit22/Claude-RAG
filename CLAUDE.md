@@ -13,19 +13,17 @@ Query → Gemini Embeddings → LanceDB → Chunks → Claude Code CLI → Respo
 ```
 
 ## Pipeline State
-Phase: refactor-hunt
-Feature: Skin System Bridge
-Files-Validated: src/react/tokens/colors.css, demo/skins.css, demo/index.html
-Validation-Report: reports/validation-skin-system-bridge.md
+Phase: complete
+Feature: Brutalist Skin - Admin Panel Components
+Files: demo/skins.css (lines 959-1280)
+Refactor-Report: reports/refactors-brutalist-admin.md
 
 ## Last Session (2025-12-28)
-- **Skin System Bridge**: Implemented CSS custom property remapping so React components respond to skin switching
-- **Validation**: 6 parallel agents ran tests/API/UI/wiring/bottlenecks/bugs checks
-- **Bugs Fixed**:
-  - `--curator-bg-elevated` mapping conflict resolved
-  - `--curator-text-faint` now has correct fallback
-  - Lucide error handling added for CDN failure graceful degradation
-- **Status**: All checks passing, ready for refactor-hunt
+- **Refactoring Complete**: 11/12 refactors executed (1 skipped - subjective)
+- **High Priority**: Status colors extracted, bar-label conflict fixed, dual selectors removed
+- **Medium Priority**: Combined focus states, stripe gradients to variables, typography/container/item base selectors
+- **Low Priority**: Removed redundant border-radius, documented z-index stacking
+- **Line Reduction**: ~50 lines through selector consolidation
 
 ## Key Files
 - `src/server.ts` - Bun HTTP server
