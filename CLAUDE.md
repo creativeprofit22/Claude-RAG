@@ -13,16 +13,27 @@ Query → Gemini Embeddings → LanceDB → Chunks → Claude Code CLI → Respo
 ```
 
 ## Pipeline State
-Phase: refactor-hunt
-Feature: Glass Skin - Admin Panel Components
-Files-Validated: demo/skins.css (lines 1287-1695)
-Validation-Report: reports/validation-glass-admin.md
+Phase: build
+Feature: Phase 2 - Charts + Admin Components
+Previous: Phase 1 Motion System (complete, refactored)
 
 ## Last Session (2025-12-28)
-- **Validated**: Glass admin components (stat cards, panels, charts, service status)
-- **Fixes Applied**: 8 total - focus-visible states, color fallbacks, cursor pointers, status variable colors
-- **Performance**: Removed backdrop-filter from status badges
-- **Pattern Consistency**: Now matches Brutalist/Cyberpunk patterns
+**Phase 1 Refactors Completed:**
+- Derived VALID_SKINS from skinMotionMap keys (no duplication)
+- Consolidated MotionContextValue/UseSkinMotionReturn interfaces
+- Added exit transitions to list/button in all 4 skin variants
+- Used shared EmptyState component in RAGChat (removed inline duplication)
+
+**Phase 2 Charts Infrastructure Built:**
+- Installed echarts + echarts-for-react
+- Created `src/react/charts/` directory structure
+- Built 4 ECharts skin themes (library, cyberpunk, brutalist, glass)
+- Created SkinAwareChart wrapper component (native echarts, skin-aware theming)
+- Build passing
+
+**Next Steps:**
+- Integrate SkinAwareChart into AdminDashboard (replace CSS bar chart)
+- Add motion to DocumentList, RAGInterface, RAGChat empty state, DocumentLibrary
 
 ## Key Files
 - `src/server.ts` - Bun HTTP server

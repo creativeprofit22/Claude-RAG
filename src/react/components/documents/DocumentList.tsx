@@ -1,5 +1,6 @@
 'use client';
 
+import { AnimatePresence } from 'framer-motion';
 import { DocumentCard } from './DocumentCard.js';
 import { EmptyState } from '../shared/EmptyState.js';
 import type { DocumentSummary } from '../../types.js';
@@ -80,16 +81,18 @@ export function DocumentList({
 
   return (
     <div className="rag-doc-list" role="list" aria-label="Document list">
-      {documents.map((doc) => (
-        <DocumentCard
-          key={doc.documentId}
-          document={doc}
-          isSelected={selectedDocumentId === doc.documentId}
-          onSelect={onDocumentSelect}
-          onDelete={onDocumentDelete}
-          onPreview={onDocumentPreview}
-        />
-      ))}
+      <AnimatePresence mode="popLayout">
+        {documents.map((doc) => (
+          <DocumentCard
+            key={doc.documentId}
+            document={doc}
+            isSelected={selectedDocumentId === doc.documentId}
+            onSelect={onDocumentSelect}
+            onDelete={onDocumentDelete}
+            onPreview={onDocumentPreview}
+          />
+        ))}
+      </AnimatePresence>
     </div>
   );
 }

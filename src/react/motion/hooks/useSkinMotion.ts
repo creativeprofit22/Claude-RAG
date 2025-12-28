@@ -1,11 +1,11 @@
 import { useMemo } from 'react';
-import type { SkinType, SkinMotionConfig } from '../types.js';
+import type { SkinType, SkinMotionConfig, MotionContextValue } from '../types.js';
 import { useSkinDetect } from './useSkinDetect.js';
 import { useReducedMotion } from './useReducedMotion.js';
 import { skinMotionMap } from '../variants/index.js';
 
 // Minimal motion config for reduced motion preference
-const reducedMotionConfig: SkinMotionConfig = {
+export const reducedMotionConfig: SkinMotionConfig = {
   enter: { opacity: 1 },
   exit: { opacity: 0 },
   hover: {},
@@ -57,17 +57,14 @@ const reducedMotionConfig: SkinMotionConfig = {
   },
 };
 
-export interface UseSkinMotionReturn {
-  skin: SkinType;
-  motion: SkinMotionConfig;
-  reducedMotion: boolean;
-}
+// Re-export MotionContextValue as UseSkinMotionReturn for hook return type
+export type { MotionContextValue as UseSkinMotionReturn } from '../types.js';
 
 /**
  * Primary hook for accessing current skin's motion configuration
  * Automatically respects prefers-reduced-motion
  */
-export function useSkinMotion(): UseSkinMotionReturn {
+export function useSkinMotion(): MotionContextValue {
   const skin = useSkinDetect();
   const isReducedMotion = useReducedMotion();
 

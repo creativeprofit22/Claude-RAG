@@ -89,13 +89,15 @@ export const glassMotion: SkinMotionConfig = {
         delayChildren: 0.15,
       },
     },
+    exit: { opacity: 0, filter: 'blur(4px)', transition: { duration: DURATION.fast } },
   },
 
   button: {
     hidden: { opacity: 0, scale: 0.9, filter: 'blur(4px)' },
     visible: { opacity: 1, scale: 1, filter: 'blur(0px)' },
-    hover: { 
-      scale: 1.05, 
+    exit: { opacity: 0, scale: 0.95, filter: 'blur(4px)', transition: { duration: DURATION.fast } },
+    hover: {
+      scale: 1.05,
       filter: 'brightness(1.1)',
       boxShadow: '0 10px 30px rgba(0,0,0,0.15)',
     },

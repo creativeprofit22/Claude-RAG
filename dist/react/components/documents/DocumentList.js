@@ -1,5 +1,6 @@
 'use client';
 import { jsx as _jsx, jsxs as _jsxs, Fragment as _Fragment } from "react/jsx-runtime";
+import { AnimatePresence } from 'framer-motion';
 import { DocumentCard } from './DocumentCard.js';
 import { EmptyState } from '../shared/EmptyState.js';
 /** Number of skeleton cards to show while loading */
@@ -29,6 +30,6 @@ export function DocumentList({ documents, isLoading = false, onDocumentSelect, o
     if (documents.length === 0) {
         return _jsx(_Fragment, { children: emptyState || _jsx(DefaultEmptyState, {}) });
     }
-    return (_jsx("div", { className: "rag-doc-list", role: "list", "aria-label": "Document list", children: documents.map((doc) => (_jsx(DocumentCard, { document: doc, isSelected: selectedDocumentId === doc.documentId, onSelect: onDocumentSelect, onDelete: onDocumentDelete, onPreview: onDocumentPreview }, doc.documentId))) }));
+    return (_jsx("div", { className: "rag-doc-list", role: "list", "aria-label": "Document list", children: _jsx(AnimatePresence, { mode: "popLayout", children: documents.map((doc) => (_jsx(DocumentCard, { document: doc, isSelected: selectedDocumentId === doc.documentId, onSelect: onDocumentSelect, onDelete: onDocumentDelete, onPreview: onDocumentPreview }, doc.documentId))) }) }));
 }
 //# sourceMappingURL=DocumentList.js.map

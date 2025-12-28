@@ -1,9 +1,10 @@
 'use client';
 
-import React, { createContext, useContext, ReactNode } from 'react';
+import React, { createContext, useContext, ReactNode, useMemo } from 'react';
 import { LazyMotion, domAnimation } from 'framer-motion';
 import type { SkinType, SkinMotionConfig, MotionContextValue } from '../types.js';
-import { useSkinMotion } from '../hooks/useSkinMotion.js';
+import { useSkinMotion, reducedMotionConfig } from '../hooks/useSkinMotion.js';
+import { skinMotionMap } from '../variants/index.js';
 import { initGSAP } from '../gsap-init.js';
 
 // Initialize GSAP once
@@ -25,17 +26,28 @@ interface MotionProviderProps {
  * Provides motion context and LazyMotion wrapper for the app
  * Place at the root of your React tree
  */
-export function MotionProvider({ 
-  children, 
+export function MotionProvider({
+  children,
   forceSkin,
   forceReducedMotion,
 }: MotionProviderProps) {
   const { skin, motion, reducedMotion } = useSkinMotion();
 
+  // Compute effective values respecting force props
+  const effectiveSkin = forceSkin ?? skin;
+  const effectiveReducedMotion = forceReducedMotion ?? reducedMotion;
+
+  // Motion config priority: forceReducedMotion > forceSkin > detected
+  const effectiveMotion = useMemo(() => {
+    if (effectiveReducedMotion) return reducedMotionConfig;
+    if (forceSkin) return skinMotionMap[forceSkin];
+    return motion;
+  }, [effectiveReducedMotion, forceSkin, motion]);
+
   const value: MotionContextValue = {
-    skin: forceSkin ?? skin,
-    motion,
-    reducedMotion: forceReducedMotion ?? reducedMotion,
+    skin: effectiveSkin,
+    motion: effectiveMotion,
+    reducedMotion: effectiveReducedMotion,
   };
 
   return (

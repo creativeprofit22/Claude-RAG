@@ -1,7 +1,9 @@
 import { useState, useEffect } from 'react';
 import type { SkinType } from '../types.js';
+import { skinMotionMap } from '../variants/index.js';
 
-const VALID_SKINS: SkinType[] = ['library', 'cyberpunk', 'brutalist', 'glass'];
+// Derive valid skins from skinMotionMap to avoid duplication
+const VALID_SKINS = Object.keys(skinMotionMap) as SkinType[];
 
 /**
  * Detects current skin from data-skin attribute on document body

@@ -1,11 +1,13 @@
 'use client';
 
 import { useRef, useEffect } from 'react';
-import { Database, X, AlertCircle } from 'lucide-react';
+import { AnimatePresence } from 'framer-motion';
+import { Database, X, AlertCircle, type LucideIcon } from 'lucide-react';
 import { ChatHeader } from './components/ChatHeader.js';
 import { ChatInput } from './components/ChatInput.js';
 import { MessageBubble } from './components/MessageBubble.js';
 import { TypingIndicator } from './components/TypingIndicator.js';
+import { EmptyState } from './components/shared/EmptyState.js';
 import { useRAGChat } from './hooks/useRAGChat.js';
 import { DEFAULT_ACCENT_COLOR, type RAGChatConfig } from './types.js';
 
@@ -97,18 +99,14 @@ export function RAGChat({
   }, [messages.length, isTyping]);
 
   const defaultEmptyState = (
-    <div className="curator-empty-state">
-      <div
-        className="curator-empty-state-icon"
-        style={{ boxShadow: `0 0 30px ${accentColor}15` }}
-      >
-        <Database size={48} style={{ color: accentColor }} aria-hidden="true" />
-      </div>
-      <h3 className="curator-empty-state-title">Start a conversation</h3>
-      <p className="curator-empty-state-description">
-        Ask questions about your documents. Get instant, accurate answers with source citations.
-      </p>
-    </div>
+    <EmptyState
+      icon={Database}
+      iconSize={48}
+      iconColor={accentColor}
+      iconShadow={`0 0 30px ${accentColor}15`}
+      title="Start a conversation"
+      description="Ask questions about your documents. Get instant, accurate answers with source citations."
+    />
   );
 
   return (
@@ -143,7 +141,7 @@ export function RAGChat({
         {messages.length === 0 ? (
           emptyState || defaultEmptyState
         ) : (
-          <>
+          <AnimatePresence mode="popLayout">
             {messages.map((message) => (
               <MessageBubble
                 key={message.id}
@@ -152,8 +150,8 @@ export function RAGChat({
                 showSources={showSources}
               />
             ))}
-            {isTyping && <TypingIndicator accentColor={accentColor} />}
-          </>
+            {isTyping && <TypingIndicator key="typing-indicator" accentColor={accentColor} />}
+          </AnimatePresence>
         )}
       </div>
 

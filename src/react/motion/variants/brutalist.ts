@@ -59,17 +59,19 @@ export const brutalistMotion: SkinMotionConfig = {
         delayChildren: 0,
       },
     },
+    exit: { opacity: 0, transition: { duration: 0.1 } },
   },
 
   button: {
     hidden: { opacity: 0 },
     visible: { opacity: 1 },
-    hover: { 
+    exit: { opacity: 0, transition: { duration: 0.1 } },
+    hover: {
       x: 2,
       y: 2,
       boxShadow: '2px 2px 0 var(--color-text)',
     },
-    tap: { 
+    tap: {
       x: 4,
       y: 4,
       boxShadow: 'none',

@@ -82,13 +82,15 @@ export const cyberpunkMotion: SkinMotionConfig = {
         delayChildren: 0.05,
       },
     },
+    exit: { opacity: 0, x: 20, transition: { duration: DURATION.fast } },
   },
 
   button: {
     hidden: { opacity: 0, scaleX: 0.5 },
     visible: { opacity: 1, scaleX: 1 },
-    hover: { 
-      scale: 1.05, 
+    exit: { opacity: 0, scaleX: 0.5, filter: 'blur(2px)', transition: { duration: DURATION.fast } },
+    hover: {
+      scale: 1.05,
       filter: 'brightness(1.2)',
       boxShadow: '0 0 20px var(--color-neon)',
     },

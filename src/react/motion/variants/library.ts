@@ -56,11 +56,13 @@ export const libraryMotion: SkinMotionConfig = {
         delayChildren: 0.1,
       },
     },
+    exit: { opacity: 0, transition: { duration: DURATION.fast } },
   },
 
   button: {
     hidden: { opacity: 0, scale: 0.9 },
     visible: { opacity: 1, scale: 1 },
+    exit: { opacity: 0, scale: 0.9, transition: { duration: DURATION.fast } },
     hover: { scale: 1.05, y: -1 },
     tap: { scale: 0.95 },
     disabled: { opacity: 0.5 },
