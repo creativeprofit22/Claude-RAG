@@ -153,7 +153,7 @@
      ========================================= */
   --curator-gold: oklch(0.55 0.18 74);                /* darker gold for contrast */
   --curator-gold-bright: oklch(0.60 0.18 74);
-  --curator-gold-hover: oklch(0.55 0.18 74 / 0.20);   /* gold hover state */
+  --curator-gold-hover: oklch(from var(--curator-gold) l c h / 0.20);   /* gold hover state */
   --curator-gold-muted: oklch(from var(--curator-gold) l c h / 0.15);
   --curator-gold-subtle: oklch(from var(--curator-gold) l c h / 0.08);
   --curator-cream: oklch(0.75 0.1 80);                /* deeper cream for light bg */
