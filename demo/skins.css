@@ -193,6 +193,19 @@
   --skin-glow-primary: 0 0 10px var(--skin-primary), 0 0 20px var(--skin-primary-glow);
   --skin-glow-accent: 0 0 10px var(--skin-accent), 0 0 20px rgba(255, 0, 128, 0.4);
   --skin-glow-text: 0 0 8px var(--skin-primary-glow);
+  --skin-glow-text-lg: 0 0 10px var(--skin-primary-glow);
+  --skin-glow-text-sm: 0 0 6px var(--skin-primary-glow);
+  --skin-glow-subtle: rgba(0, 255, 255, 0.1);
+  --skin-glow-faint: rgba(0, 255, 255, 0.05);
+  --skin-glow-soft: rgba(0, 255, 255, 0.15);
+
+  /* === ELEMENT CLIP-PATHS (cyberpunk-specific) === */
+  --skin-clip-element: polygon(0 0, calc(100% - 6px) 0, 100% 6px, 100% 100%, 6px 100%, 0 calc(100% - 6px));
+  --skin-clip-element-sm: polygon(0 0, calc(100% - 4px) 0, 100% 4px, 100% 100%, 4px 100%, 0 calc(100% - 4px));
+
+  /* === LETTER SPACING VARIANTS === */
+  --skin-letter-spacing-tight: 0.02em;
+  --skin-letter-spacing-wide: 0.08em;
 }
 
 
@@ -716,7 +729,7 @@
 [data-skin="cyberpunk"] .rag-admin-stat-value {
   font-family: var(--skin-font-display);
   color: var(--skin-primary);
-  text-shadow: 0 0 10px var(--skin-primary-glow);
+  text-shadow: var(--skin-glow-text-lg);
   letter-spacing: var(--skin-letter-spacing);
 }
 
@@ -731,7 +744,7 @@
 [data-skin="cyberpunk"] .rag-admin-stat-icon {
   background: linear-gradient(135deg, var(--skin-primary) 0%, var(--skin-accent) 100%);
   border-radius: 0;
-  clip-path: polygon(0 0, calc(100% - 6px) 0, 100% 6px, 100% 100%, 6px 100%, 0 calc(100% - 6px));
+  clip-path: var(--skin-clip-element);
   box-shadow: 0 0 12px var(--skin-primary-glow);
 }
 
@@ -746,7 +759,7 @@
   border-radius: var(--skin-border-radius);
   box-shadow:
     var(--skin-shadow-inset),
-    0 0 15px rgba(0, 255, 255, 0.1);
+    0 0 15px var(--skin-glow-subtle);
   position: relative;
 }
 
@@ -775,9 +788,9 @@
   text-transform: var(--skin-text-transform);
   letter-spacing: var(--skin-letter-spacing);
   color: var(--skin-primary);
-  text-shadow: 0 0 8px var(--skin-primary-glow);
+  text-shadow: var(--skin-glow-text);
   border-bottom: 1px solid var(--skin-border-subtle);
-  background: linear-gradient(180deg, rgba(0, 255, 255, 0.05) 0%, transparent 100%);
+  background: linear-gradient(180deg, var(--skin-glow-faint) 0%, transparent 100%);
   padding-left: 1rem;
   position: relative;
 }
@@ -800,7 +813,7 @@
   border: 1px solid transparent;
   transition: background 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
   position: relative;
-  clip-path: polygon(0 0, calc(100% - 6px) 0, 100% 6px, 100% 100%, 6px 100%, 0 calc(100% - 6px));
+  clip-path: var(--skin-clip-element);
 }
 
 [data-skin="cyberpunk"] .rag-admin-recent-item:hover {
@@ -824,7 +837,7 @@
 [data-skin="cyberpunk"] .rag-admin-recent-name {
   font-family: var(--skin-font-mono);
   color: var(--skin-text-primary);
-  letter-spacing: 0.02em;
+  letter-spacing: var(--skin-letter-spacing-tight);
 }
 
 [data-skin="cyberpunk"] .rag-admin-recent-meta,
@@ -845,7 +858,7 @@
   background: var(--skin-bg-deep);
   border: 1px solid var(--skin-border-subtle);
   border-radius: 0;
-  clip-path: polygon(0 0, calc(100% - 4px) 0, 100% 4px, 100% 100%, 4px 100%, 0 calc(100% - 4px));
+  clip-path: var(--skin-clip-element-sm);
 }
 
 [data-skin="cyberpunk"] .rag-admin-bar-fill {
@@ -881,19 +894,19 @@
 [data-skin="cyberpunk"] .rag-admin-bar-count {
   font-family: var(--skin-font-display);
   color: var(--skin-primary);
-  text-shadow: 0 0 6px var(--skin-primary-glow);
+  text-shadow: var(--skin-glow-text-sm);
 }
 
 /* Service status items - Status with glow accents */
 [data-skin="cyberpunk"] .rag-admin-service-item {
   border-radius: 0;
-  clip-path: polygon(0 0, calc(100% - 6px) 0, 100% 6px, 100% 100%, 6px 100%, 0 calc(100% - 6px));
+  clip-path: var(--skin-clip-element);
   transition: background 0.2s ease, box-shadow 0.2s ease;
 }
 
 [data-skin="cyberpunk"] .rag-admin-service-item:hover {
   background: var(--skin-bg-hover);
-  box-shadow: 0 0 10px rgba(0, 255, 255, 0.15);
+  box-shadow: 0 0 10px var(--skin-glow-soft);
 }
 
 [data-skin="cyberpunk"] .rag-admin-service-header {
@@ -904,11 +917,11 @@
 /* Status badges with neon glow */
 [data-skin="cyberpunk"] .rag-admin-service-status {
   border-radius: 0;
-  clip-path: polygon(0 0, calc(100% - 4px) 0, 100% 4px, 100% 100%, 4px 100%, 0 calc(100% - 4px));
+  clip-path: var(--skin-clip-element-sm);
   border: 1px solid currentColor;
   font-family: var(--skin-font-mono);
   text-transform: var(--skin-text-transform);
-  letter-spacing: 0.08em;
+  letter-spacing: var(--skin-letter-spacing-wide);
   font-size: 0.6rem;
   box-shadow: 0 0 8px currentColor;
   padding: 0.125rem 0.625rem;
