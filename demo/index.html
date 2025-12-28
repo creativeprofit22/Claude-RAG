@@ -7,7 +7,7 @@
   <!-- Skin System (defines --skin-* tokens for each theme) -->
   <link rel="stylesheet" href="/demo/skins.css?v=skins-1">
   <!-- Curator Design System (defines --curator-* tokens) -->
-  <link rel="stylesheet" href="/dist/react/styles.css?v=curator-3">
+  <link rel="stylesheet" href="/dist/react/styles.css?v=curator-4">
   <!-- Demo page styles (uses skin tokens) -->
   <link rel="stylesheet" href="/demo/styles.css?v=skins-1">
   <!-- Google Fonts for theme typography -->
@@ -171,12 +171,12 @@
       skinButtons.forEach(b => b.classList.remove('active'));
       btn.classList.add('active');
 
-      // Re-initialize Lucide icons
-      lucide.createIcons();
+      // Re-initialize Lucide icons (with error handling)
+      if (typeof lucide !== 'undefined') lucide.createIcons();
     });
 
-    // Initialize Lucide icons for static HTML elements
-    lucide.createIcons();
+    // Initialize Lucide icons for static HTML elements (with error handling)
+    if (typeof lucide !== 'undefined') lucide.createIcons();
 
     // Bundle exports RAGChat, RAGInterface, AdminDashboard, ApiKeyConfigBar via RAGBundle global
     initDemo(RAGBundle.RAGInterface, RAGBundle.AdminDashboard, RAGBundle.ApiKeyConfigBar);

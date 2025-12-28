@@ -225,3 +225,47 @@
   --curator-skeleton-base: oklch(0 0 0 / 0.06);       /* dark skeleton on light bg */
   --curator-skeleton-shine: oklch(0 0 0 / 0.10);      /* skeleton pulse highlight */
 }
+
+/* =========================================
+   SKIN SYSTEM BRIDGE
+   Maps curator tokens to skin variables for theme switching.
+   When a skin is active (data-skin attribute), these overrides apply.
+   Falls back to Library skin defaults which match original Curator aesthetic.
+
+   NOTE: Uses both :root AND body selectors because demo sets data-skin on body,
+   and CSS custom properties inherit downward but not upward.
+   ========================================= */
+
+:root, body {
+  /* === Background Colors === */
+  --curator-bg-deep: var(--skin-bg-deep, oklch(0.147 0.004 49.25));
+  --curator-bg-surface: var(--skin-bg-surface, oklch(0.216 0.006 56.043));
+  --curator-bg-elevated: var(--skin-bg-surface, oklch(0.27 0.006 56));
+  --curator-bg-hover: var(--skin-bg-hover, oklch(0.25 0.005 55));
+  --curator-bg-subtle: var(--skin-bg-subtle, oklch(0.18 0.005 52));
+
+  /* === Text Colors === */
+  --curator-text-primary: var(--skin-text-primary, oklch(0.985 0.001 106));
+  --curator-text-secondary: var(--skin-text-secondary, oklch(0.709 0.01 56));
+  --curator-text-muted: var(--skin-text-muted, oklch(0.553 0.013 58));
+  --curator-text-faint: oklch(0.45 0.01 55); /* No skin override - always fainter than muted */
+
+  /* === Accent Colors (Gold → Primary) === */
+  --curator-gold: var(--skin-primary, oklch(0.65 0.18 74));
+  --curator-gold-bright: var(--skin-primary-bright, oklch(0.72 0.18 74));
+  --curator-gold-hover: var(--skin-primary-glow, oklch(0.65 0.18 74 / 0.20));
+  --curator-gold-muted: var(--skin-primary-glow, oklch(0.65 0.18 74 / 0.15));
+  --curator-gold-subtle: var(--skin-primary-glow, oklch(0.65 0.18 74 / 0.08));
+
+  /* === Border Colors === */
+  --curator-border-subtle: var(--skin-border-subtle, oklch(0.92 0.08 85 / 0.08));
+  --curator-border-light: var(--skin-border-subtle, oklch(0.92 0.08 85 / 0.12));
+  --curator-border-medium: var(--skin-border-color, oklch(0.92 0.08 85 / 0.18));
+  --curator-border-gold: var(--skin-border-color, oklch(0.65 0.18 74 / 0.4));
+  --curator-border-gold-strong: var(--skin-primary, oklch(0.65 0.18 74 / 0.6));
+
+  /* === Font Families === */
+  --curator-font-sans: var(--skin-font-body, 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif);
+  --curator-font-serif: var(--skin-font-display, 'Playfair Display', Georgia, 'Times New Roman', serif);
+  --curator-font-mono: var(--skin-font-mono, 'JetBrains Mono', 'Fira Code', 'SF Mono', 'Cascadia Code', Consolas, monospace);
+}

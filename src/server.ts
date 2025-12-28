@@ -58,6 +58,10 @@ const MIME_TYPES: Record<string, string> = {
   '.jpg': 'image/jpeg',
   '.svg': 'image/svg+xml',
   '.ico': 'image/x-icon',
+  '.woff': 'font/woff',
+  '.woff2': 'font/woff2',
+  '.ttf': 'font/ttf',
+  '.otf': 'font/otf',
 };
 
 // Demo directory path - use process.cwd() for reliability
@@ -1403,7 +1407,7 @@ async function handleRequest(req: Request): Promise<Response> {
     }
 
     // Serve static files from /demo
-    if (req.method === 'GET' && (url.pathname === '/demo' || url.pathname.startsWith('/demo/'))) {
+    if ((req.method === 'GET' || req.method === 'HEAD') && (url.pathname === '/demo' || url.pathname.startsWith('/demo/'))) {
       let filePath = url.pathname === '/demo' || url.pathname === '/demo/'
         ? join(DEMO_DIR, 'index.html')
         : join(DEMO_DIR, url.pathname.replace('/demo/', ''));
@@ -1439,7 +1443,7 @@ async function handleRequest(req: Request): Promise<Response> {
     }
 
     // Serve static files from /dist (built assets)
-    if (req.method === 'GET' && url.pathname.startsWith('/dist/')) {
+    if ((req.method === 'GET' || req.method === 'HEAD') && url.pathname.startsWith('/dist/')) {
       let filePath = join(DIST_DIR, url.pathname.replace('/dist/', ''));
 
       // Sanitize path to prevent directory traversal attacks

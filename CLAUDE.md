@@ -12,23 +12,20 @@ Reusable RAG component for embedding into projects. Uses Claude Code CLI (user's
 Query → Gemini Embeddings → LanceDB → Chunks → Claude Code CLI → Response
 ```
 
-## Current Focus
-Section: M6 Complete, Ready for Publish
-Files: src/react/styles.css
-
 ## Pipeline State
-Phase: validated
-Feature: M6 Token Migration
-Validation-Report: reports/validation-m6-token-migration.md
+Phase: refactor-hunt
+Feature: Skin System Bridge
+Files-Validated: src/react/tokens/colors.css, demo/skins.css, demo/index.html
+Validation-Report: reports/validation-skin-system-bridge.md
 
-## Last Session (2025-12-27)
-- M6 validated: 82 token usages, zero hardcoded 0.375rem/0.25rem
-- All tokens defined in spacing.css
-- Build passes, 21 tests pass
-
-## Next Steps
-1. Publish to npm (version bump, npm publish)
-2. Add dual runtime support (README with Bun alternative, keep npm primary)
+## Last Session (2025-12-28)
+- **Skin System Bridge**: Implemented CSS custom property remapping so React components respond to skin switching
+- **Validation**: 6 parallel agents ran tests/API/UI/wiring/bottlenecks/bugs checks
+- **Bugs Fixed**:
+  - `--curator-bg-elevated` mapping conflict resolved
+  - `--curator-text-faint` now has correct fallback
+  - Lucide error handling added for CDN failure graceful degradation
+- **Status**: All checks passing, ready for refactor-hunt
 
 ## Key Files
 - `src/server.ts` - Bun HTTP server
