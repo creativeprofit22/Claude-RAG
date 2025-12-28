@@ -41,6 +41,7 @@ const MIME_TYPES = {
 };
 // Demo directory path - use process.cwd() for reliability
 const DEMO_DIR = join(process.cwd(), 'demo');
+const DIST_DIR = join(process.cwd(), 'dist');
 const MAX_PAYLOAD_SIZE = 10 * 1024 * 1024; // 10MB limit
 // CORS origin configuration - allow all localhost ports for development
 // SECURITY: '*' is for development only. In production, set CORS_ORIGIN to specific allowed origins.
@@ -1204,6 +1205,35 @@ async function handleRequest(req) {
                 // Check file size to prevent DoS from large file reads
                 const stats = statSync(filePath);
                 const MAX_STATIC_FILE_SIZE = 5 * 1024 * 1024; // 5MB limit for static files
+                if (stats.size > MAX_STATIC_FILE_SIZE) {
+                    return errorResponse('File too large', 413);
+                }
+                const ext = extname(filePath);
+                const mimeType = MIME_TYPES[ext] || 'application/octet-stream';
+                const content = readFileSync(filePath);
+                return new Response(content, {
+                    status: 200,
+                    headers: {
+                        'Content-Type': mimeType,
+                        'Cache-Control': 'no-cache',
+                        ...corsHeaders,
+                    },
+                });
+            }
+        }
+        // Serve static files from /dist (built assets)
+        if (req.method === 'GET' && url.pathname.startsWith('/dist/')) {
+            let filePath = join(DIST_DIR, url.pathname.replace('/dist/', ''));
+            // Sanitize path to prevent directory traversal attacks
+            const normalizedPath = normalize(resolve(filePath));
+            const normalizedDistDir = normalize(resolve(DIST_DIR));
+            if (!normalizedPath.startsWith(normalizedDistDir + '/') && normalizedPath !== normalizedDistDir) {
+                return errorResponse('Access denied', 403);
+            }
+            filePath = normalizedPath;
+            if (existsSync(filePath)) {
+                const stats = statSync(filePath);
+                const MAX_STATIC_FILE_SIZE = 5 * 1024 * 1024;
                 if (stats.size > MAX_STATIC_FILE_SIZE) {
                     return errorResponse('File too large', 413);
                 }
