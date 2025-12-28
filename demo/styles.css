@@ -1,32 +1,55 @@
+/* Demo page styles - Skinnable Theme System
+   Uses skin variables from skins.css for swappable themes (Winamp-style)
+   See /DESIGN-SYSTEM.md for full component documentation */
+
+/* ==========================================================================
+   DEMO VARIABLES - Map skin tokens to demo-specific names
+   ========================================================================== */
 :root {
-  /* Background colors */
-  --bg-subtle: rgba(255, 255, 255, 0.03);
-  --bg-muted: rgba(255, 255, 255, 0.05);
-  --bg-accent: rgba(99, 102, 241, 0.05);
-  --bg-accent-hover: rgba(99, 102, 241, 0.1);
-  --bg-accent-strong: rgba(99, 102, 241, 0.2);
+  /* Background colors - mapped to skin system */
+  --demo-bg-subtle: var(--skin-bg-subtle);
+  --demo-bg-muted: var(--skin-bg-hover);
+  --demo-bg-accent: var(--skin-primary-glow);
+  --demo-bg-accent-hover: var(--skin-primary);
+  --demo-bg-accent-strong: var(--skin-primary-bright);
 
-  /* Border colors */
-  --border-subtle: rgba(255, 255, 255, 0.1);
-  --border-accent: rgba(99, 102, 241, 0.3);
-  --border-accent-hover: rgba(99, 102, 241, 0.5);
+  /* Border colors - mapped to skin system */
+  --demo-border-subtle: var(--skin-border-subtle);
+  --demo-border-accent: var(--skin-border-color);
+  --demo-border-accent-hover: var(--skin-primary);
 
-  /* Text colors */
-  --text-primary: #fff;
-  --text-muted: #9ca3af;
-  --text-dim: #6b7280;
-  --text-accent: #6366f1;
-  --text-accent-light: #a5b4fc;
+  /* Text colors - mapped to skin system */
+  --demo-text-primary: var(--skin-text-primary);
+  --demo-text-muted: var(--skin-text-secondary);
+  --demo-text-dim: var(--skin-text-muted);
+  --demo-text-accent: var(--skin-primary);
+  --demo-text-accent-light: var(--skin-primary-bright);
 
-  /* Status colors */
-  --color-success: #22c55e;
-  --color-error: #ef4444;
-  --color-warning: #f59e0b;
+  /* Status colors - semantic, skin-agnostic */
+  --demo-color-success: #22c55e;
+  --demo-color-error: #ef4444;
+  --demo-color-warning: #f59e0b;
 
-  /* Gradients */
-  --gradient-primary: linear-gradient(135deg, #6366f1, #8b5cf6);
-  --gradient-primary-full: linear-gradient(135deg, #6366f1 0%, #8b5cf6 50%, #a855f7 100%);
-  --gradient-bg: linear-gradient(135deg, #0a0a0f 0%, #1a1a2e 50%, #0a0a0f 100%);
+  /* Legacy compatibility - map old names to skin variables */
+  --leather-dark: var(--skin-accent-dark);
+  --leather-medium: var(--skin-accent-muted);
+  --leather-light: var(--skin-border-color);
+  --parchment: var(--skin-accent);
+  --aged-paper: var(--skin-accent);
+  --brass: var(--skin-primary);
+  --brass-bright: var(--skin-primary-bright);
+
+  /* Gradients - mapped to skin system */
+  --demo-gradient-primary: var(--skin-gradient-btn);
+  --demo-gradient-primary-full: var(--skin-gradient-btn);
+  --demo-gradient-bg: var(--skin-gradient-bg);
+
+  /* Shadows - mapped to skin system */
+  --shadow-brutal: var(--skin-shadow-brutal);
+  --shadow-brutal-lg: var(--skin-shadow-brutal-lg);
+  --shadow-brutal-sm: var(--skin-shadow-brutal-sm);
+  --shadow-emboss: var(--skin-shadow-emboss);
+  --shadow-carved: var(--skin-shadow-inset);
 }
 
 * {
@@ -36,10 +59,10 @@
 }
 
 body {
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-  background: var(--gradient-bg);
+  font-family: var(--skin-font-body);
+  background: var(--skin-gradient-bg);
   min-height: 100vh;
-  color: var(--text-primary);
+  color: var(--skin-text-primary);
 }
 
 .demo-container {
@@ -49,30 +72,73 @@ body {
   min-height: 100vh;
   display: flex;
   flex-direction: column;
+  position: relative;
 }
 
-/* Header */
+/* Texture overlay - changes per skin */
+.demo-container::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background: var(--skin-texture-overlay);
+  background-size: var(--skin-texture-size);
+  pointer-events: none;
+  opacity: var(--skin-texture-opacity);
+  z-index: 0;
+}
+
+/* Header - Scholarly book title page */
 .demo-header {
   text-align: center;
   margin-bottom: 2rem;
+  padding: 1.5rem 2rem;
+  position: relative;
+}
+
+/* Ornamental rule above title - uses skin gradient */
+.demo-header::before {
+  content: '';
+  display: block;
+  width: 120px;
+  height: 2px;
+  background: var(--skin-gradient-header);
+  margin: 0 auto 1rem;
+}
+
+/* Ornamental rule below subtitle */
+.demo-header::after {
+  content: '';
+  display: block;
+  width: 80px;
+  height: 1px;
+  background: var(--skin-gradient-header);
+  margin: 0.75rem auto 0;
 }
 
 .demo-header h1 {
+  font-family: var(--skin-font-display);
   font-size: 2.5rem;
-  font-weight: 700;
-  background: var(--gradient-primary-full);
+  font-weight: 600;
+  background: var(--skin-gradient-btn);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
   margin-bottom: 0.5rem;
+  letter-spacing: var(--skin-letter-spacing);
+  font-feature-settings: 'liga' 1, 'calt' 1;
+  text-transform: var(--skin-text-transform);
 }
 
 .demo-header p {
-  color: var(--text-muted);
-  font-size: 1.1rem;
+  font-family: var(--skin-font-display);
+  color: var(--skin-text-secondary);
+  font-size: 1rem;
+  font-style: italic;
+  letter-spacing: 0.08em;
+  text-transform: var(--skin-text-transform);
 }
 
-/* Controls */
+/* Controls - uses skin border system */
 .demo-controls {
   display: flex;
   gap: 1rem;
@@ -80,9 +146,16 @@ body {
   justify-content: center;
   margin-bottom: 1.5rem;
   padding: 1rem;
-  background: var(--bg-subtle);
-  border: 1px solid var(--border-subtle);
-  border-radius: 1rem;
+  background: var(--skin-bg-subtle);
+  border: var(--skin-border-width) var(--skin-border-style) var(--skin-border-color);
+  border-radius: var(--skin-border-radius);
+  position: relative;
+
+  /* Double border - only for skins that support it */
+  outline: calc(var(--skin-has-double-border) * 2px) solid var(--skin-border-color);
+  outline-offset: calc(var(--skin-has-double-border) * 4px);
+  margin-left: calc(var(--skin-has-double-border) * 8px);
+  margin-right: calc(var(--skin-has-double-border) * 8px);
 }
 
 .control-group {
@@ -93,7 +166,7 @@ body {
 
 .control-group label {
   font-size: 0.75rem;
-  color: var(--text-dim);
+  color: var(--demo-text-dim);
   text-transform: uppercase;
   letter-spacing: 0.05em;
 }
@@ -101,18 +174,27 @@ body {
 .control-group input,
 .control-group select {
   padding: 0.5rem 0.75rem;
-  background: var(--bg-muted);
-  border: 1px solid var(--border-subtle);
-  border-radius: 0.5rem;
-  color: var(--text-primary);
+  background: var(--skin-bg-subtle);
+  border: 1px solid var(--skin-border-color);
+  border-left: var(--skin-border-accent-width) solid var(--skin-primary);
+  border-radius: var(--skin-border-radius);
+  color: var(--skin-text-primary);
   font-size: 0.875rem;
   min-width: 140px;
+  transition: all 0.2s ease;
+
+  /* Inset effect from skin */
+  box-shadow: var(--skin-shadow-inset);
 }
 
 .control-group input:focus,
 .control-group select:focus {
   outline: none;
-  border-color: var(--text-accent);
+  border-color: var(--skin-primary);
+  background: var(--skin-bg-hover);
+  box-shadow:
+    var(--skin-shadow-inset),
+    0 0 0 3px var(--skin-primary-glow);
 }
 
 .control-group input[type="color"] {
@@ -121,19 +203,41 @@ body {
   cursor: pointer;
 }
 
-/* Status bar */
+/* Status bar - uses skin color system */
 .status-bar {
   display: flex;
   align-items: center;
   justify-content: center;
   gap: 1.5rem;
-  padding: 0.75rem 1rem;
-  background: var(--bg-subtle);
-  border: 1px solid var(--border-subtle);
-  border-radius: 0.75rem;
+  padding: 0.625rem 1rem;
+  background: linear-gradient(to bottom, var(--skin-accent-muted), var(--skin-accent-dark));
+  border: var(--skin-border-width) solid var(--skin-accent-dark);
+  border-radius: var(--skin-border-radius);
   margin-bottom: 1.5rem;
-  font-size: 0.875rem;
+  margin-left: calc(var(--skin-has-double-border) * 8px);
+  margin-right: calc(var(--skin-has-double-border) * 8px);
+  font-size: 0.8rem;
+  font-family: var(--skin-font-mono);
+  color: var(--skin-accent);
+
+  /* Corner accents */
+  position: relative;
 }
+
+.status-bar::before,
+.status-bar::after {
+  content: '';
+  position: absolute;
+  width: 8px;
+  height: 8px;
+  background: var(--skin-primary);
+  border-radius: 50%;
+  top: 50%;
+  transform: translateY(-50%);
+}
+
+.status-bar::before { left: 12px; }
+.status-bar::after { right: 12px; }
 
 .status-item {
   display: flex;
@@ -148,43 +252,60 @@ body {
   animation: pulse 2s infinite;
 }
 
-.status-dot.healthy { background: var(--color-success); }
-.status-dot.unhealthy { background: var(--color-error); }
-.status-dot.checking { background: var(--color-warning); }
+.status-dot.healthy { background: var(--demo-color-success); }
+.status-dot.unhealthy { background: var(--demo-color-error); }
+.status-dot.checking { background: var(--demo-color-warning); }
 
 @keyframes pulse {
   0%, 100% { opacity: 1; }
   50% { opacity: 0.5; }
 }
 
-/* Tab navigation */
+/* Tab navigation - uses skin shapes */
 .demo-tabs {
   display: flex;
-  gap: 0.5rem;
+  gap: 0;
   margin-bottom: 1.5rem;
+  margin-left: calc(var(--skin-has-double-border) * 8px);
 }
 
 .demo-tab {
   padding: 0.75rem 1.5rem;
-  background: var(--bg-subtle);
-  border: 1px solid var(--border-subtle);
-  border-radius: 0.75rem;
-  color: var(--text-muted);
+  background: var(--skin-bg-subtle);
+  border: var(--skin-border-width) solid var(--skin-border-color);
+  border-bottom: none;
+  border-radius: var(--skin-border-radius) var(--skin-border-radius) 0 0;
+  color: var(--skin-text-muted);
+  font-family: var(--skin-font-display);
   font-size: 0.875rem;
   font-weight: 500;
+  text-transform: var(--skin-text-transform);
+  letter-spacing: var(--skin-letter-spacing);
   cursor: pointer;
-  transition: all 0.2s;
+  transition: all 0.15s ease-out;
+  position: relative;
+  margin-right: -1px;
+
+  /* Shape from skin - tabs */
+  clip-path: var(--skin-tab-clip);
 }
 
 .demo-tab:hover {
-  background: var(--bg-muted);
-  color: var(--text-primary);
+  background: var(--skin-bg-hover);
+  color: var(--skin-text-primary);
+  z-index: 1;
 }
 
 .demo-tab.active {
-  background: var(--gradient-primary);
-  border-color: transparent;
-  color: var(--text-primary);
+  background: var(--skin-gradient-btn);
+  border-color: var(--skin-accent-dark);
+  color: var(--skin-accent);
+  font-weight: 600;
+  z-index: 2;
+
+  box-shadow:
+    var(--skin-shadow-emboss),
+    0 -2px 8px rgba(0,0,0,0.1);
 }
 
 /* Section containers */
@@ -211,30 +332,50 @@ body {
   min-height: 0;
 }
 
-/* Chat container */
+/* Chat container - uses skin shape system */
 .chat-wrapper {
   flex: 1;
   display: flex;
   flex-direction: column;
-  background: rgba(10, 10, 15, 0.8);
-  border: 1px solid var(--border-subtle);
-  border-radius: 1rem;
+  background: var(--skin-bg-surface);
+  border: var(--skin-border-width) solid var(--skin-accent-muted);
+  border-radius: var(--skin-border-radius);
   min-height: 500px;
   max-height: calc(100vh - 320px);
-  /* overflow handled by child components */
+  overflow: hidden;
+  position: relative;
+
+  /* Shape from skin - card/container */
+  clip-path: var(--skin-card-clip);
+
+  box-shadow:
+    var(--skin-shadow-brutal-lg),
+    inset 0 0 0 1px rgba(255,255,255,0.05);
+}
+
+/* Corner decoration - from skin */
+.chat-wrapper::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  right: 0;
+  width: var(--skin-corner-decoration-size);
+  height: var(--skin-corner-decoration-size);
+  background: var(--skin-corner-decoration);
+  pointer-events: none;
 }
 
 /* Document upload section */
 .upload-section {
   padding: 1rem;
-  background: rgba(255, 255, 255, 0.02);
-  border-bottom: 1px solid var(--border-subtle);
+  background: var(--curator-bg-subtle);
+  border-bottom: 1px solid var(--demo-border-subtle);
 }
 
 .upload-section h3 {
   font-size: 0.875rem;
   margin-bottom: 0.75rem;
-  color: var(--text-muted);
+  color: var(--demo-text-muted);
 }
 
 .upload-form {
@@ -247,10 +388,10 @@ body {
   flex: 1;
   min-width: 200px;
   padding: 0.75rem;
-  background: var(--bg-muted);
-  border: 1px solid var(--border-subtle);
+  background: var(--demo-bg-muted);
+  border: 1px solid var(--demo-border-subtle);
   border-radius: 0.5rem;
-  color: var(--text-primary);
+  color: var(--demo-text-primary);
   font-size: 0.875rem;
   resize: vertical;
   min-height: 60px;
@@ -258,88 +399,127 @@ body {
 
 .upload-form textarea:focus {
   outline: none;
-  border-color: var(--text-accent);
+  border-color: var(--demo-text-accent);
 }
 
 .upload-form input {
   padding: 0.75rem;
-  background: var(--bg-muted);
-  border: 1px solid var(--border-subtle);
+  background: var(--demo-bg-muted);
+  border: 1px solid var(--demo-border-subtle);
   border-radius: 0.5rem;
-  color: var(--text-primary);
+  color: var(--demo-text-primary);
   font-size: 0.875rem;
   width: 150px;
 }
 
-/* Primary button base class */
+/* Primary button - uses skin shape system */
 .btn-primary {
   padding: 0.75rem 1.5rem;
-  background: var(--gradient-primary);
-  border: none;
-  border-radius: 0.5rem;
-  color: var(--text-primary);
+  background: var(--skin-gradient-btn);
+  border: var(--skin-border-width) solid var(--skin-accent-dark);
+  border-radius: var(--skin-border-radius);
+  color: var(--skin-accent);
   font-weight: 600;
+  font-family: var(--skin-font-body);
+  text-transform: var(--skin-text-transform);
+  letter-spacing: var(--skin-letter-spacing);
   cursor: pointer;
-  transition: transform 0.2s, opacity 0.2s;
+  transition: all 0.15s ease-out;
+  position: relative;
+
+  /* Shape from skin - button */
+  clip-path: var(--skin-btn-clip);
+
+  /* Shadow from skin */
+  box-shadow:
+    var(--skin-shadow-brutal),
+    var(--skin-shadow-emboss);
 }
 
 .btn-primary:hover:not(:disabled) {
-  transform: scale(1.02);
+  transform: translate(-2px, -2px);
+  box-shadow:
+    var(--skin-shadow-brutal-lg),
+    var(--skin-shadow-emboss);
+  background: var(--skin-gradient-btn-hover);
+}
+
+.btn-primary:active:not(:disabled) {
+  transform: translate(2px, 2px);
+  box-shadow:
+    var(--skin-shadow-brutal-sm),
+    inset 0 2px 4px rgba(0,0,0,0.2);
 }
 
 .btn-primary:disabled {
   opacity: 0.5;
   cursor: not-allowed;
   transform: none;
+  box-shadow: none;
+  clip-path: none;
+}
+
+.btn-primary:focus-visible {
+  outline: 2px solid var(--skin-primary);
+  outline-offset: 4px;
 }
 
 .upload-status {
   margin-top: 0.5rem;
   font-size: 0.75rem;
-  color: var(--text-muted);
+  color: var(--demo-text-muted);
 }
 
-.upload-status.success { color: var(--color-success); }
-.upload-status.error { color: var(--color-error); }
+.upload-status.success { color: var(--demo-color-success); }
+.upload-status.error { color: var(--demo-color-error); }
 
-/* File upload area */
+/* File upload area - uses skin system */
 .file-upload-area {
-  border: 2px dashed var(--border-accent);
-  border-radius: 0.75rem;
-  padding: 1.5rem;
+  border: var(--skin-border-width) dashed var(--skin-border-color);
+  border-radius: var(--skin-border-radius);
+  padding: 2rem;
   text-align: center;
   cursor: pointer;
-  transition: all 0.2s;
-  background: var(--bg-accent);
+  transition: all 0.2s ease-out;
+  background: var(--skin-accent);
+  color: var(--skin-accent-dark);
+  position: relative;
 }
 
 .file-upload-area:hover,
 .file-upload-area.drag-over {
-  border-color: var(--text-accent);
-  background: var(--bg-accent-hover);
+  border-style: solid;
+  border-color: var(--skin-primary);
+  background: var(--skin-bg-hover);
+  color: var(--skin-text-primary);
+  box-shadow:
+    var(--skin-shadow-brutal),
+    inset 0 0 0 1px rgba(0,0,0,0.05);
+  transform: translate(-2px, -2px);
 }
 
 .upload-icon {
   width: 40px;
   height: 40px;
-  color: var(--text-accent);
+  color: var(--curator-gold);
 }
 
 .drop-content p {
   margin: 0.75rem 0 0.25rem;
-  color: var(--text-muted);
+  color: var(--demo-text-muted);
 }
 
 .browse-btn {
-  color: var(--text-accent);
+  color: var(--curator-gold);
   cursor: pointer;
   text-decoration: underline;
   font-size: inherit;
+  font-weight: 500;
 }
 
 .file-types {
   font-size: 0.75rem;
-  color: var(--text-dim);
+  color: var(--demo-text-dim);
 }
 
 .selected-files {
@@ -354,8 +534,8 @@ body {
   align-items: center;
   justify-content: space-between;
   padding: 0.5rem 0.75rem;
-  background: var(--bg-muted);
-  border: 1px solid var(--border-subtle);
+  background: var(--demo-bg-muted);
+  border: 1px solid var(--demo-border-subtle);
   border-radius: 0.5rem;
   font-size: 0.875rem;
 }
@@ -364,18 +544,18 @@ body {
   display: flex;
   align-items: center;
   gap: 0.5rem;
-  color: var(--text-primary);
+  color: var(--demo-text-primary);
 }
 
 .file-item .file-size {
-  color: var(--text-dim);
+  color: var(--demo-text-dim);
   font-size: 0.75rem;
 }
 
 .file-item .remove-file {
   background: none;
   border: none;
-  color: var(--color-error);
+  color: var(--demo-color-error);
   cursor: pointer;
   padding: 0.25rem;
   opacity: 0.7;
@@ -399,13 +579,13 @@ body {
 /* Sample questions */
 .sample-questions {
   padding: 0.75rem 1rem;
-  background: rgba(255, 255, 255, 0.02);
-  border-bottom: 1px solid var(--border-subtle);
+  background: var(--curator-bg-subtle);
+  border-bottom: 1px solid var(--demo-border-subtle);
 }
 
 .sample-questions h4 {
   font-size: 0.75rem;
-  color: var(--text-dim);
+  color: var(--demo-text-dim);
   margin-bottom: 0.5rem;
 }
 
@@ -416,32 +596,180 @@ body {
 }
 
 .sample-btn {
-  padding: 0.375rem 0.75rem;
-  background: var(--bg-accent-hover);
-  border: 1px solid var(--border-accent);
-  border-radius: 1rem;
-  color: var(--text-accent-light);
+  padding: 0.5rem 1rem;
+  background: var(--skin-bg-subtle);
+  border: 1px solid var(--skin-border-subtle);
+  border-radius: var(--skin-border-radius);
+  color: var(--skin-text-secondary);
+  font-family: var(--skin-font-display);
   font-size: 0.75rem;
   cursor: pointer;
-  transition: all 0.2s;
+  transition: all 0.15s ease-out;
+  position: relative;
+
+  /* Shadow from skin */
+  box-shadow: var(--skin-shadow-lift);
 }
 
 .sample-btn:hover {
-  background: var(--bg-accent-strong);
-  border-color: var(--border-accent-hover);
+  background: var(--skin-bg-hover);
+  border-color: var(--skin-primary);
+  color: var(--skin-text-primary);
+  transform: translateY(-2px);
+  box-shadow: var(--skin-shadow-brutal);
 }
 
-/* Footer */
+.sample-btn:active {
+  transform: translateY(0);
+  box-shadow: var(--skin-shadow-inset);
+}
+
+/* Footer - uses skin typography */
 .demo-footer {
   text-align: center;
   padding: 1.5rem;
-  color: var(--text-dim);
-  font-size: 0.875rem;
+  color: var(--skin-text-muted);
+  font-size: 0.8rem;
+  font-family: var(--skin-font-display);
+  font-style: italic;
+  position: relative;
+  margin-top: 2rem;
+}
+
+/* Decorative separator - uses skin gradient */
+.demo-footer::before {
+  content: '';
+  display: block;
+  width: 60px;
+  height: 1px;
+  background: var(--skin-gradient-header);
+  margin: 0 auto 1rem;
 }
 
 .demo-footer a {
-  color: var(--text-accent);
+  color: var(--skin-primary);
   text-decoration: none;
+  transition: all 0.2s ease;
+  border-bottom: 1px solid transparent;
+}
+
+.demo-footer a:hover {
+  color: var(--skin-primary-bright);
+  border-bottom-color: var(--skin-primary);
+}
+
+/* ==========================================================================
+   SKIN SWITCHER - One-click theme buttons
+   ========================================================================== */
+.skin-switcher {
+  display: flex;
+  justify-content: center;
+  gap: 0.75rem;
+  margin-bottom: 1.5rem;
+  padding: 0.75rem;
+  position: relative;
+  z-index: 10;
+}
+
+.skin-switcher .skin-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1rem;
+  background: var(--skin-bg-subtle);
+  border: 2px solid var(--skin-border-subtle);
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  min-width: 80px;
+}
+
+.skin-switcher .skin-btn:hover {
+  border-color: var(--skin-primary);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+}
+
+.skin-switcher .skin-btn.active {
+  border-color: var(--skin-primary);
+  background: var(--skin-bg-hover);
+  box-shadow: 0 0 0 2px var(--skin-primary-glow);
+}
+
+.skin-preview {
+  width: 40px;
+  height: 28px;
+  border-radius: 4px;
+  border: 1px solid rgba(0,0,0,0.2);
+  position: relative;
+  overflow: hidden;
+}
+
+/* Library preview - warm browns with notched corner */
+.skin-preview--library {
+  background: linear-gradient(135deg, #654321 0%, #8B4513 100%);
+}
+.skin-preview--library::after {
+  content: '';
+  position: absolute;
+  bottom: 0; right: 0;
+  width: 8px; height: 8px;
+  background: linear-gradient(135deg, transparent 50%, #B87333 50%);
+}
+
+/* Cyberpunk preview - neon gradient with glow */
+.skin-preview--cyberpunk {
+  background: linear-gradient(135deg, #0a0a12 0%, #1a1a2e 100%);
+  box-shadow: inset 0 0 8px rgba(0, 255, 255, 0.3);
+}
+.skin-preview--cyberpunk::before {
+  content: '';
+  position: absolute;
+  top: 4px; left: 4px; right: 4px;
+  height: 2px;
+  background: linear-gradient(90deg, #00ffff, #ff0080);
+  box-shadow: 0 0 6px #00ffff;
+}
+
+/* Brutalist preview - stark black/white with red accent */
+.skin-preview--brutalist {
+  background: #f5f5f5;
+  border: 3px solid #000;
+  border-radius: 0;
+}
+.skin-preview--brutalist::after {
+  content: '';
+  position: absolute;
+  top: 4px; left: 4px;
+  width: 12px; height: 12px;
+  background: #ff3333;
+}
+
+/* Glass preview - frosted blur effect */
+.skin-preview--glass {
+  background: linear-gradient(135deg, rgba(138,43,226,0.3) 0%, rgba(6,182,212,0.3) 100%);
+  backdrop-filter: blur(4px);
+  border: 1px solid rgba(255,255,255,0.2);
+}
+.skin-preview--glass::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 50%;
+  background: linear-gradient(180deg, rgba(255,255,255,0.2) 0%, transparent 100%);
+}
+
+.skin-name {
+  font-size: 0.7rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--skin-text-secondary);
+}
+
+.skin-switcher .skin-btn.active .skin-name {
+  color: var(--skin-primary);
 }
 
 /* Responsive */

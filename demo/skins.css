@@ -1,0 +1,431 @@
+/* ==========================================================================
+   CLAUDE-RAG SKIN SYSTEM
+   Winamp-style swappable themes with distinct SHAPES, not just colors
+
+   Each skin defines:
+   - Shape variables (clip-path polygons)
+   - Shadow systems
+   - Texture patterns
+   - Color palettes
+   - Border styles
+   ========================================================================== */
+
+/* ==========================================================================
+   SKIN: LIBRARY (Rare Books / Victorian)
+   Notched corners, brass accents, leather textures
+   ========================================================================== */
+[data-skin="library"], :root {
+  /* === SHAPE SYSTEM === */
+  --skin-btn-clip: polygon(
+    8px 0, 100% 0, 100% calc(100% - 8px),
+    calc(100% - 8px) 100%, 0 100%, 0 8px
+  );
+  --skin-card-clip: polygon(
+    0 0, 100% 0, 100% calc(100% - 16px),
+    calc(100% - 16px) 100%, 0 100%
+  );
+  --skin-tab-clip: polygon(
+    6px 0, calc(100% - 6px) 0, 100% 6px,
+    100% 100%, 0 100%, 0 6px
+  );
+  --skin-corner-size: 8px;
+  --skin-border-radius: 2px;
+
+  /* === SHADOW SYSTEM === */
+  --skin-shadow-brutal: 4px 4px 0 var(--skin-shadow-color);
+  --skin-shadow-brutal-lg: 6px 6px 0 var(--skin-shadow-color);
+  --skin-shadow-brutal-sm: 2px 2px 0 var(--skin-shadow-color);
+  --skin-shadow-inset: inset 0 2px 4px rgba(0,0,0,0.12);
+  --skin-shadow-emboss: inset 0 1px 0 rgba(255,255,255,0.2), inset 0 -1px 0 rgba(0,0,0,0.1);
+  --skin-shadow-lift: 0 4px 12px rgba(0,0,0,0.15);
+  --skin-shadow-color: #3C241E;
+
+  /* === TEXTURE PATTERNS === */
+  --skin-texture-overlay:
+    radial-gradient(circle at 25% 25%, rgba(139,69,19,0.03) 1px, transparent 1px),
+    radial-gradient(circle at 75% 75%, rgba(139,69,19,0.02) 0.5px, transparent 0.5px);
+  --skin-texture-size: 16px 16px, 8px 8px;
+  --skin-texture-opacity: 0.4;
+
+  /* === BORDER STYLES === */
+  --skin-border-style: solid;
+  --skin-border-width: 2px;
+  --skin-border-accent-width: 3px;
+  --skin-has-double-border: 1; /* 1 = yes, 0 = no */
+
+  /* === COLOR PALETTE === */
+  --skin-bg-deep: #1a1512;
+  --skin-bg-surface: #252018;
+  --skin-bg-subtle: #2d2620;
+  --skin-bg-hover: #352e27;
+
+  --skin-primary: #B87333;
+  --skin-primary-bright: #CD7F32;
+  --skin-primary-glow: rgba(184, 115, 51, 0.3);
+
+  --skin-accent: #F4E8D0;
+  --skin-accent-dark: #3C241E;
+  --skin-accent-muted: #654321;
+
+  --skin-text-primary: #f0e6d6;
+  --skin-text-secondary: #a89882;
+  --skin-text-muted: #6b6050;
+
+  --skin-border-color: #8B4513;
+  --skin-border-subtle: #4a3f35;
+
+  /* === GRADIENTS === */
+  --skin-gradient-btn: linear-gradient(to bottom, var(--skin-primary-bright), var(--skin-primary));
+  --skin-gradient-btn-hover: linear-gradient(to bottom, #D4955C, var(--skin-primary-bright));
+  --skin-gradient-bg: linear-gradient(180deg, var(--skin-bg-deep) 0%, var(--skin-bg-surface) 100%);
+  --skin-gradient-header: linear-gradient(90deg, transparent, var(--skin-primary), transparent);
+
+  /* === TYPOGRAPHY === */
+  --skin-font-display: 'Playfair Display', Georgia, serif;
+  --skin-font-body: 'Inter', -apple-system, sans-serif;
+  --skin-font-mono: 'JetBrains Mono', 'Fira Code', monospace;
+  --skin-letter-spacing: 0.02em;
+  --skin-text-transform: uppercase;
+
+  /* === CORNER DECORATIONS === */
+  --skin-corner-decoration: linear-gradient(135deg, transparent 50%, var(--skin-primary) 50%);
+  --skin-corner-decoration-size: 24px;
+}
+
+
+/* ==========================================================================
+   SKIN: CYBERPUNK (Neon / Tech Noir)
+   Sharp angular cuts, neon glow, scan lines
+   ========================================================================== */
+[data-skin="cyberpunk"] {
+  /* === SHAPE SYSTEM === */
+  --skin-btn-clip: polygon(
+    0 0, calc(100% - 12px) 0, 100% 12px,
+    100% 100%, 12px 100%, 0 calc(100% - 12px)
+  );
+  --skin-card-clip: polygon(
+    12px 0, 100% 0, 100% calc(100% - 24px),
+    calc(100% - 24px) 100%, 0 100%, 0 12px
+  );
+  --skin-tab-clip: polygon(
+    0 0, calc(100% - 8px) 0, 100% 8px,
+    100% 100%, 0 100%
+  );
+  --skin-corner-size: 12px;
+  --skin-border-radius: 0;
+
+  /* === SHADOW SYSTEM === */
+  --skin-shadow-brutal: 0 0 0 transparent;
+  --skin-shadow-brutal-lg: 0 0 0 transparent;
+  --skin-shadow-brutal-sm: 0 0 0 transparent;
+  --skin-shadow-inset: inset 0 0 20px rgba(0, 255, 255, 0.1);
+  --skin-shadow-emboss: 0 0 0 transparent;
+  --skin-shadow-lift: 0 0 30px var(--skin-primary-glow);
+  --skin-shadow-color: transparent;
+
+  /* === TEXTURE PATTERNS === */
+  --skin-texture-overlay:
+    repeating-linear-gradient(
+      0deg,
+      rgba(0, 255, 255, 0.02) 0px,
+      rgba(0, 255, 255, 0.02) 1px,
+      transparent 1px,
+      transparent 3px
+    ),
+    linear-gradient(90deg, rgba(255, 0, 128, 0.03) 0%, transparent 50%, rgba(0, 255, 255, 0.03) 100%);
+  --skin-texture-size: 100% 3px, 100% 100%;
+  --skin-texture-opacity: 1;
+
+  /* === BORDER STYLES === */
+  --skin-border-style: solid;
+  --skin-border-width: 1px;
+  --skin-border-accent-width: 2px;
+  --skin-has-double-border: 0;
+
+  /* === COLOR PALETTE === */
+  --skin-bg-deep: #0a0a12;
+  --skin-bg-surface: #12121f;
+  --skin-bg-subtle: #1a1a2e;
+  --skin-bg-hover: #252542;
+
+  --skin-primary: #00ffff;
+  --skin-primary-bright: #7fffff;
+  --skin-primary-glow: rgba(0, 255, 255, 0.4);
+
+  --skin-accent: #ff0080;
+  --skin-accent-dark: #1a0011;
+  --skin-accent-muted: #4a0030;
+
+  --skin-text-primary: #e0e0ff;
+  --skin-text-secondary: #8888aa;
+  --skin-text-muted: #555577;
+
+  --skin-border-color: #00ffff;
+  --skin-border-subtle: #333355;
+
+  /* === GRADIENTS === */
+  --skin-gradient-btn: linear-gradient(135deg, var(--skin-primary), var(--skin-accent));
+  --skin-gradient-btn-hover: linear-gradient(135deg, var(--skin-primary-bright), #ff4da6);
+  --skin-gradient-bg: linear-gradient(180deg, var(--skin-bg-deep) 0%, #0f0f1a 50%, var(--skin-bg-surface) 100%);
+  --skin-gradient-header: linear-gradient(90deg, var(--skin-accent), var(--skin-primary), var(--skin-accent));
+
+  /* === TYPOGRAPHY === */
+  --skin-font-display: 'Orbitron', 'Rajdhani', monospace;
+  --skin-font-body: 'Rajdhani', 'Inter', sans-serif;
+  --skin-font-mono: 'Share Tech Mono', 'Fira Code', monospace;
+  --skin-letter-spacing: 0.1em;
+  --skin-text-transform: uppercase;
+
+  /* === CORNER DECORATIONS === */
+  --skin-corner-decoration: linear-gradient(135deg, transparent 40%, var(--skin-primary) 40%, var(--skin-primary) 60%, transparent 60%);
+  --skin-corner-decoration-size: 32px;
+
+  /* === GLOW EFFECTS (cyberpunk-specific) === */
+  --skin-glow-primary: 0 0 10px var(--skin-primary), 0 0 20px var(--skin-primary-glow);
+  --skin-glow-accent: 0 0 10px var(--skin-accent), 0 0 20px rgba(255, 0, 128, 0.4);
+  --skin-glow-text: 0 0 8px var(--skin-primary-glow);
+}
+
+
+/* ==========================================================================
+   SKIN: BRUTALIST (Hard Geometric / Bauhaus)
+   No curves, harsh shadows, bold contrast
+   ========================================================================== */
+[data-skin="brutalist"] {
+  /* === SHAPE SYSTEM === */
+  --skin-btn-clip: none;
+  --skin-card-clip: none;
+  --skin-tab-clip: none;
+  --skin-corner-size: 0;
+  --skin-border-radius: 0;
+
+  /* === SHADOW SYSTEM === */
+  --skin-shadow-brutal: 8px 8px 0 var(--skin-shadow-color);
+  --skin-shadow-brutal-lg: 12px 12px 0 var(--skin-shadow-color);
+  --skin-shadow-brutal-sm: 4px 4px 0 var(--skin-shadow-color);
+  --skin-shadow-inset: inset 0 0 0 3px var(--skin-border-color);
+  --skin-shadow-emboss: none;
+  --skin-shadow-lift: none;
+  --skin-shadow-color: #000000;
+
+  /* === TEXTURE PATTERNS === */
+  --skin-texture-overlay:
+    repeating-linear-gradient(
+      45deg,
+      transparent 0px,
+      transparent 10px,
+      rgba(0,0,0,0.03) 10px,
+      rgba(0,0,0,0.03) 11px
+    );
+  --skin-texture-size: 100% 100%;
+  --skin-texture-opacity: 1;
+
+  /* === BORDER STYLES === */
+  --skin-border-style: solid;
+  --skin-border-width: 4px;
+  --skin-border-accent-width: 6px;
+  --skin-has-double-border: 0;
+
+  /* === COLOR PALETTE === */
+  --skin-bg-deep: #f5f5f5;
+  --skin-bg-surface: #ffffff;
+  --skin-bg-subtle: #eeeeee;
+  --skin-bg-hover: #e0e0e0;
+
+  --skin-primary: #ff3333;
+  --skin-primary-bright: #ff6666;
+  --skin-primary-glow: rgba(255, 51, 51, 0.2);
+
+  --skin-accent: #0033ff;
+  --skin-accent-dark: #001166;
+  --skin-accent-muted: #3355ff;
+
+  --skin-text-primary: #000000;
+  --skin-text-secondary: #333333;
+  --skin-text-muted: #666666;
+
+  --skin-border-color: #000000;
+  --skin-border-subtle: #cccccc;
+
+  /* === GRADIENTS === */
+  --skin-gradient-btn: var(--skin-primary);
+  --skin-gradient-btn-hover: var(--skin-primary-bright);
+  --skin-gradient-bg: var(--skin-bg-deep);
+  --skin-gradient-header: var(--skin-primary);
+
+  /* === TYPOGRAPHY === */
+  --skin-font-display: 'Space Grotesk', 'Inter', sans-serif;
+  --skin-font-body: 'Space Grotesk', 'Inter', sans-serif;
+  --skin-font-mono: 'Space Mono', 'Courier New', monospace;
+  --skin-letter-spacing: -0.02em;
+  --skin-text-transform: uppercase;
+
+  /* === CORNER DECORATIONS === */
+  --skin-corner-decoration: var(--skin-primary);
+  --skin-corner-decoration-size: 16px;
+}
+
+
+/* ==========================================================================
+   SKIN: GLASS (Frosted Morphism / Modern)
+   Blur, transparency, soft gradients
+   ========================================================================== */
+[data-skin="glass"] {
+  /* === SHAPE SYSTEM === */
+  --skin-btn-clip: none;
+  --skin-card-clip: none;
+  --skin-tab-clip: none;
+  --skin-corner-size: 0;
+  --skin-border-radius: 16px;
+
+  /* === SHADOW SYSTEM === */
+  --skin-shadow-brutal: none;
+  --skin-shadow-brutal-lg: none;
+  --skin-shadow-brutal-sm: none;
+  --skin-shadow-inset: inset 0 1px 0 rgba(255,255,255,0.1);
+  --skin-shadow-emboss: inset 0 1px 0 rgba(255,255,255,0.15), inset 0 -1px 0 rgba(0,0,0,0.1);
+  --skin-shadow-lift: 0 8px 32px rgba(0, 0, 0, 0.3);
+  --skin-shadow-color: rgba(0,0,0,0.2);
+
+  /* === TEXTURE PATTERNS === */
+  --skin-texture-overlay:
+    radial-gradient(ellipse at 20% 0%, rgba(255,255,255,0.15) 0%, transparent 50%),
+    radial-gradient(ellipse at 80% 100%, rgba(138,43,226,0.1) 0%, transparent 50%);
+  --skin-texture-size: 100% 100%;
+  --skin-texture-opacity: 1;
+
+  /* === BORDER STYLES === */
+  --skin-border-style: solid;
+  --skin-border-width: 1px;
+  --skin-border-accent-width: 1px;
+  --skin-has-double-border: 0;
+
+  /* === COLOR PALETTE === */
+  --skin-bg-deep: #1a1a2e;
+  --skin-bg-surface: rgba(255, 255, 255, 0.05);
+  --skin-bg-subtle: rgba(255, 255, 255, 0.08);
+  --skin-bg-hover: rgba(255, 255, 255, 0.12);
+
+  --skin-primary: #8a2be2;
+  --skin-primary-bright: #a855f7;
+  --skin-primary-glow: rgba(138, 43, 226, 0.4);
+
+  --skin-accent: #06b6d4;
+  --skin-accent-dark: #0e7490;
+  --skin-accent-muted: #22d3ee;
+
+  --skin-text-primary: rgba(255, 255, 255, 0.95);
+  --skin-text-secondary: rgba(255, 255, 255, 0.7);
+  --skin-text-muted: rgba(255, 255, 255, 0.4);
+
+  --skin-border-color: rgba(255, 255, 255, 0.15);
+  --skin-border-subtle: rgba(255, 255, 255, 0.08);
+
+  /* === GRADIENTS === */
+  --skin-gradient-btn: linear-gradient(135deg, var(--skin-primary), var(--skin-accent));
+  --skin-gradient-btn-hover: linear-gradient(135deg, var(--skin-primary-bright), var(--skin-accent-muted));
+  --skin-gradient-bg: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #1a1a2e 100%);
+  --skin-gradient-header: linear-gradient(90deg, var(--skin-primary), var(--skin-accent));
+
+  /* === TYPOGRAPHY === */
+  --skin-font-display: 'Inter', -apple-system, sans-serif;
+  --skin-font-body: 'Inter', -apple-system, sans-serif;
+  --skin-font-mono: 'JetBrains Mono', 'Fira Code', monospace;
+  --skin-letter-spacing: -0.01em;
+  --skin-text-transform: none;
+
+  /* === CORNER DECORATIONS === */
+  --skin-corner-decoration: transparent;
+  --skin-corner-decoration-size: 0;
+
+  /* === GLASS EFFECTS (glass-specific) === */
+  --skin-glass-blur: blur(16px);
+  --skin-glass-bg: rgba(255, 255, 255, 0.08);
+  --skin-glass-border: rgba(255, 255, 255, 0.18);
+}
+
+
+/* ==========================================================================
+   SKIN-SPECIFIC OVERRIDES
+   Additional styles that can't be expressed as simple variables
+   ========================================================================== */
+
+/* Cyberpunk: Neon glow on interactive elements */
+[data-skin="cyberpunk"] .btn-primary:hover {
+  box-shadow: var(--skin-glow-primary);
+  text-shadow: var(--skin-glow-text);
+}
+
+[data-skin="cyberpunk"] .demo-header h1 {
+  text-shadow: var(--skin-glow-primary);
+  animation: flicker 4s infinite;
+}
+
+@keyframes flicker {
+  0%, 100% { opacity: 1; }
+  92% { opacity: 1; }
+  93% { opacity: 0.8; }
+  94% { opacity: 1; }
+  96% { opacity: 0.9; }
+  97% { opacity: 1; }
+}
+
+[data-skin="cyberpunk"] .chat-wrapper {
+  border-color: var(--skin-border-subtle);
+  box-shadow:
+    inset 0 0 30px rgba(0, 255, 255, 0.05),
+    0 0 60px rgba(0, 255, 255, 0.1);
+}
+
+/* Brutalist: Extra bold borders and no roundness */
+[data-skin="brutalist"] .btn-primary {
+  border: var(--skin-border-width) solid var(--skin-border-color);
+  text-transform: uppercase;
+  font-weight: 800;
+  letter-spacing: 0.05em;
+}
+
+[data-skin="brutalist"] .demo-header h1 {
+  font-weight: 900;
+  -webkit-text-stroke: 2px var(--skin-text-primary);
+  -webkit-text-fill-color: transparent;
+}
+
+[data-skin="brutalist"] .chat-wrapper {
+  border: var(--skin-border-width) solid var(--skin-border-color);
+}
+
+[data-skin="brutalist"] .demo-controls {
+  outline: var(--skin-border-width) solid var(--skin-border-color);
+  outline-offset: 0;
+}
+
+/* Glass: Backdrop blur and transparency */
+[data-skin="glass"] .chat-wrapper,
+[data-skin="glass"] .demo-controls,
+[data-skin="glass"] .status-bar {
+  backdrop-filter: var(--skin-glass-blur);
+  -webkit-backdrop-filter: var(--skin-glass-blur);
+  background: var(--skin-glass-bg);
+  border: 1px solid var(--skin-glass-border);
+  border-radius: var(--skin-border-radius);
+}
+
+[data-skin="glass"] .btn-primary {
+  backdrop-filter: blur(8px);
+  border-radius: calc(var(--skin-border-radius) / 2);
+}
+
+[data-skin="glass"] .demo-header h1 {
+  background: var(--skin-gradient-header);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+[data-skin="glass"] .sample-btn {
+  backdrop-filter: blur(4px);
+  background: var(--skin-glass-bg);
+  border: 1px solid var(--skin-glass-border);
+  border-radius: 8px;
+}

@@ -4,15 +4,43 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Claude RAG - Demo</title>
-  <link rel="stylesheet" href="/demo/styles.css">
-  <link rel="stylesheet" href="/dist/react/styles.css">
+  <!-- Skin System (defines --skin-* tokens for each theme) -->
+  <link rel="stylesheet" href="/demo/skins.css?v=skins-1">
+  <!-- Curator Design System (defines --curator-* tokens) -->
+  <link rel="stylesheet" href="/dist/react/styles.css?v=curator-3">
+  <!-- Demo page styles (uses skin tokens) -->
+  <link rel="stylesheet" href="/demo/styles.css?v=skins-1">
+  <!-- Google Fonts for theme typography -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&family=Orbitron:wght@500;700&family=Playfair+Display:wght@500;600;700&family=Rajdhani:wght@400;500;600&family=Share+Tech+Mono&family=Space+Grotesk:wght@400;500;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
 </head>
-<body>
+<body data-skin="library">
   <div class="demo-container">
     <header class="demo-header">
       <h1>Claude RAG</h1>
       <p>Retrieval-Augmented Generation Demo</p>
     </header>
+
+    <!-- One-click skin switcher -->
+    <div class="skin-switcher" id="skinSwitcher">
+      <button class="skin-btn active" data-skin="library" title="Rare Books Library">
+        <span class="skin-preview skin-preview--library"></span>
+        <span class="skin-name">Library</span>
+      </button>
+      <button class="skin-btn" data-skin="cyberpunk" title="Cyberpunk Neon">
+        <span class="skin-preview skin-preview--cyberpunk"></span>
+        <span class="skin-name">Cyber</span>
+      </button>
+      <button class="skin-btn" data-skin="brutalist" title="Brutalist">
+        <span class="skin-preview skin-preview--brutalist"></span>
+        <span class="skin-name">Brutal</span>
+      </button>
+      <button class="skin-btn" data-skin="glass" title="Glass Morphism">
+        <span class="skin-preview skin-preview--glass"></span>
+        <span class="skin-name">Glass</span>
+      </button>
+    </div>
 
     <div class="demo-controls">
       <div class="control-group">
@@ -20,8 +48,8 @@
         <input type="text" id="title" value="Document Assistant" />
       </div>
       <div class="control-group">
-        <label for="accentColor">Accent Color</label>
-        <input type="color" id="accentColor" value="#6366f1" />
+        <label for="accentColor">Accent</label>
+        <input type="color" id="accentColor" value="#d97706" />
       </div>
       <div class="control-group">
         <label for="responder">Responder</label>
@@ -107,19 +135,49 @@
   </div>
 
   <!-- React & ReactDOM -->
-  <script src="https://unpkg.com/react@18/umd/react.production.min.js" integrity="sha384-DGyLxAyjq0f9SPpVevD6IgztCFlnMF6oW/XQGmfe+IsZ8TqEiDrcHkMLKI6fiB/Z" crossorigin="anonymous"></script>
-  <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" integrity="sha384-VQePqH/QE94Buf4g/4MI5NrqDYjdqT7JW6KzhieQUlw6w7U7VD59fPqCAunpXEu6" crossorigin="anonymous"></script>
+  <script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin="anonymous"></script>
+  <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin="anonymous"></script>
 
   <!-- Lucide Icons (used by RAGChat) -->
-  <script src="https://unpkg.com/lucide@0.468.0" integrity="sha384-KzdNYOIKgYfc9X38ZC+BSzHaruXjQGwJ0M2J678awAayEWy/MqqLBOo+fi3dYx6j" crossorigin="anonymous"></script>
+  <script src="https://unpkg.com/lucide@0.468.0/dist/umd/lucide.min.js" crossorigin="anonymous"></script>
 
   <!-- RAGChat bundle (IIFE - creates RAGBundle global) -->
   <script src="/demo/ragchat-bundle.js"></script>
 
   <script type="module">
     import { initDemo } from '/demo/demo.js';
+
+    // One-click skin switcher
+    const skinSwitcher = document.getElementById('skinSwitcher');
+    const skinButtons = skinSwitcher.querySelectorAll('.skin-btn');
+    const savedSkin = localStorage.getItem('claude-rag-skin') || 'library';
+
+    // Apply saved skin on load
+    document.body.setAttribute('data-skin', savedSkin);
+    skinButtons.forEach(btn => {
+      btn.classList.toggle('active', btn.dataset.skin === savedSkin);
+    });
+
+    // Handle one-click skin changes
+    skinSwitcher.addEventListener('click', (e) => {
+      const btn = e.target.closest('.skin-btn');
+      if (!btn) return;
+
+      const skin = btn.dataset.skin;
+      document.body.setAttribute('data-skin', skin);
+      localStorage.setItem('claude-rag-skin', skin);
+
+      // Update active state
+      skinButtons.forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+
+      // Re-initialize Lucide icons
+      lucide.createIcons();
+    });
+
     // Initialize Lucide icons for static HTML elements
     lucide.createIcons();
+
     // Bundle exports RAGChat, RAGInterface, AdminDashboard, ApiKeyConfigBar via RAGBundle global
     initDemo(RAGBundle.RAGInterface, RAGBundle.AdminDashboard, RAGBundle.ApiKeyConfigBar);
   </script>
