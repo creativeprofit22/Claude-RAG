@@ -20,6 +20,7 @@ import {
   Settings,
 } from 'lucide-react';
 import { SettingsModal } from '../settings/SettingsModal.js';
+import { SkinAwareChart } from '../../charts/SkinAwareChart.js';
 import type { AdminStats, AdminHealth } from '../../types.js';
 import { formatBytes, formatRelativeTime } from '../../utils/formatters.js';
 
@@ -164,11 +165,52 @@ export function AdminDashboard({
     fetchData(abortControllerRef.current.signal);
   };
 
-  // Calculate max count for chart scaling
-  const maxCategoryCount = stats?.documents.byCategory.reduce(
-    (max, cat) => Math.max(max, cat.count),
-    0
-  ) || 1;
+  // Build ECharts option for documents by category
+  const categoryChartOption = React.useMemo(() => {
+    const categories = stats?.documents.byCategory || [];
+    return {
+      tooltip: {
+        trigger: 'axis',
+        axisPointer: { type: 'shadow' },
+      },
+      grid: {
+        left: 8,
+        right: 40,
+        top: 8,
+        bottom: 8,
+        containLabel: true,
+      },
+      xAxis: {
+        type: 'value',
+        axisLabel: { show: false },
+        splitLine: { show: false },
+        axisLine: { show: false },
+        axisTick: { show: false },
+      },
+      yAxis: {
+        type: 'category',
+        data: categories.map((c) => c.categoryName),
+        axisLine: { show: false },
+        axisTick: { show: false },
+        inverse: true,
+      },
+      series: [
+        {
+          type: 'bar',
+          data: categories.map((c) => ({
+            value: c.count,
+            itemStyle: { color: c.color },
+          })),
+          barWidth: 16,
+          label: {
+            show: true,
+            position: 'right',
+            formatter: '{c}',
+          },
+        },
+      ],
+    };
+  }, [stats?.documents.byCategory]);
 
   return (
     <div className="rag-admin-dashboard" style={{ '--rag-accent': accentColor } as React.CSSProperties}>
@@ -295,29 +337,10 @@ export function AdminDashboard({
                 No categories with documents
               </div>
             ) : (
-              <div className="rag-admin-bar-chart">
-                {stats?.documents.byCategory.map((cat) => (
-                  <div key={cat.categoryId} className="rag-admin-bar-row">
-                    <div className="rag-admin-bar-label">
-                      <span
-                        className="rag-admin-bar-color"
-                        style={{ backgroundColor: cat.color }}
-                      />
-                      {cat.categoryName}
-                    </div>
-                    <div className="rag-admin-bar-container">
-                      <div
-                        className="rag-admin-bar-fill"
-                        style={{
-                          width: `${(cat.count / maxCategoryCount) * 100}%`,
-                          backgroundColor: cat.color,
-                        }}
-                      />
-                    </div>
-                    <span className="rag-admin-bar-count">{cat.count}</span>
-                  </div>
-                ))}
-              </div>
+              <SkinAwareChart
+                option={categoryChartOption}
+                style={{ height: 220 }}
+              />
             )}
           </div>
         </div>

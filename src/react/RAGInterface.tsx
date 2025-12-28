@@ -1,7 +1,9 @@
 'use client';
 
 import { useState, useCallback } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { MessageSquare, Library, X, FileText } from 'lucide-react';
+import { useSkinMotion } from './motion/hooks/useSkinMotion.js';
 import { RAGChat, type RAGChatProps } from './RAGChat.js';
 import { DocumentLibrary, type DocumentLibraryProps } from './components/documents/DocumentLibrary.js';
 import { DEFAULT_ACCENT_COLOR, type DocumentSummary } from './types.js';
@@ -81,6 +83,7 @@ export function RAGInterface({
 }: RAGInterfaceProps) {
   const [activeView, setActiveView] = useState<RAGInterfaceView>(defaultView);
   const [scopedDocument, setScopedDocument] = useState<DocumentSummary | null>(null);
+  const { motion: skinMotion } = useSkinMotion();
 
   // Handle document selection from library
   const handleDocumentSelect = useCallback((doc: DocumentSummary) => {
@@ -163,46 +166,58 @@ export function RAGInterface({
 
       {/* View Content */}
       <div className="rag-interface-content">
-        {activeView === 'chat' ? (
-          <div
-            role="tabpanel"
-            id="rag-tabpanel-chat"
-            aria-labelledby="rag-tab-chat"
-            style={{ display: 'contents' }}
-          >
-            <RAGChat
-              endpoint={chatEndpoint}
-              headers={headers}
-              title={chatTitle}
-              accentColor={accentColor}
-              placeholder={scopedDocument
-                ? `Ask about "${scopedDocument.documentName}"...`
-                : placeholder}
-              showSources={showSources}
-              systemPrompt={systemPrompt}
-              topK={topK}
-              documentId={scopedDocument?.documentId}
-              responder={responder}
-              emptyState={chatEmptyState}
-            />
-          </div>
-        ) : (
-          <div
-            role="tabpanel"
-            id="rag-tabpanel-documents"
-            aria-labelledby="rag-tab-documents"
-            style={{ display: 'contents' }}
-          >
-            <DocumentLibrary
-              endpoint={endpoint}
-              headers={headers}
-              title={documentsTitle}
-              accentColor={accentColor}
-              onDocumentSelect={handleDocumentSelect}
-              emptyState={documentsEmptyState}
-            />
-          </div>
-        )}
+        <AnimatePresence mode="wait">
+          {activeView === 'chat' ? (
+            <motion.div
+              key="chat"
+              role="tabpanel"
+              id="rag-tabpanel-chat"
+              aria-labelledby="rag-tab-chat"
+              style={{ display: 'contents' }}
+              initial={skinMotion.card.hidden}
+              animate={skinMotion.card.visible}
+              exit={skinMotion.card.exit}
+              transition={skinMotion.transition.fast}
+            >
+              <RAGChat
+                endpoint={chatEndpoint}
+                headers={headers}
+                title={chatTitle}
+                accentColor={accentColor}
+                placeholder={scopedDocument
+                  ? `Ask about "${scopedDocument.documentName}"...`
+                  : placeholder}
+                showSources={showSources}
+                systemPrompt={systemPrompt}
+                topK={topK}
+                documentId={scopedDocument?.documentId}
+                responder={responder}
+                emptyState={chatEmptyState}
+              />
+            </motion.div>
+          ) : (
+            <motion.div
+              key="documents"
+              role="tabpanel"
+              id="rag-tabpanel-documents"
+              aria-labelledby="rag-tab-documents"
+              style={{ display: 'contents' }}
+              initial={skinMotion.card.hidden}
+              animate={skinMotion.card.visible}
+              exit={skinMotion.card.exit}
+              transition={skinMotion.transition.fast}
+            >
+              <DocumentLibrary
+                endpoint={endpoint}
+                headers={headers}
+                title={documentsTitle}
+                accentColor={accentColor}
+                onDocumentSelect={handleDocumentSelect}
+                emptyState={documentsEmptyState}
+              />
+            </motion.div>
+          )}
+        </AnimatePresence>
       </div>
     </div>
   );

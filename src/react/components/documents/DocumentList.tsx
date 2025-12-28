@@ -1,8 +1,9 @@
 'use client';
 
-import { AnimatePresence } from 'framer-motion';
+import { AnimatePresence, motion } from 'framer-motion';
 import { DocumentCard } from './DocumentCard.js';
 import { EmptyState } from '../shared/EmptyState.js';
+import { useSkinMotion } from '../../motion/hooks/useSkinMotion.js';
 import type { DocumentSummary } from '../../types.js';
 
 /** Number of skeleton cards to show while loading */
@@ -62,6 +63,8 @@ export function DocumentList({
   emptyState,
   skeletonCount = DEFAULT_SKELETON_COUNT,
 }: DocumentListProps) {
+  const { motion: skinMotion } = useSkinMotion();
+
   // Show loading skeletons
   // Using stable keys with prefix to avoid React reconciliation issues
   if (isLoading) {
@@ -80,19 +83,27 @@ export function DocumentList({
   }
 
   return (
-    <div className="rag-doc-list" role="list" aria-label="Document list">
+    <motion.div
+      className="rag-doc-list"
+      role="list"
+      aria-label="Document list"
+      variants={skinMotion.list}
+      initial="hidden"
+      animate="visible"
+    >
       <AnimatePresence mode="popLayout">
         {documents.map((doc) => (
-          <DocumentCard
-            key={doc.documentId}
-            document={doc}
-            isSelected={selectedDocumentId === doc.documentId}
-            onSelect={onDocumentSelect}
-            onDelete={onDocumentDelete}
-            onPreview={onDocumentPreview}
-          />
+          <motion.div key={doc.documentId} variants={skinMotion.card}>
+            <DocumentCard
+              document={doc}
+              isSelected={selectedDocumentId === doc.documentId}
+              onSelect={onDocumentSelect}
+              onDelete={onDocumentDelete}
+              onPreview={onDocumentPreview}
+            />
+          </motion.div>
         ))}
       </AnimatePresence>
-    </div>
+    </motion.div>
   );
 }

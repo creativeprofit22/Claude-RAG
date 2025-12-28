@@ -1,8 +1,9 @@
 'use client';
 
 import { useRef, useEffect } from 'react';
-import { AnimatePresence } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { Database, X, AlertCircle, type LucideIcon } from 'lucide-react';
+import { useSkinMotion } from './motion/hooks/useSkinMotion.js';
 import { ChatHeader } from './components/ChatHeader.js';
 import { ChatInput } from './components/ChatInput.js';
 import { MessageBubble } from './components/MessageBubble.js';
@@ -53,6 +54,8 @@ export function RAGChat({
   emptyState,
 }: RAGChatProps) {
   const messagesContainerRef = useRef<HTMLDivElement>(null);
+
+  const { motion: skinMotion } = useSkinMotion();
 
   const {
     messages,
@@ -139,7 +142,13 @@ export function RAGChat({
       {/* Messages Area */}
       <div ref={messagesContainerRef} className="rag-chat-messages">
         {messages.length === 0 ? (
-          emptyState || defaultEmptyState
+          <motion.div
+            initial={skinMotion.modal.hidden}
+            animate={skinMotion.modal.visible}
+            transition={skinMotion.transition.default}
+          >
+            {emptyState || defaultEmptyState}
+          </motion.div>
         ) : (
           <AnimatePresence mode="popLayout">
             {messages.map((message) => (

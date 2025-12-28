@@ -1,0 +1,29 @@
+{
+  "categories": [
+    {
+      "id": "cat_general",
+      "name": "General",
+      "color": "#6b7280",
+      "icon": "folder"
+    },
+    {
+      "id": "cat_docs",
+      "name": "Documentation",
+      "color": "#3b82f6",
+      "icon": "book"
+    },
+    {
+      "id": "cat_code",
+      "name": "Code",
+      "color": "#10b981",
+      "icon": "code"
+    },
+    {
+      "id": "cat_notes",
+      "name": "Notes",
+      "color": "#f59e0b",
+      "icon": "sticky-note"
+    }
+  ],
+  "tags": []
+}

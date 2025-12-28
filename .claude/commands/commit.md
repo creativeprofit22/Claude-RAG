@@ -5,7 +5,7 @@ description: Run checks, commit with AI message, and push
 
 1. Run quality checks:
    ```bash
-   npm run build
+   npx tsc --noEmit
    ```
    Fix ALL errors before continuing.
 

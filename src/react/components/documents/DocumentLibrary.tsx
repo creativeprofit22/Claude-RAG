@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { motion } from 'framer-motion';
 import { Library, AlertCircle, X, Upload } from 'lucide-react';
 import { DocumentSearch } from './DocumentSearch.js';
 import { DocumentList } from './DocumentList.js';
@@ -10,6 +11,7 @@ import { EmptyState } from '../shared/EmptyState.js';
 import { UploadModal } from '../upload/UploadModal.js';
 import { useDocuments } from '../../hooks/useDocuments.js';
 import { useDocumentLibraryState } from '../../hooks/useDocumentLibraryState.js';
+import { useSkinMotion } from '../../motion/hooks/useSkinMotion.js';
 import { DEFAULT_ACCENT_COLOR, type DocumentSummary } from '../../types.js';
 
 export interface DocumentLibraryProps {
@@ -59,6 +61,30 @@ export function DocumentLibrary({
   emptyState,
   headers,
 }: DocumentLibraryProps) {
+  // Motion configuration from skin
+  const { motion: motionConfig } = useSkinMotion();
+
+  // Container orchestration variants
+  const containerVariants = {
+    hidden: { opacity: 0 },
+    visible: {
+      opacity: 1,
+      transition: {
+        staggerChildren: motionConfig.stagger.children,
+        delayChildren: 0.1,
+      },
+    },
+  };
+
+  const itemVariants = {
+    hidden: { opacity: 0, y: 20 },
+    visible: {
+      opacity: 1,
+      y: 0,
+      transition: motionConfig.transition.default,
+    },
+  };
+
   // Document state from hook
   const {
     documents,
@@ -120,9 +146,14 @@ export function DocumentLibrary({
   );
 
   return (
-    <div className={`rag-document-library ${className}`}>
+    <motion.div
+      className={`rag-document-library ${className}`}
+      variants={containerVariants}
+      initial="hidden"
+      animate="visible"
+    >
       {/* Header */}
-      <header className="rag-library-header">
+      <motion.header className="rag-library-header" variants={itemVariants}>
         <div className="rag-library-header-info">
           <div
             className="rag-library-header-icon"
@@ -153,7 +184,7 @@ export function DocumentLibrary({
           <Upload size={16} />
           Upload
         </button>
-      </header>
+      </motion.header>
 
       {/* Error Banner */}
       {displayError && (
@@ -172,18 +203,20 @@ export function DocumentLibrary({
       )}
 
       {/* Search Bar */}
-      <DocumentSearch
-        value={searchQuery}
-        onChange={setSearchQuery}
-        sortBy={sortBy}
-        onSortByChange={setSortBy}
-        sortOrder={sortOrder}
-        onSortOrderChange={setSortOrder}
-        placeholder="Search documents..."
-      />
+      <motion.div variants={itemVariants}>
+        <DocumentSearch
+          value={searchQuery}
+          onChange={setSearchQuery}
+          sortBy={sortBy}
+          onSortByChange={setSortBy}
+          sortOrder={sortOrder}
+          onSortOrderChange={setSortOrder}
+          placeholder="Search documents..."
+        />
+      </motion.div>
 
       {/* Document Grid */}
-      <div className="rag-library-content">
+      <motion.div className="rag-library-content" variants={itemVariants}>
         <DocumentList
           documents={filteredDocuments}
           isLoading={isLoading}
@@ -192,7 +225,7 @@ export function DocumentLibrary({
           onDocumentPreview={handlePreview}
           emptyState={emptyState || defaultEmptyState}
         />
-      </div>
+      </motion.div>
 
       {/* Preview Modal */}
       {previewDoc && (
@@ -226,6 +259,6 @@ export function DocumentLibrary({
         endpoint={endpoint}
         headers={headers}
       />
-    </div>
+    </motion.div>
   );
 }
