@@ -18,6 +18,8 @@ export const {
   useLayoutEffect,
   useImperativeHandle,
   useDebugValue,
+  useId,
+  useInsertionEffect,
   createContext,
   createElement,
   cloneElement,
