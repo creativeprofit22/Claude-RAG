@@ -58,9 +58,9 @@
 
   /* ─── Text Palette (light on dark) ─── */
   --lib-ink: #E8D5A3;
-  --lib-ink-soft: #C9A227;
+  --lib-ink-soft: #A89040;
   --lib-ink-faded: #A08050;
-  --lib-ink-notation: #D4AF37;
+  --lib-ink-notation: #B8A050;
 
   /* ─── Animation ─── */
   --lib-ease: cubic-bezier(0.23, 1, 0.32, 1);

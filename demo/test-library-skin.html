@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Library Skin Test - PowerConduit</title>
+  <link rel="stylesheet" href="/demo/skins.css?v=dark-lib-1229b">
+  <link rel="stylesheet" href="/demo/ragchat-bundle.css?v=dark-lib-1229b">
+  <style>
+    body {
+      background: var(--skin-bg-deep);
+      color: var(--skin-text-primary);
+      font-family: system-ui, sans-serif;
+      padding: 2rem;
+    }
+    .test-container {
+      max-width: 500px;
+      margin: 0 auto;
+    }
+    h1 { color: var(--skin-primary); margin-bottom: 2rem; }
+    .info {
+      background: var(--skin-bg-surface);
+      padding: 1rem;
+      margin-top: 2rem;
+      border: 1px solid var(--skin-border-color);
+    }
+    .info code { color: var(--skin-primary); }
+  </style>
+</head>
+<!-- CRITICAL: data-skin="library" HARDCODED - no JavaScript override -->
+<body data-skin="library">
+  <div class="test-container">
+    <h1>Library Skin Test</h1>
+
+    <p>This test page has NO JavaScript that could change the skin. If the segments below appear GOLD, the CSS is working. If they appear CYAN, something in the cascade is wrong.</p>
+
+    <!-- PowerConduit HTML structure manually created -->
+    <div class="power-conduit power-conduit--default" style="margin: 2rem 0;">
+      <div class="power-conduit__shadow"></div>
+      <div class="power-conduit__body">
+        <div class="power-conduit__circuits"></div>
+        <div class="power-conduit__track">
+          <div class="power-conduit__segment power-conduit__segment--filled"></div>
+          <div class="power-conduit__segment power-conduit__segment--filled"></div>
+          <div class="power-conduit__segment power-conduit__segment--filled"></div>
+          <div class="power-conduit__segment power-conduit__segment--filled"></div>
+          <div class="power-conduit__segment power-conduit__segment--filled power-conduit__segment--active"></div>
+          <div class="power-conduit__segment"></div>
+          <div class="power-conduit__segment"></div>
+          <div class="power-conduit__segment"></div>
+          <div class="power-conduit__segment"></div>
+          <div class="power-conduit__segment"></div>
+        </div>
+        <div class="power-conduit__flow"></div>
+        <div class="power-conduit__wear"></div>
+      </div>
+      <div class="power-conduit__info">
+        <span class="power-conduit__label">TEST LEVEL</span>
+        <span class="power-conduit__value">50%</span>
+      </div>
+      <div class="power-conduit__cap power-conduit__cap--left"></div>
+      <div class="power-conduit__cap power-conduit__cap--right"></div>
+    </div>
+
+    <div class="info">
+      <strong>Expected colors for Library skin:</strong>
+      <ul>
+        <li>Filled segments: <code>#E8D5A3 → #D4AF37 → #8B6914</code> (gold gradient)</li>
+        <li>Empty segments: <code>rgba(60, 52, 42, 0.7)</code> (dark brown)</li>
+        <li>Body background: <code>#1a1512</code> (dark brown)</li>
+        <li>Labels: <code>#C9A227</code> (gold)</li>
+      </ul>
+      <p style="margin-top:1rem">
+        <strong>Actual data-skin:</strong>
+        <code id="skinValue"></code>
+      </p>
+    </div>
+  </div>
+
+  <script>
+    // Just display what the skin is - NO CHANGES
+    document.getElementById('skinValue').textContent =
+      document.body.getAttribute('data-skin');
+  </script>
+</body>
+</html>

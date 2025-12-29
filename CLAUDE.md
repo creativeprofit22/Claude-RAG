@@ -14,22 +14,20 @@ Query → Gemini Embeddings → LanceDB → Chunks → Claude Code CLI → Respo
 
 ## Pipeline State
 Phase: complete
-Feature: FileManifest Cyberpunk Artifact
-Status: Production-ready
+Feature: Library Skin - Aged Brass Colors
+Status: Built, validated, refactored - COMPLETE
 
 ## Last Session (2025-12-29)
-**FileManifest Cyberpunk - Complete:**
-- Validation: reports/validation-file-manifest-cyberpunk.md
-- Refactors: reports/refactors-file-manifest-cyberpunk.md
-- Fixes Applied: 5 total
-  - B2: Removed derived dep from useMemo
-  - BUG-1: Added --hole-index CSS variable
-  - #2: Removed duplicate border-radius
-  - #5: Cleaned className concatenation
-  - #6: Removed empty CSS rule
-- Deferred: B1, B3-B5 (performance), #3-4 (magic numbers), #7-8 (optional)
+**Library Skin - Aged Brass Refactoring:**
+- Fixed remaining bright gold rgba values → aged brass (139, 112, 40)
+- Removed redundant `-webkit-clip-path: none` from stat-chip
+- Already had `:is()` selector in terminal-readout
+- All shared tokens already in use via library-base.css
+- Tests: 21 pass | Build: success (97.9kb CSS bundle)
 
 ## Completed
+- Library Skin Aged Brass (2025-12-29) - Colors fixed, refactored, committed
+- Library Skin Artifacts (2025-12-29) - Built, validated, refactored (8 items)
 - FileManifest Cyberpunk Artifact (2025-12-29) - Built, validated, refactored (5 fixes)
 - PowerConduit Cyberpunk Artifact (2025-12-29) - Built, validated, refactored (4 items)
 - StatChip Cyberpunk Artifact (2025-12-28) - Built, validated, refactor-hunted (clean)

@@ -1892,9 +1892,9 @@
     var(--lib-texture-brass),
     linear-gradient(
       135deg,
-      #F5E7A3 0%,
-      #D4AF37 30%,
-      #C9A227 60%,
+      #D4C090 0%,
+      #B8A050 30%,
+      #A89040 60%,
       #8B6914 100%);
   background-blend-mode: overlay, normal;
   box-shadow:
@@ -1970,7 +1970,7 @@
       135deg,
       #FFF5D4 0%,
       #E8D5A3 30%,
-      #D4AF37 60%,
+      #B8A050 60%,
       #A08020 100%);
   background-blend-mode: overlay, normal;
   box-shadow:
@@ -2113,7 +2113,7 @@
       inset 4px 0 6px rgba(0, 0, 0, 0.4),
       inset 0 0 0 4px #1A1612,
       inset 0 0 0 6px #8B6914,
-      inset 0 0 0 8px #C9A227,
+      inset 0 0 0 8px #A89040,
       inset 6px 6px 0 4px rgba(245, 231, 163, 0.5),
       inset -6px -6px 0 4px rgba(60, 45, 10, 0.6),
       inset 0 0 0 10px #2E1A18,
@@ -2122,7 +2122,7 @@
       inset 14px 14px 0 10px rgba(180, 120, 100, 0.3),
       inset -12px -12px 0 10px rgba(0, 0, 0, 0.5),
       0 0 0 2px #5C4A10,
-      0 0 0 3px #C9A227,
+      0 0 0 3px #A89040,
       4px 6px 12px rgba(0, 0, 0, 0.5);
   }
   [data-skin=library] .hud-frame__body::before {
@@ -2581,9 +2581,9 @@
   --lib-vellum: #1A1612;
   --lib-vellum-shadow: #141210;
   --lib-ink: #E8D5A3;
-  --lib-ink-soft: #C9A227;
+  --lib-ink-soft: #A89040;
   --lib-ink-faded: #A08050;
-  --lib-ink-notation: #D4AF37;
+  --lib-ink-notation: #B8A050;
   --lib-ease: cubic-bezier(0.23, 1, 0.32, 1);
   --lib-duration: 0.45s;
   --lib-duration-slow: 0.5s;

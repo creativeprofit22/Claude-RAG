@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Skin Test v2</title>
+  <link rel="stylesheet" href="/demo/ragchat-bundle.css?v=test-2">
+  <style>
+    body { font-family: sans-serif; padding: 20px; background: #222; color: #fff; }
+    .test-segment {
+      width: 100px;
+      height: 30px;
+      display: inline-block;
+      margin: 5px;
+      border: 2px solid red; /* Debug border */
+    }
+    /* Direct test - no variables */
+    .gold-direct {
+      background: linear-gradient(180deg, #E8D5A3 0%, #D4AF37 50%, #8B6914 100%);
+    }
+  </style>
+</head>
+<body data-skin="library">
+  <h1>Skin Test v2</h1>
+  <p>Body data-skin: <strong id="skinValue"></strong></p>
+
+  <h2>1. Direct Gold (no CSS vars):</h2>
+  <div class="test-segment gold-direct"></div>
+
+  <h2>2. Bundle CSS - with .power-conduit wrapper:</h2>
+  <div class="power-conduit" style="display:flex;gap:4px;">
+    <div class="power-conduit__segment power-conduit__segment--filled test-segment"></div>
+    <div class="power-conduit__segment power-conduit__segment--filled test-segment"></div>
+    <div class="power-conduit__segment test-segment" style="background:#333;"></div>
+  </div>
+
+  <h2>3. Bundle CSS - WITHOUT .power-conduit wrapper:</h2>
+  <div style="display:flex;gap:4px;">
+    <div class="power-conduit__segment--filled test-segment"></div>
+    <div class="power-conduit__segment--filled test-segment"></div>
+  </div>
+
+  <h2>4. Check computed style:</h2>
+  <pre id="computed" style="background:#333;padding:10px;"></pre>
+
+  <script>
+    document.getElementById('skinValue').textContent = document.body.getAttribute('data-skin');
+
+    // Get computed style of first filled segment
+    const segment = document.querySelector('.power-conduit .power-conduit__segment--filled');
+    if (segment) {
+      const styles = getComputedStyle(segment);
+      document.getElementById('computed').textContent =
+        'background: ' + styles.background + '\n' +
+        'background-image: ' + styles.backgroundImage + '\n' +
+        'background-color: ' + styles.backgroundColor;
+    }
+  </script>
+</body>
+</html>

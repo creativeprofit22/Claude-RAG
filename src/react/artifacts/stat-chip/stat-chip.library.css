@@ -65,7 +65,6 @@
    BODY - LEATHER WITH GOLD TOOLING
    ============================================ */
 [data-skin="library"] .stat-chip__body {
-  clip-path: none;
   border-radius: 3px;
 
   /* Subtle presence */
@@ -117,8 +116,8 @@
     inset 0 0 0 8px var(--chip-gold),
     inset 0 0 0 9px var(--chip-gold-deep),
     inset 0 0 0 12px var(--chip-leather),
-    /* Gold catch light */
-    0 0 30px rgba(201, 162, 39, 0.15),
+    /* Aged brass catch light */
+    0 0 30px rgba(139, 112, 40, 0.15),
     0 2px 2px rgba(0, 0, 0, 0.08),
     0 8px 16px rgba(0, 0, 0, 0.18),
     0 16px 32px rgba(15, 29, 22, 0.22),
@@ -277,7 +276,7 @@
   box-shadow:
     inset 0 2px 4px rgba(255, 255, 255, 0.2),
     inset 0 -2px 4px rgba(0, 0, 0, 0.3),
-    0 0 20px rgba(201, 162, 39, 0.3),
+    0 0 20px rgba(139, 112, 40, 0.3),
     0 4px 8px rgba(0, 0, 0, 0.35),
     0 8px 16px rgba(0, 0, 0, 0.25);
 }
