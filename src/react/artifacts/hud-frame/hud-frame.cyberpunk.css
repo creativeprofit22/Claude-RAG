@@ -23,6 +23,7 @@
   --hud-bg-header: rgba(0, 20, 30, 0.9);
   --hud-border: rgba(0, 255, 255, 0.5);
   --hud-border-dim: rgba(0, 255, 255, 0.25);
+  --hud-reticle-offset: 24px;
 }
 
 /* ============================================
@@ -30,36 +31,22 @@
    ============================================ */
 [data-skin="cyberpunk"] .hud-frame__body {
   /* Stepped corner clip-path - creates bracket/HUD look */
-  -webkit-clip-path: polygon(
-    /* Top edge with corner steps */
-    0 16px,              /* Left step down */
-    16px 16px,           /* Step horizontal */
-    16px 0,              /* Step up to top */
-    calc(100% - 16px) 0, /* Top edge */
-    calc(100% - 16px) 16px, /* Right step down */
-    100% 16px,           /* Right step horizontal */
-    /* Right edge */
-    100% calc(100% - 16px), /* Right step up */
-    calc(100% - 16px) calc(100% - 16px), /* Step horizontal */
-    calc(100% - 16px) 100%, /* Step down to bottom */
-    /* Bottom edge */
-    16px 100%,           /* Bottom edge */
-    16px calc(100% - 16px), /* Left step up */
-    0 calc(100% - 16px)  /* Left step horizontal */
-  );
   clip-path: polygon(
-    0 16px,
-    16px 16px,
-    16px 0,
-    calc(100% - 16px) 0,
-    calc(100% - 16px) 16px,
-    100% 16px,
-    100% calc(100% - 16px),
-    calc(100% - 16px) calc(100% - 16px),
-    calc(100% - 16px) 100%,
-    16px 100%,
-    16px calc(100% - 16px),
-    0 calc(100% - 16px)
+    /* Top edge with corner steps */
+    0 16px,                              /* Left step down */
+    16px 16px,                           /* Step horizontal */
+    16px 0,                              /* Step up to top */
+    calc(100% - 16px) 0,                 /* Top edge */
+    calc(100% - 16px) 16px,              /* Right step down */
+    100% 16px,                           /* Right step horizontal */
+    /* Right edge */
+    100% calc(100% - 16px),              /* Right step up */
+    calc(100% - 16px) calc(100% - 16px), /* Step horizontal */
+    calc(100% - 16px) 100%,              /* Step down to bottom */
+    /* Bottom edge */
+    16px 100%,                           /* Bottom edge */
+    16px calc(100% - 16px),              /* Left step up */
+    0 calc(100% - 16px)                  /* Left step horizontal */
   );
 
   /* Background material */
@@ -159,93 +146,54 @@
   z-index: 5; /* Match parent z-index to prevent layering issues */
 }
 
-/* Horizontal trace */
+/* Horizontal trace - extends left or right from node */
 [data-skin="cyberpunk"] .hud-frame__reticle::before {
   width: 14px;
   height: 2px;
+  top: 50%;
+  transform: translateY(-50%);
 }
 
-/* Vertical trace */
+/* Vertical trace - extends up or down from node */
 [data-skin="cyberpunk"] .hud-frame__reticle::after {
   width: 2px;
   height: 14px;
-}
-
-/* Top-left: traces extend up and left from node */
-[data-skin="cyberpunk"] .hud-frame__reticle--tl::before {
-  right: 100%;
-  top: 50%;
-  transform: translateY(-50%);
-  margin-right: 1px;
-}
-[data-skin="cyberpunk"] .hud-frame__reticle--tl::after {
-  bottom: 100%;
   left: 50%;
   transform: translateX(-50%);
-  margin-bottom: 1px;
 }
 
-/* Top-right: traces extend up and right from node */
-[data-skin="cyberpunk"] .hud-frame__reticle--tr::before {
-  left: 100%;
-  top: 50%;
-  transform: translateY(-50%);
-  margin-left: 1px;
-}
-[data-skin="cyberpunk"] .hud-frame__reticle--tr::after {
-  bottom: 100%;
-  left: 50%;
-  transform: translateX(-50%);
-  margin-bottom: 1px;
-}
+/* Corner-specific trace directions */
+[data-skin="cyberpunk"] .hud-frame__reticle--tl::before { right: 100%; margin-right: 1px; }
+[data-skin="cyberpunk"] .hud-frame__reticle--tl::after { bottom: 100%; margin-bottom: 1px; }
 
-/* Bottom-left: traces extend down and left from node */
-[data-skin="cyberpunk"] .hud-frame__reticle--bl::before {
-  right: 100%;
-  top: 50%;
-  transform: translateY(-50%);
-  margin-right: 1px;
-}
-[data-skin="cyberpunk"] .hud-frame__reticle--bl::after {
-  top: 100%;
-  left: 50%;
-  transform: translateX(-50%);
-  margin-top: 1px;
-}
+[data-skin="cyberpunk"] .hud-frame__reticle--tr::before { left: 100%; margin-left: 1px; }
+[data-skin="cyberpunk"] .hud-frame__reticle--tr::after { bottom: 100%; margin-bottom: 1px; }
 
-/* Bottom-right: traces extend down and right from node */
-[data-skin="cyberpunk"] .hud-frame__reticle--br::before {
-  left: 100%;
-  top: 50%;
-  transform: translateY(-50%);
-  margin-left: 1px;
-}
-[data-skin="cyberpunk"] .hud-frame__reticle--br::after {
-  top: 100%;
-  left: 50%;
-  transform: translateX(-50%);
-  margin-top: 1px;
-}
+[data-skin="cyberpunk"] .hud-frame__reticle--bl::before { right: 100%; margin-right: 1px; }
+[data-skin="cyberpunk"] .hud-frame__reticle--bl::after { top: 100%; margin-top: 1px; }
+
+[data-skin="cyberpunk"] .hud-frame__reticle--br::before { left: 100%; margin-left: 1px; }
+[data-skin="cyberpunk"] .hud-frame__reticle--br::after { top: 100%; margin-top: 1px; }
 
 /* Position nodes inward from corners */
 [data-skin="cyberpunk"] .hud-frame__reticle--tl {
-  top: 24px;
-  left: 24px;
+  top: var(--hud-reticle-offset);
+  left: var(--hud-reticle-offset);
 }
 
 [data-skin="cyberpunk"] .hud-frame__reticle--tr {
-  top: 24px;
-  right: 24px;
+  top: var(--hud-reticle-offset);
+  right: var(--hud-reticle-offset);
 }
 
 [data-skin="cyberpunk"] .hud-frame__reticle--bl {
-  bottom: 24px;
-  left: 24px;
+  bottom: var(--hud-reticle-offset);
+  left: var(--hud-reticle-offset);
 }
 
 [data-skin="cyberpunk"] .hud-frame__reticle--br {
-  bottom: 24px;
-  right: 24px;
+  bottom: var(--hud-reticle-offset);
+  right: var(--hud-reticle-offset);
 }
 
 /* HIDE top-left reticle when header is present (overlaps with icon) */

@@ -4,6 +4,11 @@
  * A panel container with stepped corners and targeting reticle decorations
  */
 
+/* Base tokens (skins may override) */
+.hud-frame {
+  --hud-reticle-offset: 8px;
+}
+
 /* Container - the outer frame boundary */
 .hud-frame {
   position: relative;
@@ -70,23 +75,23 @@
 }
 
 .hud-frame__reticle--tl {
-  top: 8px;
-  left: 8px;
+  top: var(--hud-reticle-offset);
+  left: var(--hud-reticle-offset);
 }
 
 .hud-frame__reticle--tr {
-  top: 8px;
-  right: 8px;
+  top: var(--hud-reticle-offset);
+  right: var(--hud-reticle-offset);
 }
 
 .hud-frame__reticle--bl {
-  bottom: 8px;
-  left: 8px;
+  bottom: var(--hud-reticle-offset);
+  left: var(--hud-reticle-offset);
 }
 
 .hud-frame__reticle--br {
-  bottom: 8px;
-  right: 8px;
+  bottom: var(--hud-reticle-offset);
+  right: var(--hud-reticle-offset);
 }
 
 /* Edge glow layer */

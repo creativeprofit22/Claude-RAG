@@ -48,6 +48,21 @@ const HEALTH_STATUS_ICONS = {
 /** Skeleton loader count */
 const SKELETON_COUNT = 4;
 
+/** Conditional panel content - handles loading/empty/content states */
+interface PanelContentProps {
+  isLoading: boolean;
+  isEmpty: boolean;
+  skeleton: React.ReactNode;
+  emptyMessage: string;
+  children: React.ReactNode;
+}
+
+function PanelContent({ isLoading, isEmpty, skeleton, emptyMessage, children }: PanelContentProps) {
+  if (isLoading) return <>{skeleton}</>;
+  if (isEmpty) return <div className="rag-admin-chart-empty">{emptyMessage}</div>;
+  return <>{children}</>;
+}
+
 /** Convert health data to ServiceEntry format with defensive null checks */
 function buildServiceEntries(health: AdminHealth | null): ServiceEntry[] {
   // Defensive null checks for nested properties - API may return partial data
@@ -320,22 +335,23 @@ export function AdminDashboard({
           className="rag-admin-panel"
         >
           <div className="rag-admin-chart">
-            {isLoading ? (
-              <div className="rag-admin-chart-skeleton">
-                {Array.from({ length: SKELETON_COUNT }, (_, i) => (
-                  <div key={i} className="rag-admin-chart-skeleton-bar" />
-                ))}
-              </div>
-            ) : (stats?.documents?.byCategory?.length ?? 0) === 0 ? (
-              <div className="rag-admin-chart-empty">
-                No categories with documents
-              </div>
-            ) : (
+            <PanelContent
+              isLoading={isLoading}
+              isEmpty={(stats?.documents?.byCategory?.length ?? 0) === 0}
+              skeleton={
+                <div className="rag-admin-chart-skeleton">
+                  {Array.from({ length: SKELETON_COUNT }, (_, i) => (
+                    <div key={i} className="rag-admin-chart-skeleton-bar" />
+                  ))}
+                </div>
+              }
+              emptyMessage="No categories with documents"
+            >
               <SkinAwareChart
                 option={categoryChartOption}
                 style={{ height: 220 }}
               />
-            )}
+            </PanelContent>
           </div>
         </HudFrame>
 
@@ -363,18 +379,19 @@ export function AdminDashboard({
           className="rag-admin-panel rag-admin-panel-wide"
         >
           <div className="rag-admin-recent-list">
-            {isLoading ? (
-              <div className="rag-admin-recent-skeleton">
-                {Array.from({ length: 3 }, (_, i) => (
-                  <div key={i} className="rag-admin-recent-skeleton-row" />
-                ))}
-              </div>
-            ) : stats?.recentUploads.length === 0 ? (
-              <div className="rag-admin-recent-empty">
-                No documents uploaded yet
-              </div>
-            ) : (
-              stats?.recentUploads.map((doc) => (
+            <PanelContent
+              isLoading={isLoading}
+              isEmpty={stats?.recentUploads.length === 0}
+              skeleton={
+                <div className="rag-admin-recent-skeleton">
+                  {Array.from({ length: 3 }, (_, i) => (
+                    <div key={i} className="rag-admin-recent-skeleton-row" />
+                  ))}
+                </div>
+              }
+              emptyMessage="No documents uploaded yet"
+            >
+              {stats?.recentUploads.map((doc) => (
                 <div key={doc.documentId} className="rag-admin-recent-item">
                   <FileText size={16} className="rag-admin-recent-icon" />
                   <div className="rag-admin-recent-info">
@@ -387,8 +404,8 @@ export function AdminDashboard({
                     {formatRelativeTime(doc.timestamp)}
                   </span>
                 </div>
-              ))
-            )}
+              ))}
+            </PanelContent>
           </div>
         </HudFrame>
       </div>

@@ -37,6 +37,9 @@ export interface HudFrameProps {
 /** Reticle symbol - crosshair/targeting icon */
 const RETICLE_SYMBOL = '\u2295'; // ⊕ circled plus
 
+/** Corner positions for reticle decorations */
+const RETICLE_POSITIONS = ['tl', 'tr', 'bl', 'br'] as const;
+
 export const HudFrame = memo(function HudFrame({
   children,
   title,
@@ -69,7 +72,7 @@ export const HudFrame = memo(function HudFrame({
     >
       {/* Main frame body */}
       <div className="hud-frame__body">
-        {/* Edge glow effect layer */}
+        {/* Edge glow effect layer - hidden in cyberpunk (uses filter), but other skins may use it */}
         <div className="hud-frame__glow" aria-hidden="true" />
 
         {/* Header bar (optional) */}
@@ -85,22 +88,15 @@ export const HudFrame = memo(function HudFrame({
         )}
 
         {/* Corner reticle decorations */}
-        {!hideReticles && (
-          <>
-            <span className="hud-frame__reticle hud-frame__reticle--tl" aria-hidden="true">
-              {RETICLE_SYMBOL}
-            </span>
-            <span className="hud-frame__reticle hud-frame__reticle--tr" aria-hidden="true">
-              {RETICLE_SYMBOL}
-            </span>
-            <span className="hud-frame__reticle hud-frame__reticle--bl" aria-hidden="true">
-              {RETICLE_SYMBOL}
-            </span>
-            <span className="hud-frame__reticle hud-frame__reticle--br" aria-hidden="true">
-              {RETICLE_SYMBOL}
-            </span>
-          </>
-        )}
+        {!hideReticles && RETICLE_POSITIONS.map((pos) => (
+          <span
+            key={pos}
+            className={`hud-frame__reticle hud-frame__reticle--${pos}`}
+            aria-hidden="true"
+          >
+            {RETICLE_SYMBOL}
+          </span>
+        ))}
 
         {/* Content safe zone */}
         <div className="hud-frame__content">
