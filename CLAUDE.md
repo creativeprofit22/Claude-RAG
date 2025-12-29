@@ -14,22 +14,23 @@ Query → Gemini Embeddings → LanceDB → Chunks → Claude Code CLI → Respo
 
 ## Pipeline State
 Phase: refactor-hunt
-Feature: StatChip Cyberpunk Artifact
-Files-Validated: src/react/artifacts/stat-chip/*, src/react/components/admin/AdminDashboard.tsx
-Validation-Report: reports/validation-stat-chip-cyberpunk.md
+Feature: Terminal Readout Cyberpunk Artifact
+Files-Validated: TerminalReadout.tsx, terminal-readout.base.css, terminal-readout.cyberpunk.css, AdminDashboard.tsx
+Validation-Report: reports/validation-terminal-readout-cyberpunk.md
 
-## Last Session (2025-12-28)
-**StatChip Cyberpunk Artifact - Complete:**
-- Built holographic data chip component for Admin Dashboard
-- Fixed: Loading class, vendor prefixes, text overflow, copy-paste duplication
-- Fixed: Glitch effect too subtle - increased frequency (3 bursts/3s cycle) + added skewX distortion
-- Added: will-change performance hints, aria accessibility
-- Demo CSS loading: Added ragchat-bundle.css to demo/index.html
+## Last Session (2025-12-29)
+**Terminal Readout Validation - Clean:**
+- Tests: skipped (none exist)
+- API: pass (all endpoints working)
+- UI: pass (accessibility, states, CSS coverage)
+- Wiring: pass (data flow verified)
+- Bottlenecks: 3/4 fixed (memoization, keys, overflow)
+- Bugs: 1/5 fixed (null safety - medium priority)
 
 ## Completed
+- StatChip Cyberpunk Artifact (2025-12-28) - Built, validated, refactor-hunted (clean)
 - Phase 3: Modals + Upload Motion System (2025-12-28)
 - Final E2E Validation (2025-12-29)
-- StatChip Cyberpunk Build + Validation (2025-12-28)
 
 ## Key Files
 - `src/server.ts` - Bun HTTP server

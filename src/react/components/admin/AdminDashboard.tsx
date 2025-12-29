@@ -15,7 +15,6 @@ import {
   AlertCircle,
   Clock,
   Layers,
-  Cpu,
   Activity,
   Settings,
 } from 'lucide-react';
@@ -23,6 +22,7 @@ import { SettingsModal } from '../settings/SettingsModal.js';
 import { SkinAwareChart } from '../../charts/SkinAwareChart.js';
 import { ErrorBanner } from '../shared/ErrorBanner.js';
 import { StatChip } from '../../artifacts/stat-chip/StatChip.js';
+import { TerminalReadout, type ServiceEntry, type ServiceStatus } from '../../artifacts/terminal-readout/TerminalReadout.js';
 import type { AdminStats, AdminHealth } from '../../types.js';
 import { formatBytes, formatRelativeTime } from '../../utils/formatters.js';
 
@@ -47,29 +47,49 @@ const HEALTH_STATUS_ICONS = {
 /** Skeleton loader count */
 const SKELETON_COUNT = 4;
 
-/** Reusable service status item component */
-interface ServiceStatusItemProps {
-  icon: React.ReactNode;
-  label: string;
-  isUp: boolean;
-  statusText: string;
-  meta?: string;
-}
+/** Convert health data to ServiceEntry format with defensive null checks */
+function buildServiceEntries(health: AdminHealth | null): ServiceEntry[] {
+  // Defensive null checks for nested properties - API may return partial data
+  if (!health?.services?.database || !health?.services?.embeddings || !health?.services?.responders) {
+    return [];
+  }
 
-function ServiceStatusItem({ icon, label, isUp, statusText, meta }: ServiceStatusItemProps) {
-  return (
-    <div className="rag-admin-service-item">
-      <div className="rag-admin-service-header">
-        {icon}
-        <span>{label}</span>
-        <span className={`rag-admin-service-status rag-admin-service-${isUp ? 'up' : 'down'}`}>
-          {isUp ? <CheckCircle size={14} /> : <XCircle size={14} />}
-          {statusText}
-        </span>
-      </div>
-      {meta && <div className="rag-admin-service-meta">{meta}</div>}
-    </div>
-  );
+  const getStatus = (isUp: boolean, isDegraded?: boolean): ServiceStatus => {
+    if (isDegraded) return 'degraded';
+    return isUp ? 'up' : 'down';
+  };
+
+  const db = health.services.database;
+  const embed = health.services.embeddings;
+  const claude = health.services.responders.claude;
+  const gemini = health.services.responders.gemini;
+
+  return [
+    {
+      icon: <Database size={16} />,
+      label: 'DATABASE',
+      status: getStatus(db.status === 'up'),
+      statusText: db.status === 'up' ? `${db.documentCount} docs` : db.status,
+    },
+    {
+      icon: <Layers size={16} />,
+      label: 'EMBEDDINGS',
+      status: getStatus(embed.status === 'up'),
+      statusText: embed.provider || 'N/A',
+    },
+    {
+      icon: <Activity size={16} />,
+      label: 'CLAUDE CLI',
+      status: getStatus(claude?.available ?? false),
+      statusText: claude?.available ? 'OK' : 'N/A',
+    },
+    {
+      icon: <Activity size={16} />,
+      label: 'GEMINI API',
+      status: getStatus(gemini?.available ?? false),
+      statusText: gemini?.available ? 'OK' : 'N/A',
+    },
+  ];
 }
 
 export function AdminDashboard({
@@ -88,6 +108,9 @@ export function AdminDashboard({
   // Stabilize headers to prevent infinite rerenders from inline objects
   const headersJson = JSON.stringify(headers);
   const stableHeaders = React.useMemo(() => headers, [headersJson]);
+
+  // Memoize service entries to prevent unnecessary TerminalReadout re-renders
+  const serviceEntries = React.useMemo(() => buildServiceEntries(health), [health]);
 
   const fetchData = useCallback(async (signal?: AbortSignal) => {
     try {
@@ -314,42 +337,14 @@ export function AdminDashboard({
           </div>
         </div>
 
-        {/* Service Health */}
+        {/* Service Health - Cyberpunk: Busted Terminal Readout */}
         <div className="rag-admin-panel">
-          <h3 className="rag-admin-panel-title">
-            <Cpu size={16} />
-            Service Health
-          </h3>
-          <div className="rag-admin-services">
-            <ServiceStatusItem
-              icon={<Database size={16} />}
-              label="Database (LanceDB)"
-              isUp={health?.services.database.status === 'up'}
-              statusText={health?.services.database.status || 'unknown'}
-              meta={health?.services.database.status === 'up'
-                ? `${health.services.database.documentCount} docs, ${health.services.database.chunkCount.toLocaleString()} chunks`
-                : undefined}
-            />
-            <ServiceStatusItem
-              icon={<Layers size={16} />}
-              label="Embeddings"
-              isUp={health?.services.embeddings.status === 'up'}
-              statusText={health?.services.embeddings.status || 'unknown'}
-              meta={health?.services.embeddings.provider || 'Not configured'}
-            />
-            <ServiceStatusItem
-              icon={<Activity size={16} />}
-              label="Claude Code CLI"
-              isUp={health?.services.responders.claude.available ?? false}
-              statusText={health?.services.responders.claude.available ? 'available' : 'unavailable'}
-            />
-            <ServiceStatusItem
-              icon={<Activity size={16} />}
-              label="Gemini API"
-              isUp={health?.services.responders.gemini.available ?? false}
-              statusText={health?.services.responders.gemini.available ? 'configured' : 'not configured'}
-            />
-          </div>
+          <TerminalReadout
+            title="SYSTEM_HEALTH.exe"
+            services={serviceEntries}
+            burnInText="SYSTEM INITIALIZED // SECTOR 7G"
+            isLoading={isLoading}
+          />
         </div>
 
         {/* Recent Uploads */}

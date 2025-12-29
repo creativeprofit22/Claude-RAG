@@ -1,0 +1,331 @@
+/**
+ * TerminalReadout Cyberpunk Skin
+ * Busted CRT terminal with phosphor decay aesthetic
+ *
+ * Features:
+ * - CRT screen curve (asymmetric border-radius for bulge)
+ * - Phosphor glow text-shadow (green/amber/red per status)
+ * - Burn-in ghost text at low opacity
+ * - Flicker animation per line (staggered)
+ * - Dense scanline overlay
+ * - Screen glare/reflection
+ */
+
+/* ============================================
+   CYBERPUNK TOKENS
+   ============================================ */
+[data-skin="cyberpunk"] {
+  --terminal-phosphor-green: #00ff66;
+  --terminal-phosphor-amber: #ffaa00;
+  --terminal-phosphor-red: #ff3366;
+  --terminal-phosphor-dim: rgba(0, 255, 102, 0.3);
+  --terminal-bg-dark: rgba(5, 10, 8, 0.98);
+  --terminal-bg-screen: rgba(8, 20, 15, 0.95);
+  --terminal-bezel: #1a1a1a;
+  --terminal-bezel-inner: #0d0d0d;
+  --terminal-scanline-opacity: 0.08;
+}
+
+/* ============================================
+   CRT FRAME - PHYSICAL MONITOR HOUSING
+   ============================================ */
+[data-skin="cyberpunk"] .terminal-readout__frame {
+  /* Outer bezel */
+  background: linear-gradient(
+    145deg,
+    var(--terminal-bezel) 0%,
+    var(--terminal-bezel-inner) 100%
+  );
+  border-radius: 8px;
+  padding: 3px;
+  box-shadow:
+    /* Outer shadow */
+    0 8px 32px rgba(0, 0, 0, 0.6),
+    0 2px 8px rgba(0, 0, 0, 0.4),
+    /* Subtle edge highlight */
+    inset 0 1px 0 rgba(255, 255, 255, 0.05);
+}
+
+/* ============================================
+   TITLE BAR - TERMINAL HEADER
+   ============================================ */
+[data-skin="cyberpunk"] .terminal-readout__titlebar {
+  background: linear-gradient(
+    90deg,
+    rgba(0, 255, 102, 0.15) 0%,
+    rgba(0, 255, 102, 0.05) 100%
+  );
+  border-bottom: 1px solid rgba(0, 255, 102, 0.2);
+  color: var(--terminal-phosphor-green);
+  text-shadow: 0 0 8px var(--terminal-phosphor-green);
+}
+
+[data-skin="cyberpunk"] .terminal-readout__title-icon {
+  opacity: 0.6;
+  animation: title-blink 2s step-end infinite;
+}
+
+@keyframes title-blink {
+  0%, 100% { opacity: 0.6; }
+  50% { opacity: 0.3; }
+}
+
+/* ============================================
+   CRT SCREEN - THE DISPLAY AREA
+   ============================================ */
+[data-skin="cyberpunk"] .terminal-readout__screen {
+  /* CRT screen curve - asymmetric for authentic bulge */
+  border-radius: 4px / 40px;
+
+  /* Dark phosphor background */
+  background: var(--terminal-bg-screen);
+
+  /* Inner shadow for recessed screen look */
+  box-shadow:
+    inset 0 0 60px rgba(0, 0, 0, 0.5),
+    inset 0 0 20px rgba(0, 255, 102, 0.03);
+
+  /* Very subtle screen glow */
+  border: 1px solid rgba(0, 255, 102, 0.1);
+}
+
+/* ============================================
+   SERVICE ENTRIES - PHOSPHOR TEXT
+   ============================================ */
+[data-skin="cyberpunk"] .terminal-readout__service {
+  /* Base phosphor glow */
+  color: var(--terminal-phosphor-green);
+  text-shadow: 0 0 6px var(--terminal-phosphor-green);
+
+  /* Staggered flicker animation */
+  animation: line-flicker 4s ease-in-out infinite;
+  animation-delay: var(--flicker-delay, 0s);
+}
+
+/* Flicker keyframes - subtle brightness variation per line */
+@keyframes line-flicker {
+  0%, 100% { opacity: 1; }
+  2% { opacity: 0.85; }
+  4% { opacity: 1; }
+  8% { opacity: 0.9; }
+  10% { opacity: 1; }
+  35% { opacity: 0.95; }
+  36% { opacity: 0.8; }
+  37% { opacity: 1; }
+  65% { opacity: 0.92; }
+  66% { opacity: 1; }
+  92% { opacity: 0.88; }
+  94% { opacity: 1; }
+}
+
+/* Service icon - phosphor glow */
+[data-skin="cyberpunk"] .terminal-readout__service-icon {
+  color: var(--terminal-phosphor-green);
+  filter: drop-shadow(0 0 4px var(--terminal-phosphor-green));
+}
+
+/* Service label */
+[data-skin="cyberpunk"] .terminal-readout__service-label {
+  font-family: 'Share Tech Mono', 'Courier New', monospace;
+}
+
+/* ============================================
+   STATUS BAR - POWER LEVEL INDICATOR
+   ============================================ */
+[data-skin="cyberpunk"] .terminal-readout__status-bar {
+  background: rgba(0, 255, 102, 0.1);
+  border: 1px solid rgba(0, 255, 102, 0.3);
+  border-radius: 1px;
+}
+
+[data-skin="cyberpunk"] .terminal-readout__status-fill {
+  border-radius: 0;
+}
+
+/* Status-specific fill colors */
+[data-skin="cyberpunk"] .terminal-readout__service--up .terminal-readout__status-fill {
+  background: linear-gradient(
+    90deg,
+    var(--terminal-phosphor-green) 0%,
+    rgba(0, 255, 102, 0.7) 100%
+  );
+  box-shadow: 0 0 8px var(--terminal-phosphor-green);
+}
+
+[data-skin="cyberpunk"] .terminal-readout__service--degraded .terminal-readout__status-fill {
+  background: linear-gradient(
+    90deg,
+    var(--terminal-phosphor-amber) 0%,
+    rgba(255, 170, 0, 0.7) 100%
+  );
+  box-shadow: 0 0 8px var(--terminal-phosphor-amber);
+}
+
+[data-skin="cyberpunk"] .terminal-readout__service--down .terminal-readout__status-fill {
+  /* Empty bar when down, but show error pulse */
+  background: transparent;
+}
+
+[data-skin="cyberpunk"] .terminal-readout__service--unknown .terminal-readout__status-fill {
+  background: linear-gradient(
+    90deg,
+    rgba(100, 100, 100, 0.5) 0%,
+    rgba(100, 100, 100, 0.3) 100%
+  );
+}
+
+/* ============================================
+   STATUS TEXT - COLOR BY STATE
+   ============================================ */
+[data-skin="cyberpunk"] .terminal-readout__service--up .terminal-readout__status-text {
+  color: var(--terminal-phosphor-green);
+  text-shadow: 0 0 8px var(--terminal-phosphor-green);
+}
+
+[data-skin="cyberpunk"] .terminal-readout__service--degraded .terminal-readout__status-text {
+  color: var(--terminal-phosphor-amber);
+  text-shadow: 0 0 8px var(--terminal-phosphor-amber);
+}
+
+[data-skin="cyberpunk"] .terminal-readout__service--degraded {
+  color: var(--terminal-phosphor-amber);
+  text-shadow: 0 0 6px var(--terminal-phosphor-amber);
+}
+
+[data-skin="cyberpunk"] .terminal-readout__service--degraded .terminal-readout__service-icon {
+  color: var(--terminal-phosphor-amber);
+  filter: drop-shadow(0 0 4px var(--terminal-phosphor-amber));
+}
+
+[data-skin="cyberpunk"] .terminal-readout__service--down .terminal-readout__status-text {
+  color: var(--terminal-phosphor-red);
+  text-shadow: 0 0 8px var(--terminal-phosphor-red);
+  /* Error glitch effect */
+  animation: error-glitch 0.5s step-end infinite;
+}
+
+[data-skin="cyberpunk"] .terminal-readout__service--down {
+  color: var(--terminal-phosphor-red);
+  text-shadow: 0 0 6px var(--terminal-phosphor-red);
+}
+
+[data-skin="cyberpunk"] .terminal-readout__service--down .terminal-readout__service-icon {
+  color: var(--terminal-phosphor-red);
+  filter: drop-shadow(0 0 4px var(--terminal-phosphor-red));
+}
+
+@keyframes error-glitch {
+  0%, 100% { transform: translateX(0); }
+  10% { transform: translateX(-1px); }
+  20% { transform: translateX(1px); }
+  30% { transform: translateX(0); }
+  70% { transform: translateX(1px); }
+  80% { transform: translateX(-1px); }
+  90% { transform: translateX(0); }
+}
+
+/* ============================================
+   BURN-IN GHOST TEXT
+   ============================================ */
+[data-skin="cyberpunk"] .terminal-readout__burnin {
+  color: var(--terminal-phosphor-dim);
+  opacity: 0.15;
+  text-shadow: 0 0 4px var(--terminal-phosphor-dim);
+  /* Burn-in never changes - static ghost of old text */
+}
+
+/* ============================================
+   SCANLINE OVERLAY - DENSER THAN CHIPS
+   ============================================ */
+[data-skin="cyberpunk"] .terminal-readout__scanlines {
+  background: repeating-linear-gradient(
+    0deg,
+    transparent 0px,
+    transparent 1px,
+    rgba(0, 0, 0, var(--terminal-scanline-opacity)) 1px,
+    rgba(0, 0, 0, var(--terminal-scanline-opacity)) 2px
+  );
+  animation: scanline-scroll 8s linear infinite;
+}
+
+@keyframes scanline-scroll {
+  0% { background-position: 0 0; }
+  100% { background-position: 0 50px; }
+}
+
+/* ============================================
+   SCREEN GLARE/REFLECTION
+   ============================================ */
+[data-skin="cyberpunk"] .terminal-readout__glare {
+  background: linear-gradient(
+    135deg,
+    rgba(255, 255, 255, 0.03) 0%,
+    transparent 40%,
+    transparent 60%,
+    rgba(255, 255, 255, 0.01) 100%
+  );
+}
+
+/* ============================================
+   BEZEL FOOTER
+   ============================================ */
+[data-skin="cyberpunk"] .terminal-readout__bezel {
+  background: linear-gradient(
+    180deg,
+    var(--terminal-bezel-inner) 0%,
+    var(--terminal-bezel) 100%
+  );
+  border-top: 1px solid rgba(255, 255, 255, 0.03);
+}
+
+[data-skin="cyberpunk"] .terminal-readout__bezel-label {
+  color: rgba(0, 255, 102, 0.3);
+  text-shadow: 0 0 4px rgba(0, 255, 102, 0.2);
+}
+
+/* ============================================
+   LOADING STATE - SCAN ANIMATION
+   ============================================ */
+[data-skin="cyberpunk"] .terminal-readout--loading .terminal-readout__service--skeleton {
+  animation: skeleton-scan 1.5s ease-in-out infinite;
+}
+
+@keyframes skeleton-scan {
+  0%, 100% { opacity: 0.3; }
+  50% { opacity: 0.6; }
+}
+
+[data-skin="cyberpunk"] .terminal-readout__empty {
+  color: var(--terminal-phosphor-dim);
+  text-shadow: 0 0 6px var(--terminal-phosphor-dim);
+}
+
+/* ============================================
+   HOVER EFFECTS
+   ============================================ */
+[data-skin="cyberpunk"] .terminal-readout:hover .terminal-readout__screen {
+  box-shadow:
+    inset 0 0 60px rgba(0, 0, 0, 0.5),
+    inset 0 0 30px rgba(0, 255, 102, 0.05);
+}
+
+/* ============================================
+   REDUCED MOTION
+   ============================================ */
+@media (prefers-reduced-motion: reduce) {
+  [data-skin="cyberpunk"] .terminal-readout__service {
+    animation: none !important;
+  }
+
+  [data-skin="cyberpunk"] .terminal-readout__scanlines {
+    animation: none !important;
+  }
+
+  [data-skin="cyberpunk"] .terminal-readout__title-icon {
+    animation: none !important;
+  }
+
+  [data-skin="cyberpunk"] .terminal-readout__service--down .terminal-readout__status-text {
+    animation: none !important;
+  }
+}

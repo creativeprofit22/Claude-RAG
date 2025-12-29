@@ -93443,6 +93443,101 @@ var RAGBundle = (() => {
     );
   }
 
+  // src/react/artifacts/terminal-readout/TerminalReadout.tsx
+  function getStatusBarFill(status) {
+    switch (status) {
+      case "up":
+        return 100;
+      case "degraded":
+        return 50;
+      case "down":
+        return 0;
+      default:
+        return 25;
+    }
+  }
+  function getStatusText(status, override) {
+    if (override) return override;
+    switch (status) {
+      case "up":
+        return "UP";
+      case "degraded":
+        return "SLOW";
+      case "down":
+        return "DOWN";
+      default:
+        return "???";
+    }
+  }
+  function TerminalReadout({
+    title = "SYSTEM_HEALTH.exe",
+    services,
+    burnInText = "SYSTEM INITIALIZED",
+    isLoading = false,
+    className = ""
+  }) {
+    return /* @__PURE__ */ jsx(
+      "article",
+      {
+        className: `terminal-readout ${isLoading ? "terminal-readout--loading" : ""} ${className}`,
+        "aria-label": "System Health Terminal",
+        "aria-busy": isLoading,
+        children: /* @__PURE__ */ jsxs("div", { className: "terminal-readout__frame", children: [
+          /* @__PURE__ */ jsxs("header", { className: "terminal-readout__titlebar", children: [
+            /* @__PURE__ */ jsx("span", { className: "terminal-readout__title-icon", "aria-hidden": "true", children: "\u2591\u2592" }),
+            /* @__PURE__ */ jsx("span", { className: "terminal-readout__title", children: title })
+          ] }),
+          /* @__PURE__ */ jsxs("div", { className: "terminal-readout__screen", children: [
+            /* @__PURE__ */ jsxs("div", { className: "terminal-readout__services", children: [
+              services.map((service, index) => /* @__PURE__ */ jsxs(
+                "div",
+                {
+                  className: `terminal-readout__service terminal-readout__service--${service.status}`,
+                  style: { "--flicker-delay": `${index * 0.15}s` },
+                  children: [
+                    /* @__PURE__ */ jsx("div", { className: "terminal-readout__service-icon", children: service.icon }),
+                    /* @__PURE__ */ jsx("span", { className: "terminal-readout__service-label", children: service.label }),
+                    /* @__PURE__ */ jsx(
+                      "div",
+                      {
+                        className: "terminal-readout__status-bar",
+                        role: "meter",
+                        "aria-valuenow": getStatusBarFill(service.status),
+                        "aria-valuemin": 0,
+                        "aria-valuemax": 100,
+                        "aria-label": `${service.label} health`,
+                        children: /* @__PURE__ */ jsx(
+                          "div",
+                          {
+                            className: "terminal-readout__status-fill",
+                            style: { "--fill-percent": `${getStatusBarFill(service.status)}%` }
+                          }
+                        )
+                      }
+                    ),
+                    /* @__PURE__ */ jsx("span", { className: "terminal-readout__status-text", children: getStatusText(service.status, service.statusText) })
+                  ]
+                },
+                index
+              )),
+              services.length === 0 && !isLoading && /* @__PURE__ */ jsx("div", { className: "terminal-readout__empty", children: "NO SERVICES DETECTED" }),
+              isLoading && services.length === 0 && /* @__PURE__ */ jsx(Fragment2, { children: Array.from({ length: 4 }, (_, i) => /* @__PURE__ */ jsxs("div", { className: "terminal-readout__service terminal-readout__service--skeleton", children: [
+                /* @__PURE__ */ jsx("div", { className: "terminal-readout__service-icon", children: "\u25A1" }),
+                /* @__PURE__ */ jsx("span", { className: "terminal-readout__service-label", children: "SCANNING..." }),
+                /* @__PURE__ */ jsx("div", { className: "terminal-readout__status-bar", children: /* @__PURE__ */ jsx("div", { className: "terminal-readout__status-fill" }) }),
+                /* @__PURE__ */ jsx("span", { className: "terminal-readout__status-text", children: "---" })
+              ] }, i)) })
+            ] }),
+            /* @__PURE__ */ jsx("div", { className: "terminal-readout__burnin", "aria-hidden": "true", children: burnInText }),
+            /* @__PURE__ */ jsx("div", { className: "terminal-readout__scanlines", "aria-hidden": "true" }),
+            /* @__PURE__ */ jsx("div", { className: "terminal-readout__glare", "aria-hidden": "true" })
+          ] }),
+          /* @__PURE__ */ jsx("footer", { className: "terminal-readout__bezel", children: /* @__PURE__ */ jsx("span", { className: "terminal-readout__bezel-label", children: "CRT_FRAME" }) })
+        ] })
+      }
+    );
+  }
+
   // src/react/utils/formatters.ts
   function formatRelativeTime(timestamp) {
     if (!timestamp || timestamp <= 0 || !Number.isFinite(timestamp)) {
@@ -93467,18 +93562,38 @@ var RAGBundle = (() => {
     unhealthy: XCircle
   };
   var SKELETON_COUNT = 4;
-  function ServiceStatusItem({ icon, label, isUp, statusText, meta }) {
-    return /* @__PURE__ */ jsxs("div", { className: "rag-admin-service-item", children: [
-      /* @__PURE__ */ jsxs("div", { className: "rag-admin-service-header", children: [
-        icon,
-        /* @__PURE__ */ jsx("span", { children: label }),
-        /* @__PURE__ */ jsxs("span", { className: `rag-admin-service-status rag-admin-service-${isUp ? "up" : "down"}`, children: [
-          isUp ? /* @__PURE__ */ jsx(CheckCircle, { size: 14 }) : /* @__PURE__ */ jsx(XCircle, { size: 14 }),
-          statusText
-        ] })
-      ] }),
-      meta && /* @__PURE__ */ jsx("div", { className: "rag-admin-service-meta", children: meta })
-    ] });
+  function buildServiceEntries(health) {
+    if (!health) return [];
+    const getStatus = (isUp, isDegraded) => {
+      if (isDegraded) return "degraded";
+      return isUp ? "up" : "down";
+    };
+    return [
+      {
+        icon: /* @__PURE__ */ jsx(Database, { size: 16 }),
+        label: "DATABASE",
+        status: getStatus(health.services.database.status === "up"),
+        statusText: health.services.database.status === "up" ? `${health.services.database.documentCount} docs` : health.services.database.status
+      },
+      {
+        icon: /* @__PURE__ */ jsx(Layers, { size: 16 }),
+        label: "EMBEDDINGS",
+        status: getStatus(health.services.embeddings.status === "up"),
+        statusText: health.services.embeddings.provider || "N/A"
+      },
+      {
+        icon: /* @__PURE__ */ jsx(Activity, { size: 16 }),
+        label: "CLAUDE CLI",
+        status: getStatus(health.services.responders.claude.available ?? false),
+        statusText: health.services.responders.claude.available ? "OK" : "N/A"
+      },
+      {
+        icon: /* @__PURE__ */ jsx(Activity, { size: 16 }),
+        label: "GEMINI API",
+        status: getStatus(health.services.responders.gemini.available ?? false),
+        statusText: health.services.responders.gemini.available ? "OK" : "N/A"
+      }
+    ];
   }
   function AdminDashboard({
     endpoint = "/api/rag",
@@ -93700,52 +93815,15 @@ var RAGBundle = (() => {
             }
           ) })
         ] }),
-        /* @__PURE__ */ jsxs("div", { className: "rag-admin-panel", children: [
-          /* @__PURE__ */ jsxs("h3", { className: "rag-admin-panel-title", children: [
-            /* @__PURE__ */ jsx(Cpu, { size: 16 }),
-            "Service Health"
-          ] }),
-          /* @__PURE__ */ jsxs("div", { className: "rag-admin-services", children: [
-            /* @__PURE__ */ jsx(
-              ServiceStatusItem,
-              {
-                icon: /* @__PURE__ */ jsx(Database, { size: 16 }),
-                label: "Database (LanceDB)",
-                isUp: health?.services.database.status === "up",
-                statusText: health?.services.database.status || "unknown",
-                meta: health?.services.database.status === "up" ? `${health.services.database.documentCount} docs, ${health.services.database.chunkCount.toLocaleString()} chunks` : void 0
-              }
-            ),
-            /* @__PURE__ */ jsx(
-              ServiceStatusItem,
-              {
-                icon: /* @__PURE__ */ jsx(Layers, { size: 16 }),
-                label: "Embeddings",
-                isUp: health?.services.embeddings.status === "up",
-                statusText: health?.services.embeddings.status || "unknown",
-                meta: health?.services.embeddings.provider || "Not configured"
-              }
-            ),
-            /* @__PURE__ */ jsx(
-              ServiceStatusItem,
-              {
-                icon: /* @__PURE__ */ jsx(Activity, { size: 16 }),
-                label: "Claude Code CLI",
-                isUp: health?.services.responders.claude.available ?? false,
-                statusText: health?.services.responders.claude.available ? "available" : "unavailable"
-              }
-            ),
-            /* @__PURE__ */ jsx(
-              ServiceStatusItem,
-              {
-                icon: /* @__PURE__ */ jsx(Activity, { size: 16 }),
-                label: "Gemini API",
-                isUp: health?.services.responders.gemini.available ?? false,
-                statusText: health?.services.responders.gemini.available ? "configured" : "not configured"
-              }
-            )
-          ] })
-        ] }),
+        /* @__PURE__ */ jsx("div", { className: "rag-admin-panel", children: /* @__PURE__ */ jsx(
+          TerminalReadout,
+          {
+            title: "SYSTEM_HEALTH.exe",
+            services: buildServiceEntries(health),
+            burnInText: "SYSTEM INITIALIZED // SECTOR 7G",
+            isLoading
+          }
+        ) }),
         /* @__PURE__ */ jsxs("div", { className: "rag-admin-panel rag-admin-panel-wide", children: [
           /* @__PURE__ */ jsxs("h3", { className: "rag-admin-panel-title", children: [
             /* @__PURE__ */ jsx(Clock, { size: 16 }),

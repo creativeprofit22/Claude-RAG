@@ -1,0 +1,204 @@
+/**
+ * TerminalReadout Base Styles
+ * Structural CSS shared across all skins
+ * Skin-specific effects are in separate files
+ */
+
+/* Container */
+.terminal-readout {
+  position: relative;
+  width: 100%;
+}
+
+/* CRT Frame - the physical monitor housing */
+.terminal-readout__frame {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+/* Title bar */
+.terminal-readout__titlebar {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 0.75rem;
+  font-family: monospace;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.terminal-readout__title-icon {
+  font-size: 0.625rem;
+}
+
+.terminal-readout__title {
+  flex: 1;
+}
+
+/* Screen area - where content displays */
+.terminal-readout__screen {
+  position: relative;
+  padding: 1rem;
+  min-height: 140px;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Service entries container */
+.terminal-readout__services {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  position: relative;
+  z-index: 2;
+}
+
+/* Individual service entry */
+.terminal-readout__service {
+  display: grid;
+  grid-template-columns: 24px 1fr 100px auto;
+  gap: 0.75rem;
+  align-items: center;
+  font-family: monospace;
+  font-size: 0.8125rem;
+}
+
+/* Service icon */
+.terminal-readout__service-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+}
+
+.terminal-readout__service-icon svg {
+  width: 16px;
+  height: 16px;
+}
+
+/* Service label */
+.terminal-readout__service-label {
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Status bar container */
+.terminal-readout__status-bar {
+  position: relative;
+  height: 12px;
+  overflow: hidden;
+}
+
+/* Status bar fill */
+.terminal-readout__status-fill {
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 100%;
+  width: var(--fill-percent, 0%);
+  transition: width 0.3s ease;
+}
+
+/* Status text */
+.terminal-readout__status-text {
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  font-size: 0.75rem;
+  min-width: 40px;
+  max-width: 80px;
+  text-align: right;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Empty state */
+.terminal-readout__empty {
+  text-align: center;
+  padding: 2rem;
+  font-family: monospace;
+  opacity: 0.5;
+}
+
+/* Burn-in ghost text */
+.terminal-readout__burnin {
+  position: absolute;
+  bottom: 0.75rem;
+  left: 1rem;
+  right: 1rem;
+  font-family: monospace;
+  font-size: 0.625rem;
+  text-transform: uppercase;
+  letter-spacing: 0.2em;
+  pointer-events: none;
+  z-index: 1;
+}
+
+/* Scanline overlay */
+.terminal-readout__scanlines {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 10;
+}
+
+/* Screen glare/reflection */
+.terminal-readout__glare {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 11;
+}
+
+/* Bezel footer */
+.terminal-readout__bezel {
+  display: flex;
+  justify-content: center;
+  padding: 0.375rem;
+}
+
+.terminal-readout__bezel-label {
+  font-family: monospace;
+  font-size: 0.5rem;
+  text-transform: uppercase;
+  letter-spacing: 0.15em;
+  opacity: 0.5;
+}
+
+/* Reduced motion - disable animations */
+@media (prefers-reduced-motion: reduce) {
+  .terminal-readout__service {
+    animation: none !important;
+  }
+
+  .terminal-readout__scanlines {
+    animation: none !important;
+  }
+
+  .terminal-readout__status-fill {
+    transition: none !important;
+  }
+}
+
+/* Responsive: Stack on narrow screens */
+@media (max-width: 400px) {
+  .terminal-readout__service {
+    grid-template-columns: 20px 1fr 60px auto;
+    gap: 0.5rem;
+    font-size: 0.75rem;
+  }
+
+  .terminal-readout__status-bar {
+    height: 10px;
+  }
+}
