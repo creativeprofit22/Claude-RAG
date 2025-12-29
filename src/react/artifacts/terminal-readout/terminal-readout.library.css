@@ -1,0 +1,624 @@
+/**
+ * TerminalReadout Library Skin - SKEUOMORPHIC Premium Collection
+ * A museum display vitrine with glass case
+ *
+ * Aesthetic: Natural history museum, Victorian scientific instruments
+ * Think: Real walnut wood grain, polished brass fittings, glass dome
+ *
+ * SKEUOMORPHIC FEATURES:
+ * - Visible walnut wood grain texture
+ * - 3D brass bezels with proper highlight/shadow
+ * - Glass display case effect with reflection
+ * - Specimen cards that look like real paper
+ * - Thermometer-style status bars
+ */
+
+@import '../../skins/library-base.css';
+
+/* ============================================
+   PREMIUM TOKENS
+   ============================================ */
+[data-skin="library"] {
+  /* Deep walnut - using shared palette */
+  --terminal-walnut: var(--lib-wood-walnut);
+  --terminal-walnut-light: var(--lib-wood-walnut-light);
+  --terminal-walnut-dark: var(--lib-wood-walnut-dark);
+
+  /* Velvet lining - deep green */
+  --terminal-velvet: #162420;
+  --terminal-velvet-highlight: #1E322B;
+
+  /* Specimen cream - actual cream for labels */
+  --terminal-cream: #F5F1E8;
+  --terminal-cream-aged: #EDE7DA;
+  --terminal-cream-shadow: #D8D2C6;
+
+  /* Brass hardware - using shared gold palette */
+  --terminal-brass: var(--lib-gold);
+  --terminal-brass-light: var(--lib-gold-highlight);
+  --terminal-brass-deep: var(--lib-gold-deep);
+  --terminal-brass-shadow: var(--lib-gold-shadow);
+  --terminal-brass-shimmer: var(--lib-gold-shimmer-v);
+
+  /* Museum label ink - dark ink for cream labels */
+  --terminal-ink: #1A1612;
+  --terminal-ink-faded: #5C5248;
+
+  /* Status - vintage scientific (mercury thermometer colors) */
+  --terminal-good: #2D4A3A;
+  --terminal-good-light: #3D6B4F;
+  --terminal-warn: #8B6914;
+  --terminal-warn-light: #B8860B;
+  --terminal-bad: #5C2A2A;
+  --terminal-bad-light: #8B4A4A;
+
+  /* Animation - alias to shared */
+  --terminal-duration: var(--lib-duration);
+  --terminal-ease: var(--lib-ease);
+}
+
+/* ============================================
+   FRAME - DRAMATIC WALNUT VITRINE CABINET
+   Thick wooden frame with brass fittings
+   ============================================ */
+[data-skin="library"] .terminal-readout__frame {
+  /*
+   * DRAMATIC WALNUT WOOD CABINET
+   * High contrast gradient for obvious 3D depth
+   */
+  background: linear-gradient(
+    180deg,
+    #6B5040 0%,           /* Light walnut - top edge catching light */
+    #5C4332 10%,
+    #4A3525 30%,
+    #3D2B1F 50%,          /* Mid walnut */
+    #2E2018 75%,
+    #241810 100%          /* Dark walnut - bottom in shadow */
+  );
+  border-radius: 6px;
+  padding: 12px;
+  position: relative;
+
+  /*
+   * ANTIQUE WALNUT CABINET FRAME
+   * Warm wood with aged brass corner fittings
+   */
+  box-shadow:
+    /* Wood bevel - warm highlights */
+    inset 0 2px 0 0 rgba(140, 100, 70, 0.3),
+    inset 2px 0 0 0 rgba(140, 100, 70, 0.2),
+    inset 0 -2px 0 0 rgba(0, 0, 0, 0.5),
+    inset -2px 0 0 0 rgba(0, 0, 0, 0.4),
+
+    /* Aged brass corner fittings - muted olive-gold */
+    /* Top-left */
+    inset 7px 7px 0 0 #A89040,
+    inset 10px 10px 0 0 #8B7028,
+    /* Top-right */
+    inset -7px 7px 0 0 #8B7028,
+    inset -10px 10px 0 0 #7A6020,
+    /* Bottom-left */
+    inset 7px -7px 0 0 #7A6020,
+    inset 10px -10px 0 0 #685018,
+    /* Bottom-right */
+    inset -7px -7px 0 0 #685018,
+    inset -10px -10px 0 0 #5A4810,
+
+    /* Soft shadows */
+    3px 5px 10px rgba(30, 20, 15, 0.35),
+    6px 10px 20px rgba(25, 15, 10, 0.3);
+
+  border: 2px solid;
+  border-color: rgba(180, 140, 110, 0.3) rgba(0, 0, 0, 0.4) rgba(0, 0, 0, 0.5) rgba(140, 100, 70, 0.2);
+  transition: box-shadow var(--terminal-duration) var(--terminal-ease);
+}
+
+/* VISIBLE WOOD GRAIN OVERLAY */
+[data-skin="library"] .terminal-readout__frame::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  z-index: 1;
+
+  /* DRAMATIC visible wood grain */
+  background:
+    /* Primary grain lines - BOLD */
+    repeating-linear-gradient(
+      0deg,
+      transparent 0px,
+      transparent 4px,
+      rgba(15, 10, 6, 0.4) 4px,
+      rgba(15, 10, 6, 0.4) 5.5px,
+      transparent 5.5px,
+      transparent 12px,
+      rgba(25, 16, 10, 0.3) 12px,
+      rgba(25, 16, 10, 0.3) 13.5px
+    ),
+    /* Secondary grain */
+    repeating-linear-gradient(
+      2deg,
+      transparent 0px,
+      transparent 20px,
+      rgba(50, 35, 22, 0.2) 20px,
+      rgba(50, 35, 22, 0.2) 23px,
+      transparent 23px,
+      transparent 35px
+    ),
+    /* Wood knots */
+    radial-gradient(ellipse 20px 40px at 20% 30%, rgba(20, 12, 8, 0.3) 0%, transparent 60%),
+    radial-gradient(ellipse 30px 15px at 80% 70%, rgba(20, 12, 8, 0.25) 0%, transparent 55%);
+}
+
+[data-skin="library"] .terminal-readout:hover .terminal-readout__frame {
+  box-shadow:
+    /* Wood bevel - slightly warmer */
+    inset 0 3px 0 0 rgba(150, 110, 80, 0.35),
+    inset 3px 0 0 0 rgba(150, 110, 80, 0.25),
+    inset 0 -2px 0 0 rgba(0, 0, 0, 0.45),
+    inset -2px 0 0 0 rgba(0, 0, 0, 0.35),
+
+    /* Aged brass corners - slightly warmer on hover */
+    inset 7px 7px 0 0 #B8A050,
+    inset 10px 10px 0 0 #9A8030,
+    inset -7px 7px 0 0 #9A8030,
+    inset -10px 10px 0 0 #8B7028,
+    inset 7px -7px 0 0 #8B7028,
+    inset 10px -10px 0 0 #7A6020,
+    inset -7px -7px 0 0 #7A6020,
+    inset -10px -10px 0 0 #685018,
+
+    /* Soft warm shadows */
+    4px 6px 12px rgba(30, 20, 15, 0.4),
+    8px 12px 24px rgba(25, 15, 10, 0.35);
+}
+
+/* ============================================
+   TITLE BAR - AGED BRASS MUSEUM PLAQUE
+   Tarnished, warm brass with patina
+   ============================================ */
+[data-skin="library"] .terminal-readout__titlebar {
+  /*
+   * AGED BRASS PLAQUE
+   * Muted warm tones, not bright/neon
+   */
+  background: linear-gradient(
+    180deg,
+    #B8A050 0%,
+    #A89040 12%,
+    #987828 35%,
+    #8B7028 55%,
+    #7A6020 75%,
+    #685018 90%,
+    #4A3A10 100%
+  );
+  border: none;
+  padding: 0.5rem 1.25rem;
+  margin: 0;
+  border-radius: 3px 3px 0 0;
+  position: relative;
+  z-index: 5;
+
+  /* Subtle aged bevel */
+  border-top: 2px solid #C8B060;
+  border-left: 2px solid #B8A050;
+  border-right: 2px solid #4A3A10;
+  border-bottom: 2px solid #3A2A08;
+
+  box-shadow:
+    inset 1px 1px 0 0 rgba(200, 180, 100, 0.2),
+    inset -1px -1px 0 0 rgba(0, 0, 0, 0.15),
+    2px 3px 6px rgba(0, 0, 0, 0.3),
+    3px 5px 10px rgba(30, 20, 10, 0.25);
+
+  transition: box-shadow var(--terminal-duration) var(--terminal-ease);
+}
+
+[data-skin="library"] .terminal-readout:hover .terminal-readout__titlebar {
+  box-shadow:
+    inset 2px 2px 0 0 rgba(200, 180, 100, 0.25),
+    inset -1px -1px 0 0 rgba(0, 0, 0, 0.12),
+    3px 4px 8px rgba(0, 0, 0, 0.35),
+    4px 6px 12px rgba(30, 20, 10, 0.3);
+}
+
+[data-skin="library"] .terminal-readout__title {
+  font-family: 'Cormorant Garamond', 'EB Garamond', serif;
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  /* SKEUOMORPHIC: Dark text for engraved effect */
+  color: #2A1F15;
+  /* Engraved text - stamped INTO the brass */
+  text-shadow: var(--lib-text-engraved);
+  /* Hide original text, show library title */
+  font-size: 0;
+}
+
+[data-skin="library"] .terminal-readout__title::after {
+  content: 'Service Ledger';
+  font-size: 0.7rem;
+}
+
+[data-skin="library"] .terminal-readout__title-icon {
+  /* Hide cyberpunk block characters */
+  display: none;
+}
+
+/* ============================================
+   SCREEN - SKEUOMORPHIC GLASS DISPLAY CASE
+   Velvet interior with glass dome cover
+   ============================================ */
+[data-skin="library"] .terminal-readout__screen {
+  /* SKEUOMORPHIC: Deep green velvet interior */
+  background:
+    /* Velvet nap texture */
+    var(--lib-texture-velvet),
+    /* Subtle leather undertone for depth */
+    var(--lib-texture-leather),
+    /* Base velvet gradient */
+    linear-gradient(
+      180deg,
+      var(--terminal-velvet-highlight) 0%,
+      var(--terminal-velvet) 60%,
+      #101815 100%
+    );
+  background-blend-mode: soft-light, overlay, normal;
+  border-radius: 0;
+  margin: 0;
+  padding: 0.625rem;
+  position: relative;
+
+  /* SKEUOMORPHIC: Inset display case cavity */
+  box-shadow:
+    /* Top shadow - deep recess */
+    inset 0 4px 10px rgba(0, 0, 0, 0.5),
+    /* Left shadow */
+    inset 4px 0 8px rgba(0, 0, 0, 0.35),
+    /* Bottom subtle highlight */
+    inset 0 -2px 6px rgba(255, 255, 255, 0.02),
+    /* Right subtle highlight */
+    inset -2px 0 4px rgba(255, 255, 255, 0.015),
+    /* Brass inner edge */
+    inset 0 0 0 1px rgba(139, 105, 20, 0.3);
+}
+
+/* GLASS DOME EFFECT - overlay on screen */
+[data-skin="library"] .terminal-readout__screen::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  /* Glass dome reflection */
+  background: var(--lib-glass-dome);
+  pointer-events: none;
+  /* Glass edge highlight */
+  box-shadow: var(--lib-glass-edge);
+  z-index: 10;
+}
+
+[data-skin="library"] .terminal-readout:hover .terminal-readout__screen {
+  box-shadow:
+    inset 0 4px 12px rgba(0, 0, 0, 0.55),
+    inset 4px 0 8px rgba(0, 0, 0, 0.4),
+    inset 0 -2px 6px rgba(255, 255, 255, 0.025),
+    inset -2px 0 4px rgba(255, 255, 255, 0.02),
+    inset 0 0 0 1px rgba(201, 162, 39, 0.15);
+}
+
+/* ============================================
+   SERVICE ENTRIES - SKEUOMORPHIC SPECIMEN CARDS
+   Paper cards with typed labels and pin holes
+   ============================================ */
+[data-skin="library"] .terminal-readout__service {
+  /* SKEUOMORPHIC: Aged paper card */
+  background:
+    /* Paper fiber texture */
+    url("data:image/svg+xml,%3Csvg viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='paper'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23paper)' opacity='0.03'/%3E%3C/svg%3E"),
+    /* Cream paper gradient with subtle aging */
+    linear-gradient(
+      180deg,
+      var(--terminal-cream) 0%,
+      var(--terminal-cream-aged) 100%
+    );
+  background-blend-mode: multiply, normal;
+  border-radius: 2px;
+  margin: 0.4rem;
+  padding: 0.625rem 0.875rem;
+  animation: none;
+  position: relative;
+
+  /* SKEUOMORPHIC: Paper card lifted off velvet */
+  box-shadow:
+    /* Subtle inner top shadow (paper curl) */
+    inset 0 1px 0 0 rgba(255, 255, 255, 0.8),
+    /* Paper edge shadow */
+    0 1px 1px rgba(0, 0, 0, 0.12),
+    0 2px 3px rgba(0, 0, 0, 0.1),
+    0 3px 5px rgba(0, 0, 0, 0.08);
+
+  /* Subtle paper edge */
+  border: 1px solid var(--terminal-cream-shadow);
+
+  transition: all var(--terminal-duration) var(--terminal-ease);
+}
+
+/* Pin hole effect in corner */
+[data-skin="library"] .terminal-readout__service::after {
+  content: '';
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: var(--terminal-cream-shadow);
+  box-shadow:
+    inset 0 1px 1px rgba(0, 0, 0, 0.2),
+    0 0.5px 0 rgba(255, 255, 255, 0.5);
+}
+
+[data-skin="library"] .terminal-readout__service:hover {
+  transform: translateY(-2px);
+  box-shadow:
+    inset 0 1px 0 0 rgba(255, 255, 255, 0.9),
+    0 2px 3px rgba(0, 0, 0, 0.15),
+    0 4px 6px rgba(0, 0, 0, 0.12),
+    0 6px 10px rgba(0, 0, 0, 0.08);
+}
+
+/* Service icon */
+[data-skin="library"] .terminal-readout__service-icon {
+  color: var(--terminal-ink-faded);
+  filter: none;
+}
+
+/* Service label - typewriter text */
+[data-skin="library"] .terminal-readout__service-label {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--terminal-ink);
+  /* Slight ink bleed for typed effect */
+  text-shadow: 0 0 0.5px rgba(26, 22, 18, 0.3);
+}
+
+/* ============================================
+   STATUS BAR - SKEUOMORPHIC THERMOMETER GAUGE
+   Glass tube with mercury/fluid level
+   ============================================ */
+[data-skin="library"] .terminal-readout__status-bar {
+  /* SKEUOMORPHIC: Glass tube container */
+  background:
+    /* Glass reflection */
+    linear-gradient(
+      180deg,
+      rgba(255, 255, 255, 0.15) 0%,
+      rgba(255, 255, 255, 0.05) 30%,
+      transparent 50%,
+      rgba(0, 0, 0, 0.05) 100%
+    ),
+    /* Glass body */
+    var(--terminal-cream-aged);
+  border: 1px solid rgba(0, 0, 0, 0.2);
+  border-radius: 10px;
+  height: 10px;
+  overflow: hidden;
+  position: relative;
+
+  /* Glass tube inset effect */
+  box-shadow:
+    inset 0 2px 3px rgba(0, 0, 0, 0.15),
+    inset 0 -1px 1px rgba(255, 255, 255, 0.5),
+    0 1px 0 rgba(255, 255, 255, 0.3);
+}
+
+[data-skin="library"] .terminal-readout__status-fill {
+  border-radius: 10px;
+  transition: width var(--terminal-duration) var(--terminal-ease);
+  position: relative;
+}
+
+/* Mercury/fluid fill effect with 3D bulge */
+[data-skin="library"] .terminal-readout__service--up .terminal-readout__status-fill {
+  /* SKEUOMORPHIC: Mercury/fluid with surface tension bulge */
+  background: linear-gradient(
+    180deg,
+    var(--terminal-good-light) 0%,
+    var(--terminal-good-light) 20%,
+    var(--terminal-good) 50%,
+    #1D3228 90%,
+    #152820 100%
+  );
+  box-shadow:
+    /* Top highlight - surface tension */
+    inset 0 2px 0 rgba(255, 255, 255, 0.25),
+    /* Bottom shadow */
+    inset 0 -2px 0 rgba(0, 0, 0, 0.2),
+    /* Glow in glass */
+    0 0 4px rgba(45, 74, 58, 0.3);
+}
+
+[data-skin="library"] .terminal-readout__service--degraded .terminal-readout__status-fill {
+  background: linear-gradient(
+    180deg,
+    var(--terminal-warn-light) 0%,
+    var(--terminal-warn-light) 20%,
+    var(--terminal-warn) 50%,
+    #5C4A10 90%,
+    #4A3A08 100%
+  );
+  box-shadow:
+    inset 0 2px 0 rgba(255, 255, 255, 0.25),
+    inset 0 -2px 0 rgba(0, 0, 0, 0.2),
+    0 0 4px rgba(139, 105, 20, 0.3);
+}
+
+[data-skin="library"] .terminal-readout__service--down .terminal-readout__status-fill {
+  background: linear-gradient(
+    180deg,
+    var(--terminal-bad-light) 0%,
+    var(--terminal-bad-light) 20%,
+    var(--terminal-bad) 50%,
+    #3A1818 90%,
+    #2A1010 100%
+  );
+  box-shadow:
+    inset 0 2px 0 rgba(255, 255, 255, 0.25),
+    inset 0 -2px 0 rgba(0, 0, 0, 0.2),
+    0 0 4px rgba(92, 42, 42, 0.3);
+}
+
+[data-skin="library"] .terminal-readout__service--unknown .terminal-readout__status-fill {
+  background: linear-gradient(
+    180deg,
+    #8A8070 0%,
+    var(--terminal-ink-faded) 50%,
+    #4A4238 100%
+  );
+}
+
+/* ============================================
+   STATUS TEXT - SCIENTIFIC NOTATION
+   ============================================ */
+[data-skin="library"] :is(.terminal-readout__service--up, .terminal-readout__service--degraded, .terminal-readout__service--down) .terminal-readout__status-text {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 0.65rem;
+  font-weight: 600;
+  font-style: italic;
+  text-shadow: none;
+}
+
+[data-skin="library"] .terminal-readout__service--up .terminal-readout__status-text {
+  color: var(--terminal-good);
+}
+
+[data-skin="library"] .terminal-readout__service--degraded .terminal-readout__status-text {
+  color: var(--terminal-warn);
+}
+
+[data-skin="library"] .terminal-readout__service--degraded {
+  background: linear-gradient(180deg, #FDF8ED, #F8F0DD);
+}
+
+[data-skin="library"] .terminal-readout__service--degraded .terminal-readout__service-icon {
+  color: var(--terminal-warn);
+  filter: none;
+}
+
+[data-skin="library"] .terminal-readout__service--down .terminal-readout__status-text {
+  color: var(--terminal-bad);
+  animation: none;
+}
+
+[data-skin="library"] .terminal-readout__service--down {
+  background: linear-gradient(180deg, #FDF5F5, #F8EDED);
+}
+
+[data-skin="library"] .terminal-readout__service--down .terminal-readout__service-icon {
+  color: var(--terminal-bad);
+  filter: none;
+}
+
+/* ============================================
+   SCANLINES & BURN-IN - HIDDEN (cyberpunk-only)
+   ============================================ */
+[data-skin="library"] .terminal-readout__scanlines,
+[data-skin="library"] .terminal-readout__burnin {
+  display: none;
+}
+
+/* ============================================
+   GLARE - GLASS CASE REFLECTION
+   ============================================ */
+[data-skin="library"] .terminal-readout__glare {
+  background: linear-gradient(
+    135deg,
+    rgba(255, 255, 255, 0.06) 0%,
+    transparent 30%,
+    transparent 70%,
+    rgba(255, 255, 255, 0.02) 100%
+  );
+  pointer-events: none;
+}
+
+/* ============================================
+   BEZEL - AGED BRASS TRIM
+   Bottom brass plate with engraved label
+   ============================================ */
+[data-skin="library"] .terminal-readout__bezel {
+  /* Aged brass - muted, warm */
+  background: linear-gradient(
+    180deg,
+    #A89040 0%,
+    #987828 25%,
+    #8B7028 50%,
+    #7A6020 80%,
+    #5A4810 100%
+  );
+  border: none;
+  padding: 0.4rem 1rem;
+  border-radius: 0 0 3px 3px;
+
+  /* Subtle aged bevel */
+  box-shadow:
+    inset 0 1px 0 0 rgba(180, 160, 80, 0.2),
+    inset 0 -1px 0 0 rgba(0, 0, 0, 0.2),
+    inset 1px 0 0 0 rgba(180, 160, 80, 0.1),
+    inset -1px 0 0 0 rgba(0, 0, 0, 0.1);
+}
+
+[data-skin="library"] .terminal-readout__bezel-label {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 0.55rem;
+  font-style: italic;
+  letter-spacing: 0.08em;
+  /* SKEUOMORPHIC: Engraved text */
+  color: #2A1F15;
+  text-shadow: var(--lib-text-engraved);
+  /* Hide original text, show library label */
+  font-size: 0;
+}
+
+[data-skin="library"] .terminal-readout__bezel-label::after {
+  content: 'Museum Collection';
+  font-size: 0.55rem;
+}
+
+/* ============================================
+   EMPTY STATE
+   ============================================ */
+[data-skin="library"] .terminal-readout__empty {
+  font-family: 'Cormorant Garamond', serif;
+  font-style: italic;
+  color: rgba(245, 241, 232, 0.6);
+  text-shadow: none;
+}
+
+/* ============================================
+   LOADING STATE
+   ============================================ */
+[data-skin="library"] .terminal-readout--loading .terminal-readout__service--skeleton {
+  background: var(--terminal-cream-aged);
+  --lib-pulse-min: 0.4;
+  --lib-pulse-max: 0.7;
+  animation: lib-pulse 2s ease-in-out infinite;
+}
+
+/* ============================================
+   REDUCED MOTION
+   ============================================ */
+@media (prefers-reduced-motion: reduce) {
+  [data-skin="library"] .terminal-readout__frame,
+  [data-skin="library"] .terminal-readout__titlebar,
+  [data-skin="library"] .terminal-readout__service,
+  [data-skin="library"] .terminal-readout__status-fill {
+    transition: none;
+  }
+
+  [data-skin="library"] .terminal-readout--loading .terminal-readout__service--skeleton {
+    animation: none;
+    opacity: 0.5;
+  }
+}

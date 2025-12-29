@@ -1,0 +1,268 @@
+/**
+ * Library Skin - Shared Base Tokens
+ * Premium Collection: Christie's, Hermès, Private Collection aesthetic
+ * SKEUOMORPHIC EDITION - Real textures, 3D bevels, glass effects
+ *
+ * Import this file BEFORE component-specific library skins
+ */
+
+/* ============================================
+   SHARED LIBRARY TOKENS
+   ============================================ */
+[data-skin="library"] {
+  /* ─── Aged Brass Palette ─── */
+  /* Muted olive-gold tones, NOT bright neon */
+  --lib-gold: #8B7028;
+  --lib-gold-deep: #7A6020;
+  --lib-gold-light: #A89040;
+  --lib-gold-accent: #9A8030;
+  --lib-gold-highlight: #B8A050;
+  --lib-gold-shadow: #4A3A10;
+
+  /* Aged brass gradient - muted, warm */
+  --lib-gold-shimmer: linear-gradient(
+    135deg,
+    #9A8030 0%,
+    #B8A050 25%,
+    #8B7028 50%,
+    #A89040 75%,
+    #7A6020 100%
+  );
+
+  /* Vertical aged brass - for plaques */
+  --lib-gold-shimmer-v: linear-gradient(
+    180deg,
+    #B8A050 0%,
+    #9A8030 15%,
+    #8B7028 40%,
+    #7A6020 85%,
+    #4A3A10 100%
+  );
+
+  /* ─── Wood Palette ─── */
+  --lib-wood-mahogany: #4A2C2A;
+  --lib-wood-mahogany-light: #6B4442;
+  --lib-wood-mahogany-dark: #2E1A18;
+  --lib-wood-walnut: #3D2B1F;
+  --lib-wood-walnut-light: #5C4332;
+  --lib-wood-walnut-dark: #241810;
+
+  /* ─── Dark Interior Palette (replaces cream/vellum) ─── */
+  --lib-cream: #1E1915;
+  --lib-cream-warm: #252018;
+  --lib-cream-vein: rgba(201, 162, 39, 0.08);
+
+  /* Dark canvas for content areas */
+  --lib-vellum: #1A1612;
+  --lib-vellum-shadow: #141210;
+
+  /* ─── Text Palette (light on dark) ─── */
+  --lib-ink: #E8D5A3;
+  --lib-ink-soft: #C9A227;
+  --lib-ink-faded: #A08050;
+  --lib-ink-notation: #D4AF37;
+
+  /* ─── Animation ─── */
+  --lib-ease: cubic-bezier(0.23, 1, 0.32, 1);
+  --lib-duration: 0.45s;
+  --lib-duration-slow: 0.5s;
+
+  /* ─── Shadows ─── */
+  /* Subtle warm glow - NOT neon gold */
+  --lib-shadow-gold-glow: 0 0 20px rgba(140, 112, 40, 0.12);
+  --lib-shadow-gold-glow-strong: 0 0 30px rgba(140, 112, 40, 0.18);
+
+  /* ════════════════════════════════════════════
+     SKEUOMORPHIC TEXTURES (SVG Data URIs)
+     ════════════════════════════════════════════ */
+
+  /* ─── Wood Grain Texture (Mahogany) ─── */
+  /* CSS gradient fallback for better browser compatibility */
+  --lib-texture-wood:
+    /* Horizontal wood grain lines */
+    repeating-linear-gradient(
+      0deg,
+      transparent 0px,
+      transparent 3px,
+      rgba(60, 40, 30, 0.15) 3px,
+      rgba(60, 40, 30, 0.15) 4px,
+      transparent 4px,
+      transparent 8px,
+      rgba(80, 50, 35, 0.1) 8px,
+      rgba(80, 50, 35, 0.1) 9px
+    ),
+    /* Subtle vertical variation */
+    repeating-linear-gradient(
+      90deg,
+      transparent 0px,
+      rgba(40, 25, 20, 0.05) 50px,
+      transparent 100px
+    );
+
+  /* ─── Brushed Brass Texture ─── */
+  /* CSS gradient for brushed metal effect */
+  --lib-texture-brass:
+    /* Fine horizontal brushing lines */
+    repeating-linear-gradient(
+      0deg,
+      transparent 0px,
+      rgba(255, 255, 255, 0.03) 1px,
+      transparent 2px,
+      rgba(0, 0, 0, 0.02) 3px,
+      transparent 4px
+    );
+
+  /* ─── Leather Texture ─── */
+  /* CSS gradient for subtle grain pattern */
+  --lib-texture-leather:
+    radial-gradient(
+      ellipse 2px 3px at 30% 40%,
+      rgba(0, 0, 0, 0.03) 0%,
+      transparent 100%
+    ),
+    radial-gradient(
+      ellipse 3px 2px at 70% 60%,
+      rgba(0, 0, 0, 0.02) 0%,
+      transparent 100%
+    );
+
+  /* ─── Velvet Texture ─── */
+  /* CSS gradient for soft nap pattern */
+  --lib-texture-velvet:
+    repeating-linear-gradient(
+      45deg,
+      transparent 0px,
+      rgba(255, 255, 255, 0.01) 1px,
+      transparent 2px
+    );
+
+  /* ════════════════════════════════════════════
+     3D BEVEL SYSTEM
+     Light source: top-left
+     ════════════════════════════════════════════ */
+
+  /* ─── Aged Brass Bezel - Subtle 3D Edge ─── */
+  --lib-bevel-brass:
+    /* Warm highlight (top-left) - NOT bright */
+    inset 2px 2px 0 0 #A89040,
+    /* Shadow (bottom-right) */
+    inset -2px -2px 0 0 #4A3A10,
+    /* Inner ridge - subtle */
+    inset 3px 3px 1px 0 rgba(180, 160, 80, 0.1),
+    /* Inner valley shadow */
+    inset -3px -3px 2px 0 rgba(0, 0, 0, 0.2);
+
+  /* ─── Aged Brass Bezel - Deeper Edge ─── */
+  --lib-bevel-brass-deep:
+    /* Warm highlight */
+    inset 3px 3px 0 0 #B8A050,
+    /* Shadow */
+    inset -3px -3px 0 0 #3A2A08,
+    /* Mid highlight - subtle */
+    inset 5px 5px 1px 0 rgba(180, 160, 80, 0.08),
+    /* Mid shadow */
+    inset -5px -5px 2px 0 rgba(0, 0, 0, 0.25),
+    /* Inner warmth */
+    inset 0 0 8px rgba(140, 112, 40, 0.08);
+
+  /* ─── Raised Plaque (for title bars) ─── */
+  --lib-bevel-plaque:
+    /* Top edge - warm */
+    inset 0 2px 0 0 rgba(180, 160, 80, 0.25),
+    /* Bottom edge shadow */
+    inset 0 -2px 0 0 rgba(0, 0, 0, 0.25),
+    /* Left edge */
+    inset 2px 0 0 0 rgba(180, 160, 80, 0.12),
+    /* Right edge */
+    inset -2px 0 0 0 rgba(0, 0, 0, 0.12),
+    /* Drop shadow */
+    0 3px 6px rgba(0, 0, 0, 0.3),
+    0 1px 2px rgba(0, 0, 0, 0.2);
+
+  /* ─── Inset Panel (for content areas) ─── */
+  --lib-bevel-inset:
+    /* Top shadow (light blocked) */
+    inset 0 3px 6px rgba(0, 0, 0, 0.4),
+    /* Left shadow */
+    inset 3px 0 6px rgba(0, 0, 0, 0.25),
+    /* Bottom highlight (light reflecting up) */
+    inset 0 -2px 4px rgba(255, 255, 255, 0.03),
+    /* Right highlight */
+    inset -2px 0 4px rgba(255, 255, 255, 0.02);
+
+  /* ─── Wood Frame Bevel ─── */
+  --lib-bevel-wood:
+    /* Top-left highlight */
+    inset 2px 2px 0 0 rgba(255, 255, 255, 0.08),
+    /* Bottom-right shadow */
+    inset -2px -2px 0 0 rgba(0, 0, 0, 0.4),
+    /* Inner depth */
+    inset 4px 4px 4px rgba(0, 0, 0, 0.2),
+    inset -4px -4px 4px rgba(0, 0, 0, 0.15);
+
+  /* ════════════════════════════════════════════
+     GLASS EFFECTS
+     ════════════════════════════════════════════ */
+
+  /* ─── Glass Dome / Cover ─── */
+  /* Simulates curved glass with highlight at top-left */
+  --lib-glass-dome: linear-gradient(
+    155deg,
+    rgba(255, 255, 255, 0.18) 0%,
+    rgba(255, 255, 255, 0.08) 15%,
+    rgba(255, 255, 255, 0.02) 30%,
+    transparent 50%,
+    rgba(0, 0, 0, 0.03) 70%,
+    rgba(0, 0, 0, 0.08) 100%
+  );
+
+  /* ─── Flat Glass Panel ─── */
+  --lib-glass-flat: linear-gradient(
+    180deg,
+    rgba(255, 255, 255, 0.06) 0%,
+    transparent 30%,
+    transparent 70%,
+    rgba(0, 0, 0, 0.04) 100%
+  );
+
+  /* ─── Glass Edge Reflection ─── */
+  --lib-glass-edge:
+    inset 0 1px 0 rgba(255, 255, 255, 0.12),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.1),
+    inset 1px 0 0 rgba(255, 255, 255, 0.06),
+    inset -1px 0 0 rgba(0, 0, 0, 0.06);
+
+  /* ════════════════════════════════════════════
+     ENGRAVED TEXT EFFECTS
+     ════════════════════════════════════════════ */
+
+  /* ─── Engraved into Aged Brass ─── */
+  /* Dark text + warm light shadow = stamped effect */
+  --lib-text-engraved:
+    /* Warm light hitting bottom edge */
+    0 1px 0 rgba(200, 180, 120, 0.35),
+    /* Shadow at top */
+    0 -1px 1px rgba(0, 0, 0, 0.15);
+
+  /* ─── Embossed / Raised Text ─── */
+  --lib-text-embossed:
+    /* Shadow below */
+    0 2px 2px rgba(0, 0, 0, 0.25),
+    /* Subtle highlight */
+    0 -1px 0 rgba(200, 180, 120, 0.1);
+
+  /* ─── Deeply Engraved (for important plaques) ─── */
+  --lib-text-engraved-deep:
+    0 1px 0 rgba(200, 180, 120, 0.4),
+    0 2px 1px rgba(200, 180, 120, 0.15),
+    0 -1px 1px rgba(0, 0, 0, 0.25),
+    0 -2px 2px rgba(0, 0, 0, 0.1);
+}
+
+/* ============================================
+   SHARED LOADING ANIMATION
+   ============================================ */
+@keyframes lib-pulse {
+  0%, 100% { opacity: var(--lib-pulse-min, 0.4); }
+  50% { opacity: var(--lib-pulse-max, 0.7); }
+}

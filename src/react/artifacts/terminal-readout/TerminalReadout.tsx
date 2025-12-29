@@ -7,6 +7,7 @@
 import React from 'react';
 import './terminal-readout.base.css';
 import './terminal-readout.cyberpunk.css';
+import './terminal-readout.library.css';
 
 export type ServiceStatus = 'up' | 'degraded' | 'down' | 'unknown';
 

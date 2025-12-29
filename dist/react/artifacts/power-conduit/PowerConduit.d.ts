@@ -5,6 +5,7 @@
  */
 import './power-conduit.base.css';
 import './power-conduit.cyberpunk.css';
+import './power-conduit.library.css';
 export interface PowerConduitProps {
     /** Current value */
     value: number;

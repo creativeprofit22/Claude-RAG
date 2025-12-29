@@ -1,0 +1,520 @@
+/**
+ * PowerConduit Library Skin - SKEUOMORPHIC Edition
+ * "Victorian Brass Thermometer / Scientific Gauge" aesthetic
+ *
+ * SKEUOMORPHIC FEATURES:
+ * - Brass frame with 3D beveled edges and brushed texture
+ * - Glass tube encasing the mercury/fluid segments
+ * - Machined brass end caps with decorative grooves
+ * - Visible measurement marks on glass
+ * - Real metallic sheen with highlights/shadows
+ *
+ * Think: Antique barometer, ship's chronometer, Victorian lab equipment
+ */
+
+@import '../../skins/library-base.css';
+
+/* ============================================
+   LIBRARY TOKENS - ANTIQUE BRASS GAUGE
+   Aged, tarnished brass - NOT bright neon
+   ============================================ */
+[data-skin="library"] .power-conduit {
+  /* Aged brass palette - muted, warm olive-gold */
+  --conduit-brass: #8B7028;
+  --conduit-brass-light: #A89040;
+  --conduit-brass-deep: #7A6020;
+  --conduit-brass-shadow: #4A3A10;
+
+  /* Subtle warm glow - not neon */
+  --conduit-glow-color: rgba(140, 112, 40, 0.15);
+  --conduit-glow-intense: rgba(140, 112, 40, 0.25);
+
+  /* Interior colors */
+  --conduit-bg: #1A1612;
+  --conduit-glass: #F5F1E8;
+  --conduit-glass-tint: rgba(245, 241, 232, 0.12);
+
+  /* Segment colors - aged brass */
+  --conduit-segment-empty: rgba(50, 45, 38, 0.8);
+  --conduit-segment-filled: #9A8030;
+
+  /* Mercury/fluid - warm amber, not bright gold */
+  --conduit-mercury: #9A8030;
+  --conduit-mercury-light: #B8A050;
+  --conduit-mercury-dark: #685018;
+
+  /* Animation */
+  --lib-ease: cubic-bezier(0.23, 1, 0.32, 1);
+  --lib-duration: 0.45s;
+}
+
+/* ============================================
+   VARIANT: WARNING (AMBER MERCURY)
+   ============================================ */
+[data-skin="library"] .power-conduit--warning {
+  --conduit-glow-color: rgba(200, 150, 60, 0.25);
+  --conduit-glow-intense: rgba(200, 150, 60, 0.4);
+  --conduit-segment-filled: #C8963C;
+  --conduit-mercury: #C8963C;
+  --conduit-mercury-light: #E0C080;
+  --conduit-mercury-dark: #8B6020;
+}
+
+/* ============================================
+   VARIANT: CRITICAL (RED MERCURY / DANGER)
+   ============================================ */
+[data-skin="library"] .power-conduit--critical {
+  --conduit-glow-color: rgba(160, 60, 50, 0.25);
+  --conduit-glow-intense: rgba(160, 60, 50, 0.4);
+  --conduit-segment-filled: #A03C32;
+  --conduit-mercury: #A03C32;
+  --conduit-mercury-light: #C06050;
+  --conduit-mercury-dark: #602018;
+}
+
+/* ============================================
+   SHADOW - Museum display glow
+   ============================================ */
+[data-skin="library"] .power-conduit__shadow {
+  background: radial-gradient(
+    ellipse at center,
+    var(--conduit-glow-color) 0%,
+    rgba(201, 162, 39, 0.08) 50%,
+    transparent 80%
+  );
+  filter: blur(12px);
+  opacity: 0.5;
+  transition: opacity var(--lib-duration) var(--lib-ease);
+}
+
+/* Hover: spotlight intensification */
+[data-skin="library"] .power-conduit:hover .power-conduit__shadow {
+  opacity: 0.75;
+}
+
+/* ============================================
+   BODY - SKEUOMORPHIC BRASS THERMOMETER FRAME
+   Polished brass housing with glass tube interior
+   ============================================ */
+[data-skin="library"] .power-conduit__body {
+  /* Thermometer frame shape */
+  border-radius: 8px;
+  position: relative;
+
+  /* SKEUOMORPHIC: Brass frame with brushed texture */
+  background:
+    var(--lib-texture-brass),
+    linear-gradient(
+      180deg,
+      var(--conduit-brass-light) 0%,
+      var(--conduit-brass) 15%,
+      var(--conduit-brass-deep) 50%,
+      var(--conduit-brass) 85%,
+      var(--conduit-brass-light) 100%
+    );
+  background-blend-mode: overlay, normal;
+
+  /* SKEUOMORPHIC: 3D brass bezel with proper bevels */
+  box-shadow:
+    /* Top-left highlight (light source) */
+    inset 2px 2px 0 0 var(--conduit-brass-light),
+    /* Bottom-right shadow */
+    inset -2px -2px 0 0 var(--conduit-brass-shadow),
+    /* Inner ridge */
+    inset 4px 4px 2px 0 rgba(255, 255, 255, 0.1),
+    inset -4px -4px 3px 0 rgba(0, 0, 0, 0.25),
+    /* External drop shadow */
+    0 3px 8px rgba(0, 0, 0, 0.3),
+    0 6px 16px rgba(0, 0, 0, 0.2),
+    /* Ambient gold glow */
+    0 0 25px var(--conduit-glow-color);
+
+  border: none;
+  transition: box-shadow var(--lib-duration) var(--lib-ease);
+}
+
+/* Hover: brass warms slightly */
+[data-skin="library"] .power-conduit:hover .power-conduit__body {
+  box-shadow:
+    inset 2px 2px 0 0 #B8A050,
+    inset -2px -2px 0 0 var(--conduit-brass-shadow),
+    inset 4px 4px 2px 0 rgba(180, 160, 80, 0.12),
+    inset -4px -4px 3px 0 rgba(0, 0, 0, 0.2),
+    0 4px 10px rgba(0, 0, 0, 0.35),
+    0 8px 20px rgba(0, 0, 0, 0.25),
+    0 0 25px var(--conduit-glow-intense);
+}
+
+/* ============================================
+   CIRCUITS - MEASUREMENT MARKS ON GLASS
+   Etched graduation lines like a thermometer
+   ============================================ */
+[data-skin="library"] .power-conduit__circuits {
+  /* SKEUOMORPHIC: Etched measurement marks */
+  background:
+    /* Major tick marks */
+    repeating-linear-gradient(
+      90deg,
+      transparent 0px,
+      transparent 9%,
+      rgba(0, 0, 0, 0.15) 9%,
+      rgba(0, 0, 0, 0.15) 10%,
+      transparent 10%
+    ),
+    /* Minor tick marks */
+    repeating-linear-gradient(
+      90deg,
+      transparent 0px,
+      transparent 4.5%,
+      rgba(0, 0, 0, 0.08) 4.5%,
+      rgba(0, 0, 0, 0.08) 5%,
+      transparent 5%
+    );
+  opacity: 0.5;
+  pointer-events: none;
+}
+
+/* ============================================
+   SEGMENT - SKEUOMORPHIC MERCURY/FLUID IN GLASS
+   Glass tube sections with liquid fill
+   ============================================ */
+[data-skin="library"] .power-conduit__segment {
+  /* SKEUOMORPHIC: Empty glass tube section */
+  background:
+    /* Glass reflection at top */
+    linear-gradient(
+      180deg,
+      rgba(255, 255, 255, 0.12) 0%,
+      rgba(255, 255, 255, 0.04) 30%,
+      transparent 50%,
+      rgba(0, 0, 0, 0.08) 100%
+    ),
+    /* Dark interior */
+    var(--conduit-segment-empty);
+  border-radius: 3px;
+
+  /* Glass tube inset effect */
+  box-shadow:
+    inset 0 2px 3px rgba(0, 0, 0, 0.4),
+    inset 0 -1px 2px rgba(255, 255, 255, 0.08),
+    inset 1px 0 2px rgba(0, 0, 0, 0.2),
+    inset -1px 0 2px rgba(0, 0, 0, 0.2);
+
+  transition:
+    background var(--lib-duration) var(--lib-ease),
+    box-shadow var(--lib-duration) var(--lib-ease);
+}
+
+/* SKEUOMORPHIC: Filled segment - mercury/fluid with surface tension */
+[data-skin="library"] .power-conduit__segment--filled {
+  background:
+    /* Glass reflection on top of mercury */
+    linear-gradient(
+      180deg,
+      rgba(255, 255, 255, 0.2) 0%,
+      rgba(255, 255, 255, 0.08) 20%,
+      transparent 40%
+    ),
+    /* Mercury gradient with meniscus effect */
+    linear-gradient(
+      180deg,
+      var(--conduit-mercury-light) 0%,
+      var(--conduit-mercury-light) 15%,
+      var(--conduit-mercury) 40%,
+      var(--conduit-mercury-dark) 85%,
+      var(--conduit-brass-shadow) 100%
+    );
+
+  /* Mercury in glass - surface tension bulge + glow */
+  box-shadow:
+    /* Top highlight - meniscus */
+    inset 0 2px 0 rgba(255, 255, 255, 0.3),
+    /* Bottom shadow */
+    inset 0 -2px 2px rgba(0, 0, 0, 0.25),
+    /* Side reflections */
+    inset 2px 0 2px rgba(255, 255, 255, 0.1),
+    inset -2px 0 2px rgba(0, 0, 0, 0.15),
+    /* Glow through glass */
+    0 0 6px var(--conduit-glow-color);
+}
+
+/* Active segment - subtle pulsing glow */
+[data-skin="library"] .power-conduit__segment--active {
+  animation: mercury-pulse 2s ease-in-out infinite;
+}
+
+@keyframes mercury-pulse {
+  0%, 100% {
+    box-shadow:
+      inset 0 2px 0 rgba(255, 255, 255, 0.3),
+      inset 0 -2px 2px rgba(0, 0, 0, 0.25),
+      inset 2px 0 2px rgba(255, 255, 255, 0.1),
+      inset -2px 0 2px rgba(0, 0, 0, 0.15),
+      0 0 6px var(--conduit-glow-color);
+  }
+  50% {
+    box-shadow:
+      inset 0 2px 0 rgba(255, 255, 255, 0.35),
+      inset 0 -2px 2px rgba(0, 0, 0, 0.2),
+      inset 2px 0 2px rgba(255, 255, 255, 0.12),
+      inset -2px 0 2px rgba(0, 0, 0, 0.12),
+      0 0 10px var(--conduit-glow-intense);
+  }
+}
+
+/* ============================================
+   FLOW - Glass reflection shimmer
+   ============================================ */
+[data-skin="library"] .power-conduit__flow {
+  /* SKEUOMORPHIC: Light playing across glass surface */
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(255, 255, 255, 0.08) 35%,
+    rgba(255, 255, 255, 0.15) 50%,
+    rgba(255, 255, 255, 0.08) 65%,
+    transparent 100%
+  );
+  background-size: 250% 100%;
+  animation: glass-shimmer 5s ease-in-out infinite;
+  opacity: 0.4;
+}
+
+@keyframes glass-shimmer {
+  0% { background-position: 250% 0; }
+  100% { background-position: -50% 0; }
+}
+
+/* ============================================
+   WEAR - Aged brass patina
+   ============================================ */
+[data-skin="library"] .power-conduit__wear {
+  /* Subtle patina texture */
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100' height='100'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.5' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  opacity: 0.02;
+  mix-blend-mode: multiply;
+}
+
+/* Wear marks on brass */
+[data-skin="library"] .power-conduit__wear::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(
+    ellipse 30% 60% at 10% 50%,
+    rgba(92, 74, 16, 0.1) 0%,
+    transparent 60%
+  ),
+  radial-gradient(
+    ellipse 25% 50% at 90% 50%,
+    rgba(92, 74, 16, 0.08) 0%,
+    transparent 60%
+  );
+  pointer-events: none;
+}
+
+/* ============================================
+   END CAPS - SKEUOMORPHIC MACHINED BRASS FITTINGS
+   Turned brass with decorative grooves
+   ============================================ */
+[data-skin="library"] .power-conduit__cap {
+  /* SKEUOMORPHIC: Polished brass with brushed texture */
+  background:
+    var(--lib-texture-brass),
+    linear-gradient(
+      180deg,
+      var(--conduit-brass-light) 0%,
+      var(--conduit-brass) 15%,
+      var(--conduit-brass-deep) 45%,
+      var(--conduit-brass-deep) 55%,
+      var(--conduit-brass) 85%,
+      var(--conduit-brass-light) 100%
+    );
+  background-blend-mode: overlay, normal;
+
+  /* Machined brass fitting shape */
+  border-radius: 4px;
+  border: none;
+
+  /* SKEUOMORPHIC: 3D machined brass with bevels */
+  box-shadow:
+    /* Top-left highlight */
+    inset 2px 2px 0 0 var(--conduit-brass-light),
+    /* Bottom-right shadow */
+    inset -2px -2px 0 0 var(--conduit-brass-shadow),
+    /* Machined groove - horizontal */
+    inset 0 4px 0 1px rgba(0, 0, 0, 0.15),
+    inset 0 -4px 0 1px rgba(255, 255, 255, 0.1),
+    /* Drop shadow */
+    0 2px 4px rgba(0, 0, 0, 0.25),
+    /* Ambient glow */
+    0 0 8px var(--conduit-glow-color);
+
+  transition: box-shadow var(--lib-duration) var(--lib-ease);
+}
+
+/* Hover: brass warms slightly */
+[data-skin="library"] .power-conduit:hover .power-conduit__cap {
+  box-shadow:
+    inset 2px 2px 0 0 #B8A050,
+    inset -2px -2px 0 0 var(--conduit-brass-shadow),
+    inset 0 4px 0 1px rgba(0, 0, 0, 0.12),
+    inset 0 -4px 0 1px rgba(180, 160, 80, 0.1),
+    0 3px 6px rgba(0, 0, 0, 0.3),
+    0 0 10px var(--conduit-glow-intense);
+}
+
+/* Decorative machined groove */
+[data-skin="library"] .power-conduit__cap::before {
+  content: '';
+  position: absolute;
+  top: 35%;
+  left: 50%;
+  width: 3px;
+  height: 30%;
+  transform: translateX(-50%);
+  /* Engraved groove effect */
+  background: linear-gradient(
+    90deg,
+    rgba(0, 0, 0, 0.3) 0%,
+    rgba(0, 0, 0, 0.2) 40%,
+    rgba(255, 255, 255, 0.15) 60%,
+    rgba(255, 255, 255, 0.1) 100%
+  );
+  border-radius: 1px;
+}
+
+/* ============================================
+   INFO - SKEUOMORPHIC BRASS PLAQUE LABELS
+   Engraved text on brass surface
+   ============================================ */
+[data-skin="library"] .power-conduit__label {
+  font-family: 'Cormorant Garamond', 'Garamond', 'Georgia', serif;
+  font-weight: 600;
+  /* Engraved brass text */
+  color: var(--conduit-brass-shadow);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  font-size: 0.65em;
+  /* Engraved effect on brass */
+  text-shadow: var(--lib-text-engraved);
+
+  transition:
+    color var(--lib-duration) var(--lib-ease),
+    text-shadow var(--lib-duration) var(--lib-ease);
+}
+
+/* Hover: engraving catches light */
+[data-skin="library"] .power-conduit:hover .power-conduit__label {
+  color: #4A3A0A;
+  text-shadow:
+    0 1px 0 rgba(255, 255, 255, 0.5),
+    0 -1px 1px rgba(0, 0, 0, 0.15);
+}
+
+[data-skin="library"] .power-conduit__value {
+  font-family: 'Cormorant Garamond', 'Garamond', 'Georgia', serif;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  /* Prominent engraved value */
+  color: #2A1F10;
+  font-size: 1.1em;
+  text-shadow: var(--lib-text-engraved-deep);
+
+  transition: text-shadow var(--lib-duration) var(--lib-ease);
+}
+
+/* Hover: value stands out more */
+[data-skin="library"] .power-conduit:hover .power-conduit__value {
+  text-shadow:
+    0 1px 0 rgba(255, 255, 255, 0.6),
+    0 2px 1px rgba(255, 255, 255, 0.25),
+    0 -1px 1px rgba(0, 0, 0, 0.25);
+}
+
+/* ============================================
+   CRITICAL VARIANT - DANGER LEVEL PULSE
+   ============================================ */
+[data-skin="library"] .power-conduit--critical .power-conduit__segment--filled {
+  animation: danger-pulse 1.5s ease-in-out infinite;
+}
+
+@keyframes danger-pulse {
+  0%, 100% {
+    box-shadow:
+      inset 0 2px 0 rgba(255, 255, 255, 0.25),
+      inset 0 -2px 2px rgba(0, 0, 0, 0.3),
+      inset 2px 0 2px rgba(255, 255, 255, 0.08),
+      inset -2px 0 2px rgba(0, 0, 0, 0.2),
+      0 0 8px var(--conduit-glow-color);
+  }
+  50% {
+    box-shadow:
+      inset 0 2px 0 rgba(255, 255, 255, 0.3),
+      inset 0 -2px 2px rgba(0, 0, 0, 0.25),
+      inset 2px 0 2px rgba(255, 255, 255, 0.1),
+      inset -2px 0 2px rgba(0, 0, 0, 0.15),
+      0 0 14px var(--conduit-glow-intense);
+  }
+}
+
+/* ============================================
+   FULL POWER STATE - MAXIMUM READING
+   ============================================ */
+[data-skin="library"] .power-conduit--full .power-conduit__body {
+  box-shadow:
+    inset 2px 2px 0 0 var(--conduit-brass-light),
+    inset -2px -2px 0 0 var(--conduit-brass-shadow),
+    inset 4px 4px 2px 0 rgba(255, 255, 255, 0.12),
+    inset -4px -4px 3px 0 rgba(0, 0, 0, 0.22),
+    0 4px 12px rgba(0, 0, 0, 0.35),
+    0 8px 24px rgba(0, 0, 0, 0.25),
+    0 0 40px var(--conduit-glow-intense);
+}
+
+[data-skin="library"] .power-conduit--full .power-conduit__segment--active {
+  animation: full-gauge-glow 1.2s ease-in-out infinite;
+}
+
+@keyframes full-gauge-glow {
+  0%, 100% {
+    box-shadow:
+      inset 0 2px 0 rgba(255, 255, 255, 0.35),
+      inset 0 -2px 2px rgba(0, 0, 0, 0.2),
+      inset 2px 0 2px rgba(255, 255, 255, 0.12),
+      inset -2px 0 2px rgba(0, 0, 0, 0.12),
+      0 0 10px var(--conduit-glow-color),
+      0 0 20px var(--conduit-glow-color);
+  }
+  50% {
+    box-shadow:
+      inset 0 2px 0 rgba(255, 255, 255, 0.45),
+      inset 0 -2px 2px rgba(0, 0, 0, 0.15),
+      inset 2px 0 2px rgba(255, 255, 255, 0.15),
+      inset -2px 0 2px rgba(0, 0, 0, 0.1),
+      0 0 16px var(--conduit-glow-intense),
+      0 0 32px var(--conduit-glow-color);
+  }
+}
+
+/* ============================================
+   REDUCED MOTION - Accessibility
+   ============================================ */
+@media (prefers-reduced-motion: reduce) {
+  [data-skin="library"] .power-conduit__segment--active,
+  [data-skin="library"] .power-conduit__flow,
+  [data-skin="library"] .power-conduit--critical .power-conduit__segment--filled,
+  [data-skin="library"] .power-conduit--full .power-conduit__segment--active {
+    animation: none;
+  }
+
+  /* Static glow for filled segments when motion reduced */
+  [data-skin="library"] .power-conduit__segment--filled {
+    box-shadow:
+      inset 0 2px 0 rgba(255, 255, 255, 0.3),
+      inset 0 -2px 2px rgba(0, 0, 0, 0.25),
+      inset 2px 0 2px rgba(255, 255, 255, 0.1),
+      inset -2px 0 2px rgba(0, 0, 0, 0.15),
+      0 0 8px var(--conduit-glow-color);
+  }
+}

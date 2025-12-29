@@ -1,6 +1,7 @@
 import { jsx as _jsx, jsxs as _jsxs } from "react/jsx-runtime";
 import './power-conduit.base.css';
 import './power-conduit.cyberpunk.css';
+import './power-conduit.library.css';
 export function PowerConduit({ value, max, label, variant = 'default', segments = 10, className = '', }) {
     // Calculate fill percentage (guard against division by zero)
     const percentage = max > 0

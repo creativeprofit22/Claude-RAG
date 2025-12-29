@@ -6,6 +6,7 @@
 import React from 'react';
 import './hud-frame.base.css';
 import './hud-frame.cyberpunk.css';
+import './hud-frame.library.css';
 export type HudFrameSize = 'compact' | 'default' | 'spacious';
 export type HudFrameVariant = 'default' | 'alert' | 'warning' | 'success';
 export interface HudFrameProps {

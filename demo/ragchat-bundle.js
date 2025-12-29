@@ -93704,15 +93704,16 @@ var RAGBundle = (() => {
     const tornEdge = useMemo(() => generateTornTopEdge(42), []);
     const corruptedIndices = useMemo(() => {
       if (corruptionLevel <= 0) return /* @__PURE__ */ new Set();
+      const intensity = Math.min(100, Math.max(0, corruptionLevel)) / 100;
       const rng = seededRandom(corruptionLevel);
       const indices = /* @__PURE__ */ new Set();
       files.forEach((_, index) => {
-        if (rng() < corruptionIntensity * 0.8) {
+        if (rng() < intensity * 0.8) {
           indices.add(index);
         }
       });
       return indices;
-    }, [files, corruptionLevel, corruptionIntensity]);
+    }, [files, corruptionLevel]);
     const feedHoles = useMemo(() => {
       const count2 = Math.max(4, Math.min(12, files.length * 2 + 4));
       return Array.from({ length: count2 }, (_, i) => i);
@@ -93720,7 +93721,12 @@ var RAGBundle = (() => {
     return /* @__PURE__ */ jsx(
       "article",
       {
-        className: `file-manifest file-manifest--printout ${isLoading ? "file-manifest--loading" : ""} ${className}`,
+        className: [
+          "file-manifest",
+          "file-manifest--printout",
+          isLoading && "file-manifest--loading",
+          className
+        ].filter(Boolean).join(" "),
         "aria-label": "File Manifest",
         "aria-busy": isLoading,
         children: /* @__PURE__ */ jsxs(
@@ -93729,7 +93735,14 @@ var RAGBundle = (() => {
             className: "file-manifest__printout",
             style: { "--torn-edge": tornEdge },
             children: [
-              /* @__PURE__ */ jsx("div", { className: "file-manifest__feed-holes", "aria-hidden": "true", children: feedHoles.map((i) => /* @__PURE__ */ jsx("div", { className: "file-manifest__feed-hole" }, i)) }),
+              /* @__PURE__ */ jsx("div", { className: "file-manifest__feed-holes", "aria-hidden": "true", children: feedHoles.map((i) => /* @__PURE__ */ jsx(
+                "div",
+                {
+                  className: "file-manifest__feed-hole",
+                  style: { "--hole-index": i }
+                },
+                i
+              )) }),
               /* @__PURE__ */ jsxs("div", { className: "file-manifest__paper", children: [
                 /* @__PURE__ */ jsxs("header", { className: "file-manifest__header", children: [
                   /* @__PURE__ */ jsxs("div", { className: "file-manifest__header-row", children: [

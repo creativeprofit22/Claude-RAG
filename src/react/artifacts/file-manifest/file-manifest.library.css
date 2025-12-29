@@ -1,0 +1,434 @@
+/**
+ * FileManifest Library Skin - Premium Collection
+ * An archival folio from a private collection
+ *
+ * Aesthetic: Sotheby's lot book, museum provenance file, rare manuscript
+ * Think: Morocco leather portfolio, gilt edges, tissue interleaving
+ */
+
+@import '../../skins/library-base.css';
+
+/* ============================================
+   PREMIUM TOKENS
+   ============================================ */
+[data-skin="library"] {
+  /* Deep burgundy morocco */
+  --manifest-morocco: #3A1C20;
+  --manifest-morocco-light: #5C2E35;
+  --manifest-morocco-deep: #2A1015;
+
+  /* Archival tissue/vellum - aliased to shared */
+  --manifest-vellum: var(--lib-vellum);
+  --manifest-vellum-shadow: var(--lib-vellum-shadow);
+  --manifest-tissue: rgba(248, 245, 238, 0.7);
+
+  /* Gold tooling - aliased to shared */
+  --manifest-gold: var(--lib-gold);
+  --manifest-gold-deep: var(--lib-gold-deep);
+  --manifest-gold-shimmer: var(--lib-gold-shimmer);
+
+  /* Archival ink - aliased to shared */
+  --manifest-ink: var(--lib-ink);
+  --manifest-ink-faded: var(--lib-ink-faded);
+  --manifest-ink-notation: var(--lib-ink-notation);
+
+  /* Status */
+  --manifest-success: #2D4A3A;
+  --manifest-error: #6B2A2A;
+  --manifest-warn: #6B5020;
+
+  /* Animation - aliased to shared */
+  --manifest-duration: var(--lib-duration);
+  --manifest-ease: var(--lib-ease);
+}
+
+/* ============================================
+   PRINTOUT - MOROCCO PORTFOLIO
+   ============================================ */
+[data-skin="library"] .file-manifest__printout {
+  background:
+    /* Morocco grain */
+    url("data:image/svg+xml,%3Csvg viewBox='0 0 400 400' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='morocco'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.025' numOctaves='5' seed='3'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23morocco)' opacity='0.1'/%3E%3C/svg%3E"),
+    linear-gradient(
+      160deg,
+      var(--manifest-morocco-light) 0%,
+      var(--manifest-morocco) 40%,
+      var(--manifest-morocco-deep) 100%
+    );
+  border-radius: 3px;
+  padding: 8px;
+  position: relative;
+
+  box-shadow:
+    /* Leather depth */
+    inset 0 1px 0 rgba(255, 255, 255, 0.05),
+    inset 0 -2px 0 rgba(0, 0, 0, 0.4),
+    /* Gold tooled border */
+    inset 0 0 0 4px var(--manifest-morocco),
+    inset 0 0 0 5px var(--manifest-gold-deep),
+    inset 0 0 0 6px var(--manifest-gold),
+    inset 0 0 0 7px var(--manifest-gold-deep),
+    /* Presence */
+    0 4px 8px rgba(0, 0, 0, 0.2),
+    0 12px 24px rgba(58, 28, 32, 0.25),
+    0 24px 48px rgba(58, 28, 32, 0.15);
+
+  border: none;
+  transition: all var(--manifest-duration) var(--manifest-ease);
+}
+
+[data-skin="library"] .file-manifest__printout:hover {
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.05),
+    inset 0 -2px 0 rgba(0, 0, 0, 0.4),
+    inset 0 0 0 4px var(--manifest-morocco),
+    inset 0 0 0 5px var(--manifest-gold-deep),
+    inset 0 0 0 6px var(--manifest-gold),
+    inset 0 0 0 7px var(--manifest-gold-deep),
+    0 0 40px rgba(201, 162, 39, 0.12),
+    0 6px 12px rgba(0, 0, 0, 0.25),
+    0 16px 32px rgba(58, 28, 32, 0.3),
+    0 32px 64px rgba(58, 28, 32, 0.2);
+}
+
+/* ============================================
+   FEED HOLES - HIDDEN
+   ============================================ */
+[data-skin="library"] .file-manifest__feed-holes,
+[data-skin="library"] .file-manifest__feed-hole {
+  display: none;
+}
+
+/* ============================================
+   PAPER - VELLUM PAGES
+   ============================================ */
+[data-skin="library"] .file-manifest__paper {
+  background:
+    /* Vellum texture */
+    url("data:image/svg+xml,%3Csvg viewBox='0 0 300 300' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='vellum'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.4' numOctaves='4'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23vellum)' opacity='0.025'/%3E%3C/svg%3E"),
+    var(--manifest-vellum);
+  border-radius: 1px;
+  margin: 0;
+  padding: 0;
+
+  box-shadow:
+    inset 0 1px 4px rgba(0, 0, 0, 0.08),
+    inset 0 0 0 1px rgba(0, 0, 0, 0.03);
+}
+
+/* ============================================
+   HEADER - CATALOGUE TITLE PLATE
+   ============================================ */
+[data-skin="library"] .file-manifest__header {
+  background: linear-gradient(
+    180deg,
+    var(--manifest-vellum) 0%,
+    var(--manifest-vellum-shadow) 100%
+  );
+  border-bottom: none;
+  padding: 1rem 1.25rem 0.75rem;
+  position: relative;
+}
+
+/* Gold rule under header */
+[data-skin="library"] .file-manifest__header::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 1rem;
+  right: 1rem;
+  height: 2px;
+  background: var(--manifest-gold-shimmer);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+}
+
+[data-skin="library"] .file-manifest__title {
+  font-family: 'Cormorant Garamond', 'EB Garamond', serif;
+  font-size: 0.9rem;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--manifest-ink);
+
+  /* Embossed effect */
+  text-shadow:
+    0 1px 0 rgba(255, 255, 255, 0.6),
+    0 -0.5px 0 rgba(0, 0, 0, 0.1);
+}
+
+[data-skin="library"] .file-manifest__sector {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 0.7rem;
+  font-style: italic;
+  color: var(--manifest-ink-faded);
+}
+
+[data-skin="library"] .file-manifest__header-divider {
+  color: var(--manifest-gold);
+}
+
+[data-skin="library"] .file-manifest__integrity {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 0.6rem;
+  color: var(--manifest-ink-faded);
+}
+
+/* ============================================
+   ENTRIES - PROVENANCE RECORDS
+   ============================================ */
+[data-skin="library"] .file-manifest__entry {
+  font-family: 'Cormorant Garamond', serif;
+  color: var(--manifest-ink);
+  padding: 0.75rem 1.25rem;
+  position: relative;
+  animation: none;
+
+  /* Subtle separator */
+  border-bottom: 1px solid rgba(201, 162, 39, 0.15);
+
+  transition: all var(--manifest-duration) var(--manifest-ease);
+}
+
+[data-skin="library"] .file-manifest__entry:last-child {
+  border-bottom: none;
+}
+
+/* Lot number indicator */
+[data-skin="library"] .file-manifest__entry::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 3px;
+  height: 60%;
+  background: transparent;
+  border-radius: 0 2px 2px 0;
+  transition: all var(--manifest-duration) var(--manifest-ease);
+}
+
+[data-skin="library"] .file-manifest__entry:hover {
+  background: rgba(201, 162, 39, 0.06);
+}
+
+[data-skin="library"] .file-manifest__entry:hover::before {
+  background: var(--manifest-gold);
+  box-shadow: 0 0 8px rgba(201, 162, 39, 0.3);
+}
+
+/* Status indicator */
+[data-skin="library"] .file-manifest__entry-status {
+  color: var(--manifest-success);
+  font-size: 0.5rem;
+}
+
+[data-skin="library"] .file-manifest__entry-status--error {
+  color: var(--manifest-error);
+  animation: none;
+}
+
+/* File name - manuscript title */
+[data-skin="library"] .file-manifest__entry-name {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--manifest-ink);
+}
+
+/* Timestamp - accession date */
+[data-skin="library"] .file-manifest__entry-time {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 0.7rem;
+  font-variant-numeric: tabular-nums;
+  color: var(--manifest-ink-faded);
+  font-style: italic;
+}
+
+/* Secondary row - provenance notes */
+[data-skin="library"] .file-manifest__entry-row--secondary {
+  color: var(--manifest-ink-notation);
+  font-size: 0.7rem;
+}
+
+[data-skin="library"] .file-manifest__entry-indent {
+  color: rgba(201, 162, 39, 0.3);
+}
+
+[data-skin="library"] .file-manifest__entry-meta {
+  font-family: 'Cormorant Garamond', serif;
+  font-style: italic;
+  color: var(--manifest-ink-faded);
+}
+
+/* ============================================
+   CORRUPTED ENTRY - DAMAGED RECORD
+   ============================================ */
+[data-skin="library"] .file-manifest__entry--corrupted {
+  color: var(--manifest-error);
+  animation: none;
+  background: rgba(107, 42, 42, 0.04);
+}
+
+[data-skin="library"] .file-manifest__entry--corrupted::before {
+  background: var(--manifest-error);
+  box-shadow: none;
+}
+
+[data-skin="library"] .file-manifest__entry--corrupted:hover {
+  background: rgba(107, 42, 42, 0.08);
+}
+
+[data-skin="library"] .file-manifest__entry--corrupted:hover::before {
+  box-shadow: 0 0 8px rgba(107, 42, 42, 0.3);
+}
+
+[data-skin="library"] .file-manifest__entry--corrupted .file-manifest__entry-time,
+[data-skin="library"] .file-manifest__entry--corrupted .file-manifest__entry-row--secondary,
+[data-skin="library"] .file-manifest__entry--corrupted .file-manifest__entry-indent {
+  color: rgba(107, 42, 42, 0.5);
+}
+
+[data-skin="library"] .file-manifest__error-text {
+  font-family: 'Cormorant Garamond', serif;
+  font-weight: 600;
+  font-size: 0.6rem;
+  font-style: italic;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--manifest-error);
+  animation: none;
+}
+
+/* ============================================
+   FOOTER - REGISTRY SUMMARY
+   ============================================ */
+[data-skin="library"] .file-manifest__footer-divider {
+  color: rgba(201, 162, 39, 0.3);
+}
+
+[data-skin="library"] .file-manifest__footer {
+  background: linear-gradient(
+    180deg,
+    var(--manifest-vellum-shadow) 0%,
+    var(--manifest-vellum) 100%
+  );
+  padding: 0.75rem 1.25rem;
+  position: relative;
+}
+
+/* Gold rule above footer */
+[data-skin="library"] .file-manifest__footer::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 1rem;
+  right: 1rem;
+  height: 1px;
+  background: var(--manifest-gold-shimmer);
+}
+
+[data-skin="library"] .file-manifest__stat {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 0.65rem;
+  font-style: italic;
+  color: var(--manifest-ink-faded);
+}
+
+[data-skin="library"] .file-manifest__stat--warn {
+  color: var(--manifest-error);
+}
+
+/* ============================================
+   CORRUPTION BAR
+   ============================================ */
+[data-skin="library"] .file-manifest__corruption-bar {
+  background: var(--manifest-vellum-shadow);
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  border-radius: 4px;
+  height: 6px;
+}
+
+[data-skin="library"] .file-manifest__corruption-fill {
+  background: linear-gradient(90deg, var(--manifest-error), #8B4040);
+  border-radius: 3px;
+  box-shadow: none;
+  animation: none;
+}
+
+/* ============================================
+   PERFORATION - HIDDEN
+   ============================================ */
+[data-skin="library"] .file-manifest__perforation-line {
+  display: none;
+}
+
+/* ============================================
+   SCANLINES & GLITCH - HIDDEN
+   ============================================ */
+[data-skin="library"] .file-manifest__scanlines,
+[data-skin="library"] .file-manifest__glitch {
+  display: none;
+}
+
+/* ============================================
+   EMPTY STATE
+   ============================================ */
+[data-skin="library"] .file-manifest__empty {
+  font-family: 'Cormorant Garamond', serif;
+  font-style: italic;
+  color: var(--manifest-ink-faded);
+}
+
+[data-skin="library"] .file-manifest__empty-icon {
+  color: var(--manifest-gold);
+}
+
+/* ============================================
+   SCROLLBAR - REFINED
+   ============================================ */
+[data-skin="library"] .file-manifest__entries::-webkit-scrollbar {
+  width: 6px;
+}
+
+[data-skin="library"] .file-manifest__entries::-webkit-scrollbar-track {
+  background: var(--manifest-vellum-shadow);
+  border-radius: 3px;
+}
+
+[data-skin="library"] .file-manifest__entries::-webkit-scrollbar-thumb {
+  background: linear-gradient(180deg, var(--manifest-gold), var(--manifest-gold-deep));
+  border-radius: 3px;
+}
+
+[data-skin="library"] .file-manifest__entries::-webkit-scrollbar-thumb:hover {
+  background: var(--manifest-gold);
+}
+
+/* ============================================
+   LOADING STATE
+   ============================================ */
+[data-skin="library"] .file-manifest--loading .file-manifest__entry--skeleton {
+  --lib-pulse-min: 0.3;
+  --lib-pulse-max: 0.6;
+  animation: lib-pulse 2s ease-in-out infinite;
+}
+
+[data-skin="library"] .file-manifest--loading .file-manifest__entry--skeleton .file-manifest__entry-status {
+  color: var(--manifest-vellum-shadow);
+}
+
+/* ============================================
+   REDUCED MOTION
+   ============================================ */
+@media (prefers-reduced-motion: reduce) {
+  [data-skin="library"] .file-manifest__printout,
+  [data-skin="library"] .file-manifest__entry,
+  [data-skin="library"] .file-manifest__entry::before {
+    transition: none;
+  }
+
+  [data-skin="library"] .file-manifest--loading .file-manifest__entry--skeleton {
+    animation: none;
+    opacity: 0.4;
+  }
+}

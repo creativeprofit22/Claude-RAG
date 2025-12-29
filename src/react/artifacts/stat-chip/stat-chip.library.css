@@ -1,0 +1,319 @@
+@import '../../skins/library-base.css';
+
+/**
+ * StatChip Library Skin - Premium Collection
+ * A museum-quality artifact, not a craft store notebook
+ *
+ * Aesthetic: Christie's lot, Hermès display, private collection
+ * Think: Deep hunter green leather, gold leaf, marbled endpapers
+ */
+
+/* ============================================
+   PREMIUM TOKENS - RICH, DEEP, LUXURIOUS
+   ============================================ */
+[data-skin="library"] {
+  /* Deep hunter green leather - not craft brown */
+  --chip-leather: #1A2F23;
+  --chip-leather-highlight: #2D4A3A;
+  --chip-leather-deep: #0F1D16;
+
+  /* Marbled cream - aliases to shared tokens */
+  --chip-cream: var(--lib-cream);
+  --chip-cream-warm: var(--lib-cream-warm);
+  --chip-cream-vein: var(--lib-cream-vein);
+
+  /* Gold leaf - aliases to shared tokens */
+  --chip-gold-light: var(--lib-gold-light);
+  --chip-gold: var(--lib-gold);
+  --chip-gold-deep: var(--lib-gold-deep);
+  --chip-gold-shimmer: var(--lib-gold-shimmer);
+
+  /* Deep ink - aliases to shared tokens */
+  --chip-ink: var(--lib-ink);
+  --chip-ink-soft: var(--lib-ink-soft);
+
+  /* Burgundy accent */
+  --chip-burgundy: #4A1C24;
+
+  /* Animation - aliases to shared tokens */
+  --chip-duration: var(--lib-duration-slow);
+  --chip-ease: var(--lib-ease);
+}
+
+/* ============================================
+   CONTAINER - PRESENTATION SHADOW
+   ============================================ */
+[data-skin="library"] .stat-chip {
+  perspective: 1000px;
+}
+
+[data-skin="library"] .stat-chip__shadow {
+  background: radial-gradient(
+    ellipse 100% 60% at 50% 100%,
+    rgba(15, 29, 22, 0.35) 0%,
+    rgba(15, 29, 22, 0.15) 40%,
+    transparent 70%
+  );
+  filter: blur(12px);
+  transform: scaleY(0.4);
+  opacity: 1;
+  bottom: -20px;
+  transition: all var(--chip-duration) var(--chip-ease);
+}
+
+/* ============================================
+   BODY - LEATHER WITH GOLD TOOLING
+   ============================================ */
+[data-skin="library"] .stat-chip__body {
+  clip-path: none;
+  border-radius: 3px;
+
+  /* Subtle presence */
+  transform: rotateX(3deg) rotateY(-1deg);
+  transform-style: preserve-3d;
+
+  /* Deep green leather */
+  background:
+    /* Leather grain */
+    url("data:image/svg+xml,%3Csvg viewBox='0 0 400 400' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='leather'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.03' numOctaves='4' seed='1'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23leather)' opacity='0.08'/%3E%3C/svg%3E"),
+    /* Gradient depth */
+    linear-gradient(
+      160deg,
+      var(--chip-leather-highlight) 0%,
+      var(--chip-leather) 40%,
+      var(--chip-leather-deep) 100%
+    );
+
+  /* Gold tooled frame - the premium detail */
+  box-shadow:
+    /* Inner leather edge */
+    inset 0 1px 0 rgba(255, 255, 255, 0.06),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.4),
+    /* Gold tooling - triple line */
+    inset 0 0 0 6px var(--chip-leather),
+    inset 0 0 0 7px var(--chip-gold-deep),
+    inset 0 0 0 8px var(--chip-gold),
+    inset 0 0 0 9px var(--chip-gold-deep),
+    inset 0 0 0 12px var(--chip-leather),
+    /* Outer presence */
+    0 1px 1px rgba(0, 0, 0, 0.1),
+    0 4px 8px rgba(0, 0, 0, 0.15),
+    0 12px 24px rgba(15, 29, 22, 0.2),
+    0 24px 48px rgba(15, 29, 22, 0.15);
+
+  border: none;
+  will-change: transform, box-shadow;
+  transition: all var(--chip-duration) var(--chip-ease);
+}
+
+/* Hover - lift with presence */
+[data-skin="library"] .stat-chip:hover .stat-chip__body {
+  transform: rotateX(0deg) rotateY(0deg) translateY(-4px) scale(1.01);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.08),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.4),
+    inset 0 0 0 6px var(--chip-leather),
+    inset 0 0 0 7px var(--chip-gold-deep),
+    inset 0 0 0 8px var(--chip-gold),
+    inset 0 0 0 9px var(--chip-gold-deep),
+    inset 0 0 0 12px var(--chip-leather),
+    /* Gold catch light */
+    0 0 30px rgba(201, 162, 39, 0.15),
+    0 2px 2px rgba(0, 0, 0, 0.08),
+    0 8px 16px rgba(0, 0, 0, 0.18),
+    0 16px 32px rgba(15, 29, 22, 0.22),
+    0 32px 64px rgba(15, 29, 22, 0.18);
+}
+
+[data-skin="library"] .stat-chip:hover .stat-chip__shadow {
+  opacity: 0.7;
+  transform: scaleY(0.3) translateY(8px);
+}
+
+/* ============================================
+   CIRCUITS → MARBLED PAPER INSERT
+   ============================================ */
+[data-skin="library"] .stat-chip__circuits {
+  /* Marbled paper effect */
+  background:
+    /* Marble veins */
+    url("data:image/svg+xml,%3Csvg viewBox='0 0 400 400' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='marble'%3E%3CfeTurbulence type='turbulence' baseFrequency='0.008' numOctaves='3' seed='5'/%3E%3CfeColorMatrix type='hueRotate' values='30'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23marble)' opacity='0.12'/%3E%3C/svg%3E"),
+    /* Cream base */
+    var(--chip-cream);
+
+  /* Inset within gold frame */
+  position: absolute;
+  inset: 14px;
+  border-radius: 1px;
+  z-index: 2;
+
+  box-shadow:
+    inset 0 1px 3px rgba(0, 0, 0, 0.1),
+    inset 0 0 0 1px rgba(0, 0, 0, 0.05);
+}
+
+/* ============================================
+   HOLO CONTENT → CENTERED ON MARBLE
+   ============================================ */
+[data-skin="library"] .stat-chip__holo {
+  position: relative;
+  z-index: 5;
+  padding: 0.25rem;
+}
+
+/* ============================================
+   VALUE - GOLD LEAF NUMERALS
+   ============================================ */
+[data-skin="library"] .stat-chip__value {
+  font-family: 'Playfair Display', 'Didot', 'Georgia', serif;
+  font-size: 2.5rem;
+  font-weight: 700;
+  letter-spacing: -0.03em;
+
+  /* Gold leaf effect */
+  background: var(--chip-gold-shimmer);
+  background-size: 200% 200%;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+
+  /* Emboss shadow */
+  filter: drop-shadow(0 1px 0 rgba(255, 255, 255, 0.4))
+          drop-shadow(0 -1px 0 rgba(0, 0, 0, 0.1));
+
+  transition: all var(--chip-duration) var(--chip-ease);
+}
+
+/* Gold shimmer on hover */
+[data-skin="library"] .stat-chip:hover .stat-chip__value {
+  animation: gold-shimmer 2s ease-in-out infinite;
+}
+
+@keyframes gold-shimmer {
+  0%, 100% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+}
+
+/* Remove glitch */
+[data-skin="library"] .stat-chip__value::before,
+[data-skin="library"] .stat-chip__value::after {
+  content: none;
+  display: none;
+}
+
+/* ============================================
+   LABEL - ENGRAVED LETTERPRESS
+   ============================================ */
+[data-skin="library"] .stat-chip__label {
+  font-family: 'Cormorant Garamond', 'EB Garamond', 'Palatino', serif;
+  font-size: 0.65rem;
+  font-weight: 600;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--chip-ink-soft);
+
+  /* Letterpress deboss */
+  text-shadow:
+    0 1px 0 rgba(255, 255, 255, 0.5),
+    0 -0.5px 0 rgba(0, 0, 0, 0.15);
+}
+
+/* ============================================
+   META - CATALOGUE NUMBER
+   ============================================ */
+[data-skin="library"] .stat-chip__meta {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 0.6rem;
+  font-style: italic;
+  color: var(--chip-ink-soft);
+  opacity: 0.7;
+}
+
+/* ============================================
+   WEAR → AGED PATINA
+   ============================================ */
+[data-skin="library"] .stat-chip__wear {
+  background:
+    /* Corner age */
+    radial-gradient(ellipse 40% 40% at 0% 0%, rgba(74, 28, 36, 0.06), transparent),
+    radial-gradient(ellipse 30% 30% at 100% 100%, rgba(74, 28, 36, 0.04), transparent);
+  opacity: 1;
+  mix-blend-mode: multiply;
+  z-index: 3;
+}
+
+[data-skin="library"] .stat-chip__wear::before,
+[data-skin="library"] .stat-chip__wear::after {
+  content: none;
+}
+
+/* ============================================
+   ICON - WAX MUSEUM SEAL
+   ============================================ */
+[data-skin="library"] .stat-chip__icon {
+  clip-path: none;
+  border-radius: 50%;
+  z-index: 6;
+
+  /* Wax seal effect */
+  background:
+    radial-gradient(circle at 30% 30%, rgba(255, 255, 255, 0.2), transparent 50%),
+    radial-gradient(circle at 70% 70%, rgba(0, 0, 0, 0.2), transparent 50%),
+    linear-gradient(145deg, var(--chip-burgundy), #2A0F14);
+
+  border: none;
+  box-shadow:
+    inset 0 2px 4px rgba(255, 255, 255, 0.15),
+    inset 0 -2px 4px rgba(0, 0, 0, 0.3),
+    0 2px 4px rgba(0, 0, 0, 0.3),
+    0 4px 8px rgba(0, 0, 0, 0.2);
+
+  color: var(--chip-gold);
+  transition: all var(--chip-duration) var(--chip-ease);
+}
+
+[data-skin="library"] .stat-chip:hover .stat-chip__icon {
+  transform: scale(1.05);
+  box-shadow:
+    inset 0 2px 4px rgba(255, 255, 255, 0.2),
+    inset 0 -2px 4px rgba(0, 0, 0, 0.3),
+    0 0 20px rgba(201, 162, 39, 0.3),
+    0 4px 8px rgba(0, 0, 0, 0.35),
+    0 8px 16px rgba(0, 0, 0, 0.25);
+}
+
+[data-skin="library"] .stat-chip__icon svg {
+  width: 18px;
+  height: 18px;
+  filter: drop-shadow(0 1px 1px rgba(0, 0, 0, 0.3));
+}
+
+/* ============================================
+   PINS - HIDDEN
+   ============================================ */
+[data-skin="library"] .stat-chip__pins,
+[data-skin="library"] .stat-chip__pin {
+  display: none;
+}
+
+/* ============================================
+   LOADING
+   ============================================ */
+[data-skin="library"] .stat-chip--loading .stat-chip__value {
+  --lib-pulse-min: 0.5;
+  --lib-pulse-max: 0.8;
+  animation: lib-pulse 2.5s ease-in-out infinite;
+}
+
+/* ============================================
+   REDUCED MOTION
+   ============================================ */
+@media (prefers-reduced-motion: reduce) {
+  [data-skin="library"] .stat-chip__body,
+  [data-skin="library"] .stat-chip__shadow,
+  [data-skin="library"] .stat-chip__icon,
+  [data-skin="library"] .stat-chip__value {
+    transition: none;
+    animation: none;
+  }
+}

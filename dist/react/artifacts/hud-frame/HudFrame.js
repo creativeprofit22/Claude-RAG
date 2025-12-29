@@ -7,6 +7,7 @@ import { jsx as _jsx, jsxs as _jsxs } from "react/jsx-runtime";
 import { memo } from 'react';
 import './hud-frame.base.css';
 import './hud-frame.cyberpunk.css';
+import './hud-frame.library.css';
 /** Reticle symbol - crosshair/targeting icon */
 const RETICLE_SYMBOL = '\u2295'; // ⊕ circled plus
 /** Corner positions for reticle decorations */

@@ -1,6 +1,7 @@
 import { jsx as _jsx, jsxs as _jsxs, Fragment as _Fragment } from "react/jsx-runtime";
 import './terminal-readout.base.css';
 import './terminal-readout.cyberpunk.css';
+import './terminal-readout.library.css';
 /** Calculate bar fill based on status */
 function getStatusBarFill(status) {
     switch (status) {
