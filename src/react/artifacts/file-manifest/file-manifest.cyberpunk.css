@@ -1,0 +1,558 @@
+/**
+ * FileManifest Cyberpunk Skin - "Corrupted Thermal Printout"
+ * Skeuomorphic thermal receipt integrated with cyberpunk palette
+ *
+ * Features:
+ * - Torn top edge (ripped from printer)
+ * - Perforated bottom edge
+ * - Feed holes on left margin (tractor-feed paper) with cyan glow
+ * - Thermal paper aging/yellowing
+ * - 2-row entry layout (status + name + time / indented metadata)
+ * - Cyan/magenta palette integration
+ * - Scanline artifacts
+ */
+
+/* ============================================
+   CYBERPUNK TOKENS - DIGITAL TERMINAL PALETTE
+   ============================================ */
+[data-skin="cyberpunk"] {
+  /* Core neon palette - matching other components */
+  --manifest-neon-cyan: #00ffff;
+  --manifest-neon-magenta: #ff00ff;
+  --manifest-corrupt-red: #ff3366;
+  --manifest-warning-amber: #ffaa00;
+
+  /* Screen colors - dark CRT terminal feel */
+  --manifest-screen-base: #080c10;
+  --manifest-screen-content: #0a1015;
+  --manifest-phosphor-text: #7dd8e8;
+  --manifest-phosphor-dim: rgba(125, 216, 232, 0.45);
+
+  /* Data ports - glowing connection points */
+  --manifest-port-bg: #050810;
+  --manifest-port-void: #020406;
+
+  /* Glow effects */
+  --manifest-glow-cyan: rgba(0, 255, 255, 0.5);
+  --manifest-glow-red: rgba(255, 51, 102, 0.5);
+
+  /* Scanline settings - more visible for CRT feel */
+  --manifest-scanline-opacity: 0.06;
+}
+
+/* ============================================
+   PRINTOUT WRAPPER - Digital Screen Container
+   ============================================ */
+[data-skin="cyberpunk"] .file-manifest__printout {
+  background: var(--manifest-screen-base);
+  border-radius: 4px;
+  /* CRT screen curvature */
+  border-radius: 4px / 20px;
+  box-shadow:
+    /* Screen depth */
+    inset 0 0 60px rgba(0, 0, 0, 0.4),
+    inset 0 0 20px rgba(0, 255, 255, 0.03),
+    /* Outer glow */
+    0 0 30px rgba(0, 255, 255, 0.08),
+    0 4px 20px rgba(0, 0, 0, 0.5);
+  /* Subtle border for definition */
+  border: 1px solid rgba(0, 255, 255, 0.12);
+}
+
+[data-skin="cyberpunk"] .file-manifest__printout:hover {
+  box-shadow:
+    inset 0 0 60px rgba(0, 0, 0, 0.4),
+    inset 0 0 30px rgba(0, 255, 255, 0.05),
+    0 0 40px rgba(0, 255, 255, 0.12),
+    0 6px 24px rgba(0, 0, 0, 0.6);
+  border-color: rgba(0, 255, 255, 0.18);
+}
+
+/* ============================================
+   FEED HOLES - Data Port Indicators
+   ============================================ */
+[data-skin="cyberpunk"] .file-manifest__feed-holes {
+  background: var(--manifest-port-bg);
+  border-right: 1px solid rgba(0, 255, 255, 0.08);
+}
+
+[data-skin="cyberpunk"] .file-manifest__feed-hole {
+  background: var(--manifest-port-void);
+  border: 1px solid rgba(0, 255, 255, 0.25);
+  box-shadow:
+    inset 0 0 4px rgba(0, 0, 0, 0.9),
+    0 0 8px rgba(0, 255, 255, 0.2),
+    0 0 16px rgba(0, 255, 255, 0.1);
+  /* Pulsing glow animation */
+  animation: port-pulse 3s ease-in-out infinite;
+  animation-delay: calc(var(--hole-index, 0) * 0.2s);
+}
+
+@keyframes port-pulse {
+  0%, 100% {
+    box-shadow:
+      inset 0 0 4px rgba(0, 0, 0, 0.9),
+      0 0 8px rgba(0, 255, 255, 0.2),
+      0 0 16px rgba(0, 255, 255, 0.1);
+  }
+  50% {
+    box-shadow:
+      inset 0 0 4px rgba(0, 0, 0, 0.9),
+      0 0 12px rgba(0, 255, 255, 0.35),
+      0 0 24px rgba(0, 255, 255, 0.15);
+  }
+}
+
+/* ============================================
+   SCREEN CONTENT - Phosphor display area
+   ============================================ */
+[data-skin="cyberpunk"] .file-manifest__paper {
+  background:
+    /* CRT phosphor grain */
+    url("data:image/svg+xml,%3Csvg viewBox='0 0 4 4' xmlns='http://www.w3.org/2000/svg'%3E%3Crect width='1' height='1' fill='rgba(0,255,255,0.015)'/%3E%3Crect x='2' y='2' width='1' height='1' fill='rgba(0,255,255,0.01)'/%3E%3C/svg%3E"),
+    /* Screen vignette */
+    radial-gradient(
+      ellipse at center,
+      transparent 0%,
+      transparent 60%,
+      rgba(0, 0, 0, 0.3) 100%
+    ),
+    var(--manifest-screen-content);
+  position: relative;
+}
+
+/* ============================================
+   HEADER - Terminal style with cyan accents
+   ============================================ */
+[data-skin="cyberpunk"] .file-manifest__header {
+  border-bottom: 1px solid rgba(0, 255, 255, 0.15);
+  padding-bottom: 0.75rem;
+}
+
+[data-skin="cyberpunk"] .file-manifest__title {
+  font-family: 'Share Tech Mono', 'Courier New', monospace;
+  font-weight: 700;
+  color: var(--manifest-neon-cyan);
+  text-shadow:
+    0 0 10px var(--manifest-neon-cyan),
+    0 0 20px rgba(0, 255, 255, 0.3);
+  letter-spacing: 0.15em;
+}
+
+[data-skin="cyberpunk"] .file-manifest__sector {
+  font-family: 'Share Tech Mono', monospace;
+  color: var(--manifest-phosphor-dim);
+  text-shadow: 0 0 6px rgba(0, 255, 255, 0.2);
+}
+
+[data-skin="cyberpunk"] .file-manifest__header-divider {
+  font-family: 'Share Tech Mono', monospace;
+  color: rgba(0, 255, 255, 0.25);
+  text-shadow: 0 0 4px rgba(0, 255, 255, 0.1);
+}
+
+[data-skin="cyberpunk"] .file-manifest__integrity {
+  font-family: 'Share Tech Mono', monospace;
+  color: var(--manifest-phosphor-dim);
+  text-shadow: 0 0 4px rgba(0, 255, 255, 0.15);
+}
+
+/* ============================================
+   ENTRIES - Phosphor text display
+   ============================================ */
+[data-skin="cyberpunk"] .file-manifest__entry {
+  font-family: 'Share Tech Mono', monospace;
+  color: var(--manifest-phosphor-text);
+  text-shadow: 0 0 4px rgba(0, 255, 255, 0.2);
+  padding: 0.5rem 0;
+  border-bottom: 1px solid rgba(0, 255, 255, 0.06);
+  transition: all 0.15s ease-out;
+  position: relative;
+}
+
+[data-skin="cyberpunk"] .file-manifest__entry:last-child {
+  border-bottom: none;
+}
+
+/* Hover accent bar */
+[data-skin="cyberpunk"] .file-manifest__entry::before {
+  content: '';
+  position: absolute;
+  left: -0.75rem;
+  top: 0;
+  width: 2px;
+  height: 100%;
+  background: var(--manifest-neon-cyan);
+  opacity: 0;
+  transition: opacity 0.15s ease-out;
+  box-shadow: 0 0 8px var(--manifest-neon-cyan);
+}
+
+[data-skin="cyberpunk"] .file-manifest__entry:hover {
+  color: var(--manifest-neon-cyan);
+  text-shadow: 0 0 6px rgba(0, 255, 255, 0.3);
+}
+
+[data-skin="cyberpunk"] .file-manifest__entry:hover::before {
+  opacity: 1;
+}
+
+/* Status indicator - healthy (bullet) */
+[data-skin="cyberpunk"] .file-manifest__entry-status {
+  color: var(--manifest-neon-cyan);
+  text-shadow: 0 0 6px var(--manifest-neon-cyan);
+}
+
+/* Status indicator - error (block) */
+[data-skin="cyberpunk"] .file-manifest__entry-status--error {
+  color: var(--manifest-corrupt-red);
+  text-shadow: 0 0 8px var(--manifest-corrupt-red);
+  animation: status-blink 1s step-end infinite;
+}
+
+@keyframes status-blink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.4; }
+}
+
+/* File name */
+[data-skin="cyberpunk"] .file-manifest__entry-name {
+  color: inherit;
+}
+
+/* Timestamp */
+[data-skin="cyberpunk"] .file-manifest__entry-time {
+  color: var(--manifest-phosphor-dim);
+  font-variant-numeric: tabular-nums;
+  text-shadow: 0 0 4px rgba(0, 255, 255, 0.15);
+}
+
+/* Secondary row - metadata */
+[data-skin="cyberpunk"] .file-manifest__entry-row--secondary {
+  color: var(--manifest-phosphor-dim);
+}
+
+[data-skin="cyberpunk"] .file-manifest__entry-indent {
+  color: rgba(0, 255, 255, 0.25);
+  text-shadow: 0 0 4px rgba(0, 255, 255, 0.1);
+}
+
+[data-skin="cyberpunk"] .file-manifest__entry-meta {
+  color: var(--manifest-phosphor-dim);
+  text-shadow: 0 0 4px rgba(0, 255, 255, 0.1);
+}
+
+/* ============================================
+   CORRUPTED ENTRY - Glitch effects
+   ============================================ */
+[data-skin="cyberpunk"] .file-manifest__entry--corrupted {
+  color: var(--manifest-corrupt-red);
+  text-shadow:
+    0 0 4px var(--manifest-corrupt-red),
+    0 0 10px rgba(255, 51, 102, 0.3);
+  animation: entry-glitch 0.8s step-end infinite;
+}
+
+[data-skin="cyberpunk"] .file-manifest__entry--corrupted::before {
+  background: var(--manifest-corrupt-red);
+  box-shadow: 0 0 8px var(--manifest-corrupt-red);
+}
+
+[data-skin="cyberpunk"] .file-manifest__entry--corrupted:hover {
+  color: var(--manifest-corrupt-red);
+  text-shadow:
+    0 0 6px var(--manifest-corrupt-red),
+    0 0 14px rgba(255, 51, 102, 0.4);
+}
+
+[data-skin="cyberpunk"] .file-manifest__entry--corrupted:hover::before {
+  opacity: 1;
+}
+
+[data-skin="cyberpunk"] .file-manifest__entry--corrupted .file-manifest__entry-time {
+  color: rgba(255, 51, 102, 0.6);
+}
+
+[data-skin="cyberpunk"] .file-manifest__entry--corrupted .file-manifest__entry-row--secondary {
+  color: rgba(255, 51, 102, 0.6);
+}
+
+[data-skin="cyberpunk"] .file-manifest__entry--corrupted .file-manifest__entry-indent {
+  color: rgba(255, 51, 102, 0.25);
+}
+
+/* Error text (ERR label) */
+[data-skin="cyberpunk"] .file-manifest__error-text {
+  font-family: 'Share Tech Mono', monospace;
+  font-weight: 700;
+  color: var(--manifest-corrupt-red);
+  text-shadow:
+    0 0 8px var(--manifest-corrupt-red),
+    0 0 16px rgba(255, 51, 102, 0.5);
+  animation: error-flash 0.4s step-end infinite;
+}
+
+@keyframes entry-glitch {
+  0%, 100% {
+    transform: translateX(0);
+    clip-path: inset(0 0 0 0);
+  }
+  5% {
+    transform: translateX(-2px);
+    clip-path: inset(10% 0 80% 0);
+  }
+  10% {
+    transform: translateX(2px);
+    clip-path: inset(40% 0 50% 0);
+  }
+  15% {
+    transform: translateX(0);
+    clip-path: inset(0 0 0 0);
+  }
+  45% {
+    transform: translateX(1px);
+    clip-path: inset(70% 0 20% 0);
+  }
+  50% {
+    transform: translateX(-1px);
+    clip-path: inset(30% 0 60% 0);
+  }
+  55% {
+    transform: translateX(0);
+    clip-path: inset(0 0 0 0);
+  }
+}
+
+@keyframes error-flash {
+  0%, 100% {
+    opacity: 1;
+    transform: translateX(0);
+  }
+  25% {
+    opacity: 0.7;
+    transform: translateX(-1px);
+  }
+  50% {
+    opacity: 1;
+    transform: translateX(1px);
+  }
+  75% {
+    opacity: 0.8;
+    transform: translateX(0);
+  }
+}
+
+/* ============================================
+   FOOTER DIVIDER
+   ============================================ */
+[data-skin="cyberpunk"] .file-manifest__footer-divider {
+  font-family: 'Share Tech Mono', monospace;
+  color: rgba(0, 255, 255, 0.2);
+  text-shadow: 0 0 4px rgba(0, 255, 255, 0.1);
+}
+
+/* ============================================
+   FOOTER / STATS
+   ============================================ */
+[data-skin="cyberpunk"] .file-manifest__footer {
+  border-top: 1px dashed rgba(0, 255, 255, 0.12);
+  padding-top: 0.625rem;
+}
+
+[data-skin="cyberpunk"] .file-manifest__stat {
+  font-family: 'Share Tech Mono', monospace;
+  color: var(--manifest-phosphor-dim);
+  text-shadow: 0 0 6px rgba(0, 255, 255, 0.15);
+}
+
+[data-skin="cyberpunk"] .file-manifest__stat--warn {
+  color: var(--manifest-corrupt-red);
+  text-shadow: 0 0 6px var(--manifest-corrupt-red);
+}
+
+/* ============================================
+   CORRUPTION BAR
+   ============================================ */
+[data-skin="cyberpunk"] .file-manifest__corruption-bar {
+  background: rgba(255, 51, 102, 0.08);
+  border: 1px solid rgba(255, 51, 102, 0.2);
+  border-radius: 2px;
+}
+
+[data-skin="cyberpunk"] .file-manifest__corruption-fill {
+  background:
+    repeating-linear-gradient(
+      90deg,
+      var(--manifest-corrupt-red) 0px,
+      var(--manifest-corrupt-red) 6px,
+      rgba(255, 51, 102, 0.4) 6px,
+      rgba(255, 51, 102, 0.4) 8px
+    );
+  box-shadow:
+    0 0 10px var(--manifest-corrupt-red),
+    0 0 20px rgba(255, 51, 102, 0.25);
+  animation: corruption-pulse 1.5s ease-in-out infinite;
+}
+
+@keyframes corruption-pulse {
+  0%, 100% {
+    opacity: 1;
+    box-shadow: 0 0 10px var(--manifest-corrupt-red), 0 0 20px rgba(255, 51, 102, 0.25);
+  }
+  50% {
+    opacity: 0.75;
+    box-shadow: 0 0 14px var(--manifest-corrupt-red), 0 0 28px rgba(255, 51, 102, 0.4);
+  }
+}
+
+/* ============================================
+   PERFORATION LINE - Digital divider
+   ============================================ */
+[data-skin="cyberpunk"] .file-manifest__perforation-line {
+  border-color: var(--manifest-neon-cyan);
+  opacity: 0.15;
+}
+
+/* ============================================
+   SCANLINES OVERLAY
+   ============================================ */
+[data-skin="cyberpunk"] .file-manifest__scanlines {
+  background: repeating-linear-gradient(
+    0deg,
+    transparent 0px,
+    transparent 2px,
+    rgba(0, 0, 0, var(--manifest-scanline-opacity)) 2px,
+    rgba(0, 0, 0, var(--manifest-scanline-opacity)) 4px
+  );
+  animation: scanline-scroll 10s linear infinite;
+}
+
+@keyframes scanline-scroll {
+  0% { background-position: 0 0; }
+  100% { background-position: 0 100px; }
+}
+
+/* ============================================
+   GLITCH OVERLAY (high corruption)
+   ============================================ */
+[data-skin="cyberpunk"] .file-manifest__glitch {
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(255, 51, 102, 0.03) 30%,
+    transparent 50%,
+    rgba(0, 255, 255, 0.02) 70%,
+    transparent 100%
+  );
+  animation: glitch-sweep 0.5s step-end infinite;
+}
+
+@keyframes glitch-sweep {
+  0%, 100% {
+    opacity: 0;
+    transform: translateX(0);
+  }
+  10% {
+    opacity: 1;
+    transform: translateX(-3%);
+  }
+  20% {
+    opacity: 0;
+    transform: translateX(2%);
+  }
+  50% {
+    opacity: 0.6;
+    transform: translateX(-1%);
+  }
+  60% {
+    opacity: 0;
+    transform: translateX(0);
+  }
+}
+
+/* ============================================
+   EMPTY STATE
+   ============================================ */
+[data-skin="cyberpunk"] .file-manifest__empty {
+  color: var(--manifest-phosphor-dim);
+  text-shadow: 0 0 8px rgba(0, 255, 255, 0.15);
+  font-family: 'Share Tech Mono', monospace;
+}
+
+[data-skin="cyberpunk"] .file-manifest__empty-icon {
+  color: var(--manifest-neon-cyan);
+  text-shadow:
+    0 0 10px var(--manifest-neon-cyan),
+    0 0 20px rgba(0, 255, 255, 0.4);
+}
+
+/* ============================================
+   SCROLLBAR - Cyberpunk style
+   ============================================ */
+[data-skin="cyberpunk"] .file-manifest__entries::-webkit-scrollbar-thumb {
+  background: rgba(0, 255, 255, 0.2);
+}
+
+[data-skin="cyberpunk"] .file-manifest__entries::-webkit-scrollbar-thumb:hover {
+  background: rgba(0, 255, 255, 0.35);
+}
+
+/* ============================================
+   LOADING STATE
+   ============================================ */
+[data-skin="cyberpunk"] .file-manifest--loading .file-manifest__entry--skeleton {
+  animation: skeleton-scan 1.2s ease-in-out infinite;
+}
+
+[data-skin="cyberpunk"] .file-manifest--loading .file-manifest__entry--skeleton .file-manifest__entry-status {
+  color: var(--manifest-phosphor-dim);
+  text-shadow: 0 0 4px rgba(0, 255, 255, 0.1);
+}
+
+@keyframes skeleton-scan {
+  0%, 100% { opacity: 0.3; }
+  50% { opacity: 0.5; }
+}
+
+/* ============================================
+   REDUCED MOTION - ACCESSIBILITY
+   ============================================ */
+@media (prefers-reduced-motion: reduce) {
+  [data-skin="cyberpunk"] .file-manifest__entry {
+    transition: none !important;
+  }
+
+  [data-skin="cyberpunk"] .file-manifest__feed-hole {
+    animation: none !important;
+  }
+
+  [data-skin="cyberpunk"] .file-manifest__entry--corrupted {
+    animation: none !important;
+  }
+
+  [data-skin="cyberpunk"] .file-manifest__entry-status--error {
+    animation: none !important;
+  }
+
+  [data-skin="cyberpunk"] .file-manifest__error-text {
+    animation: none !important;
+  }
+
+  [data-skin="cyberpunk"] .file-manifest__corruption-fill {
+    animation: none !important;
+  }
+
+  [data-skin="cyberpunk"] .file-manifest__scanlines {
+    animation: none !important;
+  }
+
+  [data-skin="cyberpunk"] .file-manifest__glitch {
+    animation: none !important;
+    opacity: 0.3;
+  }
+
+  [data-skin="cyberpunk"] .file-manifest--loading .file-manifest__entry--skeleton {
+    animation: none !important;
+    opacity: 0.4;
+  }
+}

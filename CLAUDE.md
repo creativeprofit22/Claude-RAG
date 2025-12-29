@@ -13,19 +13,24 @@ Query → Gemini Embeddings → LanceDB → Chunks → Claude Code CLI → Respo
 ```
 
 ## Pipeline State
-Phase: refactoring
-Feature: HUD Frame Cyberpunk Artifact
-Files: HudFrame.tsx, hud-frame.base.css, hud-frame.cyberpunk.css, AdminDashboard.tsx
-Refactor-Report: reports/refactors-hud-frame-cyberpunk.md
-Refactors-Remaining: 18
+Phase: refactor-hunt
+Feature: FileManifest Cyberpunk Artifact
+Files: FileManifest.tsx, file-manifest.base.css, file-manifest.cyberpunk.css, AdminDashboard.tsx
+Validation-Report: reports/validation-file-manifest-cyberpunk.md
 
 ## Last Session (2025-12-29)
-**HUD Frame Refactor Hunt Complete:**
-- Report: reports/refactors-hud-frame-cyberpunk.md
-- High: 3, Medium: 9, Low: 6
-- Total: 18 refactors identified
+**FileManifest Cyberpunk Validation + Fixes:**
+- Report: reports/validation-file-manifest-cyberpunk.md
+- Tests: MISSING (no coverage)
+- API: PASS (types match)
+- Wiring: PASS (imports/exports correct)
+- Fixes Applied:
+  - B2: Removed derived `corruptionIntensity` from useMemo deps
+  - BUG-1: Added `--hole-index` CSS variable to feed holes
+- Remaining: B1 (deferred), B3-B5 (long-term optimizations)
 
 ## Completed
+- PowerConduit Cyberpunk Artifact (2025-12-29) - Built, validated, refactored (4 items)
 - StatChip Cyberpunk Artifact (2025-12-28) - Built, validated, refactor-hunted (clean)
 - Phase 3: Modals + Upload Motion System (2025-12-28)
 - Final E2E Validation (2025-12-29)

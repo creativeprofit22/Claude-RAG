@@ -11,7 +11,7 @@ import './hud-frame.cyberpunk.css';
 const RETICLE_SYMBOL = '\u2295'; // ⊕ circled plus
 /** Corner positions for reticle decorations */
 const RETICLE_POSITIONS = ['tl', 'tr', 'bl', 'br'];
-export const HudFrame = memo(function HudFrame({ children, title, icon, size = 'default', variant = 'default', isLoading = false, hideHeader = false, hideReticles = false, className = '', 'aria-label': ariaLabel, }) {
+export const HudFrame = memo(function HudFrame({ children, title, icon, size = 'default', variant = 'default', isLoading = false, hideHeader = false, hideReticles = false, className = '', style, 'aria-label': ariaLabel, }) {
     // Build class names
     const frameClasses = [
         'hud-frame',
@@ -23,7 +23,7 @@ export const HudFrame = memo(function HudFrame({ children, title, icon, size = '
     ]
         .filter(Boolean)
         .join(' ');
-    return (_jsx("section", { className: frameClasses, "aria-label": ariaLabel || title, "aria-busy": isLoading, children: _jsxs("div", { className: "hud-frame__body", children: [_jsx("div", { className: "hud-frame__glow", "aria-hidden": "true" }), !hideHeader && title && (_jsxs("header", { className: "hud-frame__header", children: [icon && (_jsx("span", { className: "hud-frame__title-icon", children: icon })), _jsx("span", { className: "hud-frame__title", children: title })] })), !hideReticles && RETICLE_POSITIONS.map((pos) => (_jsx("span", { className: `hud-frame__reticle hud-frame__reticle--${pos}`, "aria-hidden": "true", children: RETICLE_SYMBOL }, pos))), _jsx("div", { className: "hud-frame__content", children: children }), _jsx("div", { className: "hud-frame__scan", "aria-hidden": "true" })] }) }));
+    return (_jsx("section", { className: frameClasses, style: style, "aria-label": ariaLabel || title, "aria-busy": isLoading, children: _jsxs("div", { className: "hud-frame__body", children: [_jsx("div", { className: "hud-frame__glow", "aria-hidden": "true" }), !hideHeader && title && (_jsxs("header", { className: "hud-frame__header", children: [icon && (_jsx("span", { className: "hud-frame__title-icon", children: icon })), _jsx("span", { className: "hud-frame__title", children: title })] })), !hideReticles && RETICLE_POSITIONS.map((pos) => (_jsx("span", { className: `hud-frame__reticle hud-frame__reticle--${pos}`, "aria-hidden": "true", children: RETICLE_SYMBOL }, pos))), _jsx("div", { className: "hud-frame__content", children: children }), _jsx("div", { className: "hud-frame__scan", "aria-hidden": "true" })] }) }));
 });
 export default HudFrame;
 //# sourceMappingURL=HudFrame.js.map

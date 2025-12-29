@@ -27,6 +27,8 @@ export interface HudFrameProps {
     hideReticles?: boolean;
     /** Optional className for additional styling */
     className?: string;
+    /** Optional inline styles */
+    style?: React.CSSProperties;
     /** Optional aria-label for accessibility */
     'aria-label'?: string;
 }

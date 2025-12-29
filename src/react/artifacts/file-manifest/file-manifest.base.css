@@ -1,0 +1,413 @@
+/**
+ * FileManifest Base Styles
+ * "Corrupted Data Terminal Printout" - Thermal receipt with physical wear
+ *
+ * Layout visualization:
+ * ┌──────────────────────────────────────────┐
+ * │ ○  ┌─────────────────────────────────┐   │  <- Feed holes + torn top
+ * │ ○  │ FILE_MANIFEST       SECTOR 7G   │   │
+ * │ ○  │ ================================│   │
+ * │ ○  │ DATA INTEGRITY: 85%             │   │
+ * │ ○  │                                 │   │
+ * │ ○  │ ● report.pdf              12:34 │   │  <- Primary row
+ * │ ○  │   └─ 24 chunks                  │   │  <- Secondary row
+ * │ ○  │                                 │   │
+ * │ ○  │ █ data████.csv            ██:██ │   │  <- Corrupted entry
+ * │ ○  │   └─ ERR                        │   │
+ * │ ○  │                                 │   │
+ * │ ○  │ --------------------------------│   │
+ * │ ○  │ TOTAL: 5          ERR: 2        │   │
+ * │ ○  │ [████████░░░░░░░░]              │   │  <- Corruption bar
+ * │ ○  └─────────────────────────────────┘   │
+ * │....─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─....│   │  <- Perforated tear line
+ * └──────────────────────────────────────────┘
+ */
+
+/* ============================================
+   ROOT CONTAINER - FILLS PARENT
+   ============================================ */
+.file-manifest {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.file-manifest--printout {
+  /* Modifier for printout variant */
+}
+
+/* ============================================
+   PRINTOUT WRAPPER - Physical paper effect
+   ============================================ */
+.file-manifest__printout {
+  position: relative;
+  display: flex;
+  flex: 1;
+  min-height: 0;
+  clip-path: var(--torn-edge, none);
+}
+
+/* ============================================
+   FEED HOLES - Sprocket holes on left edge
+   ============================================ */
+.file-manifest__feed-holes {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-around;
+  align-items: center;
+  width: 24px;
+  padding: 16px 6px;
+  flex-shrink: 0;
+}
+
+.file-manifest__feed-hole {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+/* ============================================
+   PAPER - Main content area (FILLS REMAINING SPACE)
+   ============================================ */
+.file-manifest__paper {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  padding: 1rem 1.25rem 1rem 0.75rem;
+  min-height: 0;
+  overflow: hidden;
+}
+
+/* ============================================
+   HEADER - Thermal print style
+   ============================================ */
+.file-manifest__header {
+  font-family: 'Courier New', monospace;
+  font-size: 0.8125rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: 1rem;
+  flex-shrink: 0;
+}
+
+.file-manifest__header-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.file-manifest__title {
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  font-size: 0.875rem;
+}
+
+.file-manifest__sector {
+  font-size: 0.6875rem;
+  opacity: 0.7;
+}
+
+.file-manifest__header-divider {
+  font-size: 0.6875rem;
+  margin: 0.375rem 0;
+  opacity: 0.5;
+  overflow: hidden;
+  white-space: nowrap;
+}
+
+.file-manifest__integrity {
+  font-size: 0.6875rem;
+  opacity: 0.6;
+  margin-top: 0.25rem;
+}
+
+/* ============================================
+   ENTRIES CONTAINER - SCROLLABLE
+   ============================================ */
+.file-manifest__entries {
+  display: flex;
+  flex-direction: column;
+  gap: 0.625rem;
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding-right: 0.25rem;
+}
+
+/* Custom scrollbar for entries */
+.file-manifest__entries::-webkit-scrollbar {
+  width: 4px;
+}
+
+.file-manifest__entries::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.file-manifest__entries::-webkit-scrollbar-thumb {
+  background: rgba(100, 100, 100, 0.3);
+  border-radius: 2px;
+}
+
+/* ============================================
+   ENTRY - Two-row layout
+   ============================================ */
+.file-manifest__entry {
+  display: flex;
+  flex-direction: column;
+  font-family: 'Courier New', monospace;
+  font-size: 0.875rem;
+  transition: opacity 0.15s ease;
+  flex-shrink: 0;
+}
+
+/* Entry rows (shared) */
+.file-manifest__entry-row {
+  display: flex;
+  align-items: center;
+  gap: 0.625rem;
+}
+
+/* Primary row: status, name, time */
+.file-manifest__entry-row--primary {
+  min-height: 1.5rem;
+}
+
+/* Secondary row: indented metadata */
+.file-manifest__entry-row--secondary {
+  padding-left: 1.25rem;
+  font-size: 0.75rem;
+  opacity: 0.7;
+  min-height: 1.125rem;
+}
+
+/* Status indicator */
+.file-manifest__entry-status {
+  width: 1.125rem;
+  flex-shrink: 0;
+  text-align: center;
+  font-size: 0.625rem;
+}
+
+/* File name */
+.file-manifest__entry-name {
+  flex: 1;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  min-width: 0;
+}
+
+/* Time stamp */
+.file-manifest__entry-time {
+  flex-shrink: 0;
+  font-size: 0.8125rem;
+  opacity: 0.8;
+  font-variant-numeric: tabular-nums;
+}
+
+/* Indent character for secondary row */
+.file-manifest__entry-indent {
+  opacity: 0.4;
+  flex-shrink: 0;
+}
+
+/* Metadata (chunks) */
+.file-manifest__entry-meta {
+  font-size: 0.75rem;
+}
+
+/* Error text */
+.file-manifest__error-text {
+  font-weight: 700;
+  letter-spacing: 0.1em;
+}
+
+/* ============================================
+   CORRUPTED ENTRY MODIFIER
+   ============================================ */
+.file-manifest__entry--corrupted {
+  /* Styling in skin CSS */
+}
+
+.file-manifest__entry-status--error {
+  /* Styling in skin CSS */
+}
+
+/* ============================================
+   SKELETON ENTRY (Loading)
+   ============================================ */
+.file-manifest__entry--skeleton {
+  opacity: 0.5;
+}
+
+/* ============================================
+   EMPTY STATE
+   ============================================ */
+.file-manifest__empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.625rem;
+  padding: 2.5rem 1rem;
+  font-family: 'Courier New', monospace;
+  font-size: 0.8125rem;
+  opacity: 0.5;
+  text-align: center;
+  flex: 1;
+}
+
+.file-manifest__empty-icon {
+  font-size: 1.75rem;
+  opacity: 0.6;
+}
+
+/* ============================================
+   FOOTER DIVIDER
+   ============================================ */
+.file-manifest__footer-divider {
+  font-family: 'Courier New', monospace;
+  font-size: 0.6875rem;
+  opacity: 0.5;
+  margin: 1rem 0 0.625rem;
+  overflow: hidden;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+/* ============================================
+   FOOTER
+   ============================================ */
+.file-manifest__footer {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  font-family: 'Courier New', monospace;
+  font-size: 0.6875rem;
+  text-transform: uppercase;
+  flex-shrink: 0;
+}
+
+.file-manifest__stats {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.file-manifest__stat {
+  letter-spacing: 0.05em;
+}
+
+.file-manifest__stat--warn {
+  /* Styling in skin CSS */
+}
+
+/* ============================================
+   CORRUPTION BAR
+   ============================================ */
+.file-manifest__corruption-bar {
+  position: relative;
+  height: 8px;
+  overflow: hidden;
+}
+
+.file-manifest__corruption-fill {
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 100%;
+  width: var(--corruption-percent, 0%);
+  transition: width 0.3s ease;
+}
+
+/* ============================================
+   PERFORATION (tear line at bottom)
+   ============================================ */
+.file-manifest__perforation {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 10px;
+  overflow: hidden;
+}
+
+.file-manifest__perforation-line {
+  position: absolute;
+  bottom: 5px;
+  left: 24px;
+  right: 0;
+  height: 0;
+  border-bottom: 2px dashed currentColor;
+  opacity: 0.3;
+}
+
+/* ============================================
+   SCANLINES OVERLAY
+   ============================================ */
+.file-manifest__scanlines {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 10;
+}
+
+/* ============================================
+   GLITCH OVERLAY
+   ============================================ */
+.file-manifest__glitch {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 11;
+}
+
+/* ============================================
+   REDUCED MOTION
+   ============================================ */
+@media (prefers-reduced-motion: reduce) {
+  .file-manifest__entry {
+    transition: none !important;
+  }
+
+  .file-manifest__corruption-fill {
+    transition: none !important;
+  }
+
+  .file-manifest__scanlines,
+  .file-manifest__glitch {
+    animation: none !important;
+  }
+}
+
+/* ============================================
+   RESPONSIVE - Narrow screens
+   ============================================ */
+@media (max-width: 360px) {
+  .file-manifest__feed-holes {
+    width: 18px;
+    padding: 12px 4px;
+  }
+
+  .file-manifest__feed-hole {
+    width: 8px;
+    height: 8px;
+  }
+
+  .file-manifest__paper {
+    padding: 0.75rem 1rem 0.75rem 0.5rem;
+  }
+
+  .file-manifest__entry {
+    font-size: 0.8125rem;
+  }
+
+  .file-manifest__entry-row--secondary {
+    font-size: 0.6875rem;
+  }
+}

@@ -93551,6 +93551,7 @@ var RAGBundle = (() => {
     hideHeader = false,
     hideReticles = false,
     className = "",
+    style,
     "aria-label": ariaLabel
   }) {
     const frameClasses = [
@@ -93565,6 +93566,7 @@ var RAGBundle = (() => {
       "section",
       {
         className: frameClasses,
+        style,
         "aria-label": ariaLabel || title,
         "aria-busy": isLoading,
         children: /* @__PURE__ */ jsxs("div", { className: "hud-frame__body", children: [
@@ -93598,8 +93600,10 @@ var RAGBundle = (() => {
     segments = 10,
     className = ""
   }) {
-    const percentage = Math.min(100, Math.max(0, value / max3 * 100));
+    const percentage = max3 > 0 ? Math.min(100, Math.max(0, value / max3 * 100)) : 0;
+    const roundedPct = Math.round(percentage);
     const filledSegments = Math.round(percentage / 100 * segments);
+    const isFull = percentage === 100;
     const segmentElements = Array.from({ length: segments }, (_, i) => {
       const isFilled = i < filledSegments;
       const isLast = i === filledSegments - 1 && filledSegments > 0;
@@ -93615,7 +93619,7 @@ var RAGBundle = (() => {
     return /* @__PURE__ */ jsxs(
       "div",
       {
-        className: `power-conduit power-conduit--${variant} ${className}`,
+        className: `power-conduit power-conduit--${variant}${isFull ? " power-conduit--full" : ""} ${className}`,
         role: "progressbar",
         "aria-valuenow": value,
         "aria-valuemin": 0,
@@ -93631,8 +93635,8 @@ var RAGBundle = (() => {
           ] }),
           /* @__PURE__ */ jsxs("div", { className: "power-conduit__info", children: [
             /* @__PURE__ */ jsx("span", { className: "power-conduit__label", children: label }),
-            /* @__PURE__ */ jsxs("span", { className: "power-conduit__value", "data-text": `${Math.round(percentage)}%`, children: [
-              Math.round(percentage),
+            /* @__PURE__ */ jsxs("span", { className: "power-conduit__value", "data-text": `${roundedPct}%`, children: [
+              roundedPct,
               "%"
             ] })
           ] }),
@@ -93643,21 +93647,198 @@ var RAGBundle = (() => {
     );
   }
 
-  // src/react/utils/formatters.ts
-  function formatRelativeTime(timestamp) {
-    if (!timestamp || timestamp <= 0 || !Number.isFinite(timestamp)) {
-      return "unknown";
+  // src/react/artifacts/file-manifest/FileManifest.tsx
+  function seededRandom(seed) {
+    let state = seed;
+    return () => {
+      state = state * 1103515245 + 12345 & 2147483647;
+      return state / 2147483647;
+    };
+  }
+  function corruptText(text, intensity, seed) {
+    if (intensity <= 0) return text;
+    const rng = seededRandom(seed);
+    return text.split("").map((char) => rng() < intensity ? "\u2588" : char).join("");
+  }
+  function generateTornTopEdge(seed) {
+    const rng = seededRandom(seed);
+    const points4 = [];
+    points4.push("2% 3%");
+    const topSteps = 8;
+    for (let i = 1; i <= topSteps; i++) {
+      const x = 2 + i / topSteps * 96;
+      const y = rng() * 4;
+      points4.push(`${x}% ${y}%`);
     }
-    const now2 = Date.now();
-    const diff = now2 - timestamp;
-    if (diff < 0) return "just now";
-    const minutes = Math.floor(diff / 6e4);
-    const hours = Math.floor(diff / 36e5);
-    const days = Math.floor(diff / 864e5);
-    if (minutes < 1) return "just now";
-    if (minutes < 60) return `${minutes}m ago`;
-    if (hours < 24) return `${hours}h ago`;
-    return `${days}d ago`;
+    points4.push("100% 0%");
+    points4.push("100% 100%");
+    points4.push("0% 100%");
+    points4.push("0% 3%");
+    return `polygon(${points4.join(", ")})`;
+  }
+  function formatTime(timestamp) {
+    const date = new Date(timestamp);
+    const hours = date.getHours().toString().padStart(2, "0");
+    const minutes = date.getMinutes().toString().padStart(2, "0");
+    return `${hours}:${minutes}`;
+  }
+  function truncateFilename(name, maxLen = 24) {
+    if (name.length <= maxLen) return name;
+    const lastDot = name.lastIndexOf(".");
+    if (lastDot > 0 && name.length - lastDot <= 5) {
+      const ext = name.slice(lastDot);
+      const baseName = name.slice(0, lastDot);
+      const availableLen = maxLen - ext.length - 1;
+      return baseName.slice(0, availableLen) + "\u2026" + ext;
+    }
+    return name.slice(0, maxLen - 1) + "\u2026";
+  }
+  function FileManifest({
+    files,
+    sectorLabel = "SECTOR 7G",
+    corruptionLevel = 0,
+    isLoading = false,
+    className = ""
+  }) {
+    const corruptionIntensity = Math.min(100, Math.max(0, corruptionLevel)) / 100;
+    const tornEdge = useMemo(() => generateTornTopEdge(42), []);
+    const corruptedIndices = useMemo(() => {
+      if (corruptionLevel <= 0) return /* @__PURE__ */ new Set();
+      const rng = seededRandom(corruptionLevel);
+      const indices = /* @__PURE__ */ new Set();
+      files.forEach((_, index) => {
+        if (rng() < corruptionIntensity * 0.8) {
+          indices.add(index);
+        }
+      });
+      return indices;
+    }, [files, corruptionLevel, corruptionIntensity]);
+    const feedHoles = useMemo(() => {
+      const count2 = Math.max(4, Math.min(12, files.length * 2 + 4));
+      return Array.from({ length: count2 }, (_, i) => i);
+    }, [files.length]);
+    return /* @__PURE__ */ jsx(
+      "article",
+      {
+        className: `file-manifest file-manifest--printout ${isLoading ? "file-manifest--loading" : ""} ${className}`,
+        "aria-label": "File Manifest",
+        "aria-busy": isLoading,
+        children: /* @__PURE__ */ jsxs(
+          "div",
+          {
+            className: "file-manifest__printout",
+            style: { "--torn-edge": tornEdge },
+            children: [
+              /* @__PURE__ */ jsx("div", { className: "file-manifest__feed-holes", "aria-hidden": "true", children: feedHoles.map((i) => /* @__PURE__ */ jsx("div", { className: "file-manifest__feed-hole" }, i)) }),
+              /* @__PURE__ */ jsxs("div", { className: "file-manifest__paper", children: [
+                /* @__PURE__ */ jsxs("header", { className: "file-manifest__header", children: [
+                  /* @__PURE__ */ jsxs("div", { className: "file-manifest__header-row", children: [
+                    /* @__PURE__ */ jsx("span", { className: "file-manifest__title", children: corruptText("FILE_MANIFEST", corruptionIntensity * 0.2, 11) }),
+                    /* @__PURE__ */ jsx("span", { className: "file-manifest__sector", "aria-label": "Sector", children: corruptText(sectorLabel, corruptionIntensity * 0.3, 42) })
+                  ] }),
+                  /* @__PURE__ */ jsx("div", { className: "file-manifest__header-divider", "aria-hidden": "true", children: corruptText("================================", corruptionIntensity * 0.15, 99) }),
+                  /* @__PURE__ */ jsxs("div", { className: "file-manifest__integrity", children: [
+                    "DATA INTEGRITY: ",
+                    Math.max(0, 100 - corruptionLevel),
+                    "%"
+                  ] })
+                ] }),
+                /* @__PURE__ */ jsxs("div", { className: "file-manifest__entries", role: "list", children: [
+                  files.map((file, index) => {
+                    const isCorrupted = corruptedIndices.has(index);
+                    const entryIntensity = isCorrupted ? corruptionIntensity : 0;
+                    const entrySeed = index * 777 + file.timestamp;
+                    const displayName = truncateFilename(file.documentName);
+                    const timeStr = formatTime(file.timestamp);
+                    const chunkStr = `${file.chunkCount} chunks`;
+                    return /* @__PURE__ */ jsxs(
+                      "div",
+                      {
+                        className: `file-manifest__entry ${isCorrupted ? "file-manifest__entry--corrupted" : ""}`,
+                        role: "listitem",
+                        style: { "--entry-delay": `${index * 0.05}s` },
+                        children: [
+                          /* @__PURE__ */ jsxs("div", { className: "file-manifest__entry-row file-manifest__entry-row--primary", children: [
+                            /* @__PURE__ */ jsx(
+                              "span",
+                              {
+                                className: `file-manifest__entry-status ${isCorrupted ? "file-manifest__entry-status--error" : ""}`,
+                                "aria-label": isCorrupted ? "Corrupted" : "Healthy",
+                                children: isCorrupted ? "\u2588" : "\u25CF"
+                              }
+                            ),
+                            /* @__PURE__ */ jsx(
+                              "span",
+                              {
+                                className: "file-manifest__entry-name",
+                                title: file.documentName,
+                                children: corruptText(displayName, entryIntensity * 0.5, entrySeed)
+                              }
+                            ),
+                            /* @__PURE__ */ jsx("span", { className: "file-manifest__entry-time", children: corruptText(timeStr, entryIntensity * 0.6, entrySeed + 1) })
+                          ] }),
+                          /* @__PURE__ */ jsxs("div", { className: "file-manifest__entry-row file-manifest__entry-row--secondary", children: [
+                            /* @__PURE__ */ jsx("span", { className: "file-manifest__entry-indent", "aria-hidden": "true", children: "\u2514\u2500" }),
+                            /* @__PURE__ */ jsx("span", { className: "file-manifest__entry-meta", children: isCorrupted && entryIntensity > 0.5 ? /* @__PURE__ */ jsx("span", { className: "file-manifest__error-text", children: "ERR" }) : corruptText(chunkStr, entryIntensity * 0.4, entrySeed + 2) })
+                          ] })
+                        ]
+                      },
+                      file.documentId
+                    );
+                  }),
+                  files.length === 0 && !isLoading && /* @__PURE__ */ jsxs("div", { className: "file-manifest__empty", children: [
+                    /* @__PURE__ */ jsx("span", { className: "file-manifest__empty-icon", children: "[!]" }),
+                    /* @__PURE__ */ jsx("span", { children: "NO FILES IN MANIFEST" })
+                  ] }),
+                  isLoading && files.length === 0 && /* @__PURE__ */ jsx(Fragment2, { children: Array.from({ length: 3 }, (_, i) => /* @__PURE__ */ jsxs("div", { className: "file-manifest__entry file-manifest__entry--skeleton", children: [
+                    /* @__PURE__ */ jsxs("div", { className: "file-manifest__entry-row file-manifest__entry-row--primary", children: [
+                      /* @__PURE__ */ jsx("span", { className: "file-manifest__entry-status", children: "\u25CB" }),
+                      /* @__PURE__ */ jsx("span", { className: "file-manifest__entry-name", children: "SCANNING..." }),
+                      /* @__PURE__ */ jsx("span", { className: "file-manifest__entry-time", children: "--:--" })
+                    ] }),
+                    /* @__PURE__ */ jsxs("div", { className: "file-manifest__entry-row file-manifest__entry-row--secondary", children: [
+                      /* @__PURE__ */ jsx("span", { className: "file-manifest__entry-indent", children: "\u2514\u2500" }),
+                      /* @__PURE__ */ jsx("span", { className: "file-manifest__entry-meta", children: "- chunks" })
+                    ] })
+                  ] }, i)) })
+                ] }),
+                /* @__PURE__ */ jsx("div", { className: "file-manifest__footer-divider", "aria-hidden": "true", children: corruptText("--------------------------------", corruptionIntensity * 0.2, 88) }),
+                /* @__PURE__ */ jsxs("footer", { className: "file-manifest__footer", children: [
+                  /* @__PURE__ */ jsxs("div", { className: "file-manifest__stats", children: [
+                    /* @__PURE__ */ jsxs("span", { className: "file-manifest__stat", children: [
+                      "TOTAL: ",
+                      files.length
+                    ] }),
+                    /* @__PURE__ */ jsx("span", { className: "file-manifest__stat file-manifest__stat--warn", children: corruptedIndices.size > 0 && `ERR: ${corruptedIndices.size}` })
+                  ] }),
+                  corruptionLevel > 0 && /* @__PURE__ */ jsx(
+                    "div",
+                    {
+                      className: "file-manifest__corruption-bar",
+                      role: "meter",
+                      "aria-valuenow": corruptionLevel,
+                      "aria-valuemin": 0,
+                      "aria-valuemax": 100,
+                      "aria-label": "Data corruption level",
+                      children: /* @__PURE__ */ jsx(
+                        "div",
+                        {
+                          className: "file-manifest__corruption-fill",
+                          style: { "--corruption-percent": `${corruptionLevel}%` }
+                        }
+                      )
+                    }
+                  )
+                ] })
+              ] }),
+              /* @__PURE__ */ jsx("div", { className: "file-manifest__perforation", "aria-hidden": "true", children: /* @__PURE__ */ jsx("div", { className: "file-manifest__perforation-line" }) }),
+              /* @__PURE__ */ jsx("div", { className: "file-manifest__scanlines", "aria-hidden": "true" }),
+              corruptionLevel > 50 && /* @__PURE__ */ jsx("div", { className: "file-manifest__glitch", "aria-hidden": "true" })
+            ]
+          }
+        )
+      }
+    );
   }
 
   // src/react/components/admin/AdminDashboard.tsx
@@ -93820,6 +94001,7 @@ var RAGBundle = (() => {
         ]
       };
     }, [stats?.documents.byCategory]);
+    const storageMB = parseFloat(stats?.storage.estimatedMB || "0");
     return /* @__PURE__ */ jsxs("div", { className: "rag-admin-dashboard", style: { "--rag-accent": accentColor }, children: [
       /* @__PURE__ */ jsxs("div", { className: "rag-admin-header", children: [
         /* @__PURE__ */ jsxs("div", { className: "rag-admin-header-info", children: [
@@ -93948,10 +94130,10 @@ var RAGBundle = (() => {
             /* @__PURE__ */ jsx(
               PowerConduit,
               {
-                value: stats?.storage.estimatedMB || 0,
+                value: storageMB,
                 max: 1024,
                 label: "STORAGE USAGE",
-                variant: (stats?.storage.estimatedMB || 0) > 800 ? "critical" : (stats?.storage.estimatedMB || 0) > 500 ? "warning" : "default"
+                variant: storageMB > 800 ? "critical" : storageMB > 500 ? "warning" : "default"
               }
             )
           ] })
@@ -94005,30 +94187,20 @@ var RAGBundle = (() => {
         /* @__PURE__ */ jsx(
           HudFrame,
           {
-            title: "UPLOAD_MANIFEST",
-            icon: /* @__PURE__ */ jsx(Clock, { size: 16 }),
+            hideHeader: true,
+            hideReticles: true,
+            size: "compact",
             isLoading,
             className: "rag-admin-panel rag-admin-panel-wide",
-            children: /* @__PURE__ */ jsx("div", { className: "rag-admin-recent-list", children: /* @__PURE__ */ jsx(
-              PanelContent,
+            children: /* @__PURE__ */ jsx(
+              FileManifest,
               {
-                isLoading,
-                isEmpty: stats?.recentUploads.length === 0,
-                skeleton: /* @__PURE__ */ jsx("div", { className: "rag-admin-recent-skeleton", children: Array.from({ length: 3 }, (_, i) => /* @__PURE__ */ jsx("div", { className: "rag-admin-recent-skeleton-row" }, i)) }),
-                emptyMessage: "No documents uploaded yet",
-                children: stats?.recentUploads.map((doc) => /* @__PURE__ */ jsxs("div", { className: "rag-admin-recent-item", children: [
-                  /* @__PURE__ */ jsx(FileText, { size: 16, className: "rag-admin-recent-icon" }),
-                  /* @__PURE__ */ jsxs("div", { className: "rag-admin-recent-info", children: [
-                    /* @__PURE__ */ jsx("span", { className: "rag-admin-recent-name", children: doc.documentName }),
-                    /* @__PURE__ */ jsxs("span", { className: "rag-admin-recent-meta", children: [
-                      doc.chunkCount,
-                      " chunks"
-                    ] })
-                  ] }),
-                  /* @__PURE__ */ jsx("span", { className: "rag-admin-recent-time", children: formatRelativeTime(doc.timestamp) })
-                ] }, doc.documentId))
+                files: stats?.recentUploads || [],
+                sectorLabel: "SECTOR 7G",
+                corruptionLevel: 12,
+                isLoading
               }
-            ) })
+            )
           }
         )
       ] })

@@ -25,8 +25,8 @@ import { StatChip } from '../../artifacts/stat-chip/StatChip.js';
 import { TerminalReadout, type ServiceEntry, type ServiceStatus } from '../../artifacts/terminal-readout/TerminalReadout.js';
 import { HudFrame } from '../../artifacts/hud-frame/HudFrame.js';
 import { PowerConduit } from '../../artifacts/power-conduit/PowerConduit.js';
+import { FileManifest } from '../../artifacts/file-manifest/FileManifest.js';
 import type { AdminStats, AdminHealth } from '../../types.js';
-import { formatRelativeTime } from '../../utils/formatters.js';
 
 export interface AdminDashboardProps {
   /** Base API endpoint (default: /api/rag) */
@@ -405,42 +405,20 @@ export function AdminDashboard({
           />
         </HudFrame>
 
-        {/* Recent Uploads - Wrapped in HUD Frame */}
+        {/* Recent Uploads - Cyberpunk: Corrupted File Manifest */}
         <HudFrame
-          title="UPLOAD_MANIFEST"
-          icon={<Clock size={16} />}
+          hideHeader
+          hideReticles
+          size="compact"
           isLoading={isLoading}
           className="rag-admin-panel rag-admin-panel-wide"
         >
-          <div className="rag-admin-recent-list">
-            <PanelContent
-              isLoading={isLoading}
-              isEmpty={stats?.recentUploads.length === 0}
-              skeleton={
-                <div className="rag-admin-recent-skeleton">
-                  {Array.from({ length: 3 }, (_, i) => (
-                    <div key={i} className="rag-admin-recent-skeleton-row" />
-                  ))}
-                </div>
-              }
-              emptyMessage="No documents uploaded yet"
-            >
-              {stats?.recentUploads.map((doc) => (
-                <div key={doc.documentId} className="rag-admin-recent-item">
-                  <FileText size={16} className="rag-admin-recent-icon" />
-                  <div className="rag-admin-recent-info">
-                    <span className="rag-admin-recent-name">{doc.documentName}</span>
-                    <span className="rag-admin-recent-meta">
-                      {doc.chunkCount} chunks
-                    </span>
-                  </div>
-                  <span className="rag-admin-recent-time">
-                    {formatRelativeTime(doc.timestamp)}
-                  </span>
-                </div>
-              ))}
-            </PanelContent>
-          </div>
+          <FileManifest
+            files={stats?.recentUploads || []}
+            sectorLabel="SECTOR 7G"
+            corruptionLevel={12}
+            isLoading={isLoading}
+          />
         </HudFrame>
       </div>
     </div>
