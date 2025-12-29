@@ -19,11 +19,12 @@ Files-Validated: src/react/artifacts/stat-chip/*, src/react/components/admin/Adm
 Validation-Report: reports/validation-stat-chip-cyberpunk.md
 
 ## Last Session (2025-12-28)
-**StatChip Cyberpunk Artifact - Validated:**
+**StatChip Cyberpunk Artifact - Complete:**
 - Built holographic data chip component for Admin Dashboard
 - Fixed: Loading class, vendor prefixes, text overflow, copy-paste duplication
+- Fixed: Glitch effect too subtle - increased frequency (3 bursts/3s cycle) + added skewX distortion
 - Added: will-change performance hints, aria accessibility
-- All validation checks passing, ready for refactor-hunt
+- Demo CSS loading: Added ragchat-bundle.css to demo/index.html
 
 ## Completed
 - Phase 3: Modals + Upload Motion System (2025-12-28)

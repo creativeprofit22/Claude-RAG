@@ -93396,6 +93396,53 @@ var RAGBundle = (() => {
     );
   }
 
+  // src/react/artifacts/stat-chip/StatChip.tsx
+  function StatChip({
+    icon,
+    value,
+    label,
+    meta,
+    isLoading = false,
+    className = ""
+  }) {
+    const displayValue = isLoading ? "---" : String(value);
+    return /* @__PURE__ */ jsxs(
+      "article",
+      {
+        className: `stat-chip ${isLoading ? "stat-chip--loading" : ""} ${className}`,
+        "aria-label": label,
+        "aria-busy": isLoading,
+        children: [
+          /* @__PURE__ */ jsx("div", { className: "stat-chip__shadow", "aria-hidden": "true" }),
+          /* @__PURE__ */ jsxs("div", { className: "stat-chip__body", children: [
+            /* @__PURE__ */ jsx("div", { className: "stat-chip__circuits", "aria-hidden": "true" }),
+            /* @__PURE__ */ jsxs("div", { className: "stat-chip__holo", children: [
+              /* @__PURE__ */ jsx(
+                "span",
+                {
+                  className: "stat-chip__value",
+                  "data-text": displayValue,
+                  children: displayValue
+                }
+              ),
+              /* @__PURE__ */ jsx("span", { className: "stat-chip__label", children: label }),
+              meta && /* @__PURE__ */ jsx("span", { className: "stat-chip__meta", children: meta })
+            ] }),
+            /* @__PURE__ */ jsx("div", { className: "stat-chip__wear", "aria-hidden": "true" }),
+            /* @__PURE__ */ jsx("div", { className: "stat-chip__icon", children: icon })
+          ] }),
+          /* @__PURE__ */ jsxs("div", { className: "stat-chip__pins", "aria-hidden": "true", children: [
+            /* @__PURE__ */ jsx("span", { className: "stat-chip__pin" }),
+            /* @__PURE__ */ jsx("span", { className: "stat-chip__pin" }),
+            /* @__PURE__ */ jsx("span", { className: "stat-chip__pin" }),
+            /* @__PURE__ */ jsx("span", { className: "stat-chip__pin" }),
+            /* @__PURE__ */ jsx("span", { className: "stat-chip__pin" })
+          ] })
+        ]
+      }
+    );
+  }
+
   // src/react/utils/formatters.ts
   function formatRelativeTime(timestamp) {
     if (!timestamp || timestamp <= 0 || !Number.isFinite(timestamp)) {
@@ -93420,16 +93467,6 @@ var RAGBundle = (() => {
     unhealthy: XCircle
   };
   var SKELETON_COUNT = 4;
-  function StatCard({ icon, iconBgColor, iconColor, value, label, meta, isLoading }) {
-    return /* @__PURE__ */ jsxs("div", { className: "rag-admin-stat-card", children: [
-      /* @__PURE__ */ jsx("div", { className: "rag-admin-stat-icon", style: { backgroundColor: iconBgColor, color: iconColor }, children: icon }),
-      /* @__PURE__ */ jsxs("div", { className: "rag-admin-stat-info", children: [
-        /* @__PURE__ */ jsx("span", { className: "rag-admin-stat-value", children: isLoading ? "-" : value }),
-        /* @__PURE__ */ jsx("span", { className: "rag-admin-stat-label", children: label })
-      ] }),
-      meta && /* @__PURE__ */ jsx("span", { className: "rag-admin-stat-meta", children: meta })
-    ] });
-  }
   function ServiceStatusItem({ icon, label, isUp, statusText, meta }) {
     return /* @__PURE__ */ jsxs("div", { className: "rag-admin-service-item", children: [
       /* @__PURE__ */ jsxs("div", { className: "rag-admin-service-header", children: [
@@ -93612,22 +93649,18 @@ var RAGBundle = (() => {
       ] }),
       /* @__PURE__ */ jsxs("div", { className: "rag-admin-stats-grid", children: [
         /* @__PURE__ */ jsx(
-          StatCard,
+          StatChip,
           {
             icon: /* @__PURE__ */ jsx(FileText, { size: 20 }),
-            iconBgColor: "#3b82f620",
-            iconColor: "#3b82f6",
             value: stats?.documents.total || 0,
             label: "Documents",
             isLoading
           }
         ),
         /* @__PURE__ */ jsx(
-          StatCard,
+          StatChip,
           {
             icon: /* @__PURE__ */ jsx(Layers, { size: 20 }),
-            iconBgColor: "#10b98120",
-            iconColor: "#10b981",
             value: (stats?.chunks.total ?? 0).toLocaleString(),
             label: "Total Chunks",
             meta: `~${stats?.chunks.averagePerDocument || 0} per doc`,
@@ -93635,22 +93668,18 @@ var RAGBundle = (() => {
           }
         ),
         /* @__PURE__ */ jsx(
-          StatCard,
+          StatChip,
           {
             icon: /* @__PURE__ */ jsx(HardDrive, { size: 20 }),
-            iconBgColor: "#f59e0b20",
-            iconColor: "#f59e0b",
             value: `${stats?.storage.estimatedMB || "0"} MB`,
             label: "Est. Storage",
             isLoading
           }
         ),
         /* @__PURE__ */ jsx(
-          StatCard,
+          StatChip,
           {
             icon: /* @__PURE__ */ jsx(Activity, { size: 20 }),
-            iconBgColor: "#8b5cf620",
-            iconColor: "#8b5cf6",
             value: stats?.chunks.averagePerDocument || 0,
             label: "Avg Chunks/Doc",
             isLoading

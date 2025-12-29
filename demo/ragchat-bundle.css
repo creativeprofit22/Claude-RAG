@@ -1,0 +1,441 @@
+/* src/react/artifacts/stat-chip/stat-chip.base.css */
+.stat-chip {
+  position: relative;
+  -webkit-perspective: 1000px;
+  perspective: 1000px;
+  margin-bottom: 40px;
+}
+.stat-chip__body {
+  position: relative;
+  padding: 1.5rem;
+  min-height: 120px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  transform-style: preserve-3d;
+  transition: transform 0.4s ease, box-shadow 0.4s ease;
+}
+.stat-chip__circuits {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 1;
+}
+.stat-chip__holo {
+  position: relative;
+  z-index: 5;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+.stat-chip__value {
+  font-size: 2rem;
+  font-weight: 700;
+  line-height: 1.2;
+  position: relative;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.stat-chip__label {
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.stat-chip__meta {
+  font-size: 0.625rem;
+  opacity: 0.7;
+  margin-top: 0.25rem;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.stat-chip__wear {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 10;
+}
+.stat-chip__icon {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 6;
+}
+.stat-chip__pins {
+  position: absolute;
+  bottom: -8px;
+  left: 20%;
+  right: 20%;
+  height: 8px;
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+  z-index: -1;
+}
+.stat-chip__pin {
+  width: 8px;
+  height: 100%;
+  display: block;
+}
+.stat-chip__shadow {
+  position: absolute;
+  bottom: -25px;
+  left: 15%;
+  right: 15%;
+  height: 15px;
+  pointer-events: none;
+  z-index: -2;
+}
+@media (prefers-reduced-motion: reduce) {
+  .stat-chip__body {
+    transform: none !important;
+    transition: none !important;
+  }
+  .stat-chip__value::before,
+  .stat-chip__value::after {
+    animation: none !important;
+    display: none !important;
+  }
+}
+
+/* src/react/artifacts/stat-chip/stat-chip.cyberpunk.css */
+[data-skin=cyberpunk] {
+  --chip-glow-color: rgba(0, 255, 255, 0.5);
+  --chip-glow-intense: rgba(0, 255, 255, 0.7);
+  --chip-accent: #0ff;
+  --chip-accent-alt: #f0f;
+  --chip-bg-dark: rgba(0, 20, 30, 0.95);
+  --chip-bg-light: rgba(10, 40, 50, 0.9);
+  --chip-border: rgba(0, 255, 255, 0.6);
+}
+[data-skin=cyberpunk] .stat-chip {
+}
+[data-skin=cyberpunk] .stat-chip__shadow {
+  background:
+    radial-gradient(
+      ellipse at center,
+      var(--chip-glow-color) 0%,
+      transparent 70%);
+  filter: blur(10px);
+  transform: rotateX(60deg);
+  opacity: 0.8;
+}
+[data-skin=cyberpunk] .stat-chip__body {
+  -webkit-clip-path: polygon(0 8%, 8% 0, 92% 0, 100% 8%, 100% 85%, 85% 100%, 15% 100%, 0 85%);
+  clip-path: polygon(0 8%, 8% 0, 92% 0, 100% 8%, 100% 85%, 85% 100%, 15% 100%, 0 85%);
+  -webkit-transform: rotateY(-8deg) rotateX(3deg);
+  transform: rotateY(-8deg) rotateX(3deg);
+  will-change: transform, box-shadow;
+  background:
+    linear-gradient(
+      135deg,
+      var(--chip-bg-dark) 0%,
+      var(--chip-bg-light) 100%);
+  box-shadow:
+    inset 0 0 30px rgba(0, 255, 255, 0.15),
+    0 0 20px var(--chip-glow-color),
+    0 0 40px rgba(0, 255, 255, 0.3),
+    0 0 60px rgba(0, 255, 255, 0.15);
+  border: 1px solid var(--chip-border);
+}
+[data-skin=cyberpunk] .stat-chip:hover .stat-chip__body {
+  -webkit-transform: rotateY(-12deg) rotateX(5deg) translateZ(10px);
+  transform: rotateY(-12deg) rotateX(5deg) translateZ(10px);
+  box-shadow:
+    inset 0 0 40px rgba(0, 255, 255, 0.25),
+    0 0 30px var(--chip-glow-intense),
+    0 0 60px var(--chip-glow-color),
+    0 0 100px rgba(0, 255, 255, 0.3);
+}
+[data-skin=cyberpunk] .stat-chip:hover .stat-chip__shadow {
+  opacity: 1;
+  background:
+    radial-gradient(
+      ellipse at center,
+      var(--chip-glow-intense) 0%,
+      transparent 70%);
+}
+[data-skin=cyberpunk] .stat-chip__circuits {
+  background:
+    repeating-linear-gradient(
+      0deg,
+      transparent 0px,
+      transparent 8px,
+      rgba(0, 255, 255, 0.03) 8px,
+      rgba(0, 255, 255, 0.03) 9px),
+    repeating-linear-gradient(
+      90deg,
+      transparent 0px,
+      transparent 20px,
+      rgba(0, 255, 255, 0.02) 20px,
+      rgba(0, 255, 255, 0.02) 21px),
+    repeating-linear-gradient(
+      45deg,
+      transparent 0px,
+      transparent 30px,
+      rgba(0, 255, 255, 0.015) 30px,
+      rgba(0, 255, 255, 0.015) 31px);
+  opacity: 0.7;
+}
+[data-skin=cyberpunk] .stat-chip__value {
+  font-family:
+    "Orbitron",
+    "Share Tech Mono",
+    "Courier New",
+    monospace;
+  font-size: 2.5rem;
+  color: var(--chip-accent);
+  text-shadow:
+    0 0 10px rgba(0, 255, 255, 0.9),
+    0 0 20px rgba(0, 255, 255, 0.6),
+    0 0 40px rgba(0, 255, 255, 0.4);
+  letter-spacing: 0.1em;
+}
+[data-skin=cyberpunk] .stat-chip__value::before,
+[data-skin=cyberpunk] .stat-chip__value::after {
+  content: attr(data-text);
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  opacity: 0;
+}
+[data-skin=cyberpunk] .stat-chip__value::before {
+  animation: glitch-top 3s infinite linear;
+  -webkit-clip-path: polygon(0 0, 100% 0, 100% 35%, 0 35%);
+  clip-path: polygon(0 0, 100% 0, 100% 35%, 0 35%);
+  color: var(--chip-accent);
+  text-shadow: -2px 0 var(--chip-accent-alt);
+  will-change: opacity, transform;
+  -webkit-user-select: none;
+  user-select: none;
+}
+[data-skin=cyberpunk] .stat-chip__value::after {
+  animation: glitch-bottom 3s infinite linear;
+  -webkit-clip-path: polygon(0 65%, 100% 65%, 100% 100%, 0 100%);
+  clip-path: polygon(0 65%, 100% 65%, 100% 100%, 0 100%);
+  color: var(--chip-accent);
+  text-shadow: 2px 0 var(--chip-accent-alt);
+  will-change: opacity, transform;
+  -webkit-user-select: none;
+  user-select: none;
+}
+@keyframes glitch-top {
+  0%, 100% {
+    transform: translateX(0);
+    opacity: 0;
+  }
+  10% {
+    transform: translateX(-3px) skewX(-2deg);
+    opacity: 0.9;
+  }
+  11% {
+    transform: translateX(3px) skewX(2deg);
+    opacity: 0;
+  }
+  12% {
+    transform: translateX(-2px);
+    opacity: 0.9;
+  }
+  13% {
+    transform: translateX(0);
+    opacity: 0;
+  }
+  45% {
+    transform: translateX(2px) skewX(1deg);
+    opacity: 0.8;
+  }
+  46% {
+    transform: translateX(-3px) skewX(-1deg);
+    opacity: 0;
+  }
+  47% {
+    transform: translateX(2px);
+    opacity: 0.9;
+  }
+  48% {
+    transform: translateX(0);
+    opacity: 0;
+  }
+  78% {
+    transform: translateX(-2px) skewX(-2deg);
+    opacity: 0.9;
+  }
+  79% {
+    transform: translateX(3px);
+    opacity: 0;
+  }
+  80% {
+    transform: translateX(-2px) skewX(1deg);
+    opacity: 0.8;
+  }
+  81% {
+    transform: translateX(0);
+    opacity: 0;
+  }
+}
+@keyframes glitch-bottom {
+  0%, 100% {
+    transform: translateX(0);
+    opacity: 0;
+  }
+  15% {
+    transform: translateX(3px) skewX(2deg);
+    opacity: 0.9;
+  }
+  16% {
+    transform: translateX(-2px) skewX(-1deg);
+    opacity: 0;
+  }
+  17% {
+    transform: translateX(2px);
+    opacity: 0.8;
+  }
+  18% {
+    transform: translateX(0);
+    opacity: 0;
+  }
+  50% {
+    transform: translateX(-3px) skewX(-2deg);
+    opacity: 0.9;
+  }
+  51% {
+    transform: translateX(2px) skewX(1deg);
+    opacity: 0;
+  }
+  52% {
+    transform: translateX(-2px);
+    opacity: 0.9;
+  }
+  53% {
+    transform: translateX(0);
+    opacity: 0;
+  }
+  82% {
+    transform: translateX(2px) skewX(1deg);
+    opacity: 0.8;
+  }
+  83% {
+    transform: translateX(-3px);
+    opacity: 0;
+  }
+  84% {
+    transform: translateX(3px) skewX(-1deg);
+    opacity: 0.9;
+  }
+  85% {
+    transform: translateX(0);
+    opacity: 0;
+  }
+}
+[data-skin=cyberpunk] .stat-chip__label {
+  font-family:
+    "Rajdhani",
+    "Segoe UI",
+    sans-serif;
+  color: rgba(0, 255, 255, 0.7);
+  letter-spacing: 0.15em;
+}
+[data-skin=cyberpunk] .stat-chip__meta {
+  font-family: "Share Tech Mono", monospace;
+  color: rgba(0, 255, 255, 0.5);
+  font-size: 0.625rem;
+}
+[data-skin=cyberpunk] .stat-chip__wear {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100' height='100'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  opacity: 0.06;
+  mix-blend-mode: overlay;
+}
+[data-skin=cyberpunk] .stat-chip__wear::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(
+      ellipse 150px 100px at 0% 100%,
+      rgba(0, 0, 0, 0.25),
+      transparent 60%),
+    radial-gradient(
+      ellipse 100px 80px at 100% 0%,
+      rgba(0, 0, 0, 0.15),
+      transparent 50%);
+  pointer-events: none;
+}
+[data-skin=cyberpunk] .stat-chip__wear::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background:
+    repeating-linear-gradient(
+      0deg,
+      transparent 0px,
+      transparent 2px,
+      rgba(0, 0, 0, 0.1) 2px,
+      rgba(0, 0, 0, 0.1) 4px);
+  pointer-events: none;
+  animation: scanline-drift 10s linear infinite;
+  will-change: background-position;
+}
+@keyframes scanline-drift {
+  0% {
+    background-position: 0 0;
+  }
+  100% {
+    background-position: 0 100px;
+  }
+}
+[data-skin=cyberpunk] .stat-chip__icon {
+  -webkit-clip-path: polygon(0 0, calc(100% - 8px) 0, 100% 8px, 100% 100%, 8px 100%, 0 calc(100% - 8px));
+  clip-path: polygon(0 0, calc(100% - 8px) 0, 100% 8px, 100% 100%, 8px 100%, 0 calc(100% - 8px));
+  background:
+    linear-gradient(
+      135deg,
+      var(--chip-accent),
+      var(--chip-accent-alt));
+  box-shadow: 0 0 15px var(--chip-glow-color);
+  color: #0a0a12;
+}
+[data-skin=cyberpunk] .stat-chip__icon svg {
+  width: 20px;
+  height: 20px;
+}
+[data-skin=cyberpunk] .stat-chip__pin {
+  background:
+    linear-gradient(
+      to bottom,
+      #444,
+      #1a1a1a);
+  border-radius: 0 0 2px 2px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.1);
+}
+[data-skin=cyberpunk] .stat-chip:hover .stat-chip__pin {
+  box-shadow:
+    0 2px 4px rgba(0, 0, 0, 0.5),
+    0 0 8px rgba(0, 255, 255, 0.3),
+    inset 0 1px 0 rgba(255, 255, 255, 0.1);
+}
+[data-skin=cyberpunk] .stat-chip--loading .stat-chip__value {
+  animation: loading-pulse 1.5s ease-in-out infinite;
+}
+@keyframes loading-pulse {
+  0%, 100% {
+    opacity: 0.3;
+  }
+  50% {
+    opacity: 0.7;
+  }
+}

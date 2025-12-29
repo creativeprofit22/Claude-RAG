@@ -200,51 +200,49 @@
   user-select: none;
 }
 
-/* Glitch keyframes - sporadic, not constant */
+/* Glitch keyframes - more frequent and visible */
 @keyframes glitch-top {
-  0%, 90%, 100% {
+  0%, 100% {
     transform: translateX(0);
     opacity: 0;
   }
-  92% {
-    transform: translateX(-2px);
-    opacity: 0.8;
-  }
-  94% {
-    transform: translateX(2px);
-    opacity: 0;
-  }
-  96% {
-    transform: translateX(-1px);
-    opacity: 0.8;
-  }
-  98% {
-    transform: translateX(1px);
-    opacity: 0;
-  }
+  /* First glitch burst */
+  10% { transform: translateX(-3px) skewX(-2deg); opacity: 0.9; }
+  11% { transform: translateX(3px) skewX(2deg); opacity: 0; }
+  12% { transform: translateX(-2px); opacity: 0.9; }
+  13% { transform: translateX(0); opacity: 0; }
+  /* Second glitch burst */
+  45% { transform: translateX(2px) skewX(1deg); opacity: 0.8; }
+  46% { transform: translateX(-3px) skewX(-1deg); opacity: 0; }
+  47% { transform: translateX(2px); opacity: 0.9; }
+  48% { transform: translateX(0); opacity: 0; }
+  /* Third glitch burst */
+  78% { transform: translateX(-2px) skewX(-2deg); opacity: 0.9; }
+  79% { transform: translateX(3px); opacity: 0; }
+  80% { transform: translateX(-2px) skewX(1deg); opacity: 0.8; }
+  81% { transform: translateX(0); opacity: 0; }
 }
 
 @keyframes glitch-bottom {
-  0%, 88%, 100% {
+  0%, 100% {
     transform: translateX(0);
     opacity: 0;
   }
-  90% {
-    transform: translateX(2px);
-    opacity: 0.8;
-  }
-  93% {
-    transform: translateX(-2px);
-    opacity: 0;
-  }
-  95% {
-    transform: translateX(1px);
-    opacity: 0.8;
-  }
-  97% {
-    transform: translateX(-1px);
-    opacity: 0;
-  }
+  /* Offset from top for desync effect */
+  15% { transform: translateX(3px) skewX(2deg); opacity: 0.9; }
+  16% { transform: translateX(-2px) skewX(-1deg); opacity: 0; }
+  17% { transform: translateX(2px); opacity: 0.8; }
+  18% { transform: translateX(0); opacity: 0; }
+  /* Second burst */
+  50% { transform: translateX(-3px) skewX(-2deg); opacity: 0.9; }
+  51% { transform: translateX(2px) skewX(1deg); opacity: 0; }
+  52% { transform: translateX(-2px); opacity: 0.9; }
+  53% { transform: translateX(0); opacity: 0; }
+  /* Third burst */
+  82% { transform: translateX(2px) skewX(1deg); opacity: 0.8; }
+  83% { transform: translateX(-3px); opacity: 0; }
+  84% { transform: translateX(3px) skewX(-1deg); opacity: 0.9; }
+  85% { transform: translateX(0); opacity: 0; }
 }
 
 /* ============================================
