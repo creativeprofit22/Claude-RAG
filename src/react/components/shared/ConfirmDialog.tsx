@@ -8,6 +8,7 @@ import { useSkinMotion } from '../../motion/hooks/useSkinMotion.js';
 export interface ConfirmDialogProps {
   title: string;
   message: string;
+  isOpen?: boolean;
   confirmLabel?: string;
   cancelLabel?: string;
   onConfirm: () => void;
@@ -21,18 +22,21 @@ export interface ConfirmDialogProps {
 export function ConfirmDialog({
   title,
   message,
+  isOpen = true,
   confirmLabel = 'Confirm',
   cancelLabel = 'Cancel',
   onConfirm,
   onCancel,
   isDestructive = false,
 }: ConfirmDialogProps) {
-  const { handleBackdropClick } = useModal({ onClose: onCancel });
+  const { handleBackdropClick } = useModal({ onClose: onCancel, isOpen });
   const { motion: skinMotion } = useSkinMotion();
 
   return (
     <AnimatePresence mode="wait">
+      {isOpen && (
       <motion.div
+        key="confirm-dialog"
         className="curator-overlay rag-confirm-overlay"
         onClick={handleBackdropClick}
         initial={{ opacity: 0 }}
@@ -48,6 +52,7 @@ export function ConfirmDialog({
           initial="hidden"
           animate="visible"
           exit="exit"
+          onClick={(e) => e.stopPropagation()}
         >
         {/* Header */}
         <div className="rag-confirm-header">
@@ -97,6 +102,7 @@ export function ConfirmDialog({
         </div>
         </motion.div>
       </motion.div>
+      )}
     </AnimatePresence>
   );
 }

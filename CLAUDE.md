@@ -14,21 +14,22 @@ Query → Gemini Embeddings → LanceDB → Chunks → Claude Code CLI → Respo
 
 ## Pipeline State
 Phase: refactor-hunt
-Feature: Phase 2 - Charts + Admin Components
+Feature: Phase 3 - Modals + Upload Motion System
 Files-Validated:
-- src/react/components/admin/AdminDashboard.tsx
-- src/react/components/documents/DocumentList.tsx
-- src/react/RAGInterface.tsx
-- src/react/RAGChat.tsx
-- src/react/components/documents/DocumentLibrary.tsx
-Validation-Report: reports/validation-phase2-charts-admin.md
+- src/react/components/upload/UploadModal.tsx
+- src/react/components/documents/DocumentPreview.tsx
+- src/react/components/shared/ConfirmDialog.tsx
+- src/react/components/upload/FileDropZone.tsx
+- src/react/components/upload/FileQueue.tsx
+Validation-Report: reports/validation-phase3-modals-motion.md
 
 ## Last Session (2025-12-28)
-**Validation Complete - 4 Bugs Fixed:**
-- AdminDashboard: Added headers to fetch, fixed null access on byCategory
-- SkinAwareChart: Removed redundant skin change effect
-- useRAGChat: Added effect to clear messages on documentId change
-- All checks passing, build + tests green
+**Phase 3 Validation Complete - 4 Bugs Fixed:**
+- DocumentPreview: Added isOpen prop + AnimatePresence conditional
+- ConfirmDialog: Added isOpen prop + AnimatePresence conditional + stopPropagation
+- Both modals: Added key props on motion.div inside AnimatePresence
+- 18 performance bottlenecks documented for refactor-hunt
+- Build + tests green (21 pass)
 
 ## Key Files
 - `src/server.ts` - Bun HTTP server

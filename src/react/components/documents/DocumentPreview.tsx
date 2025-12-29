@@ -19,6 +19,7 @@ function getFileType(docDetails: DocumentDetails): string {
 
 export interface DocumentPreviewProps {
   document: DocumentDetails;
+  isOpen?: boolean;
   isLoading?: boolean;
   onClose: () => void;
   onQueryDocument?: (doc: DocumentDetails) => void;
@@ -30,17 +31,20 @@ export interface DocumentPreviewProps {
  */
 export function DocumentPreview({
   document: docDetails,
+  isOpen = true,
   isLoading = false,
   onClose,
   onQueryDocument,
   accentColor = DEFAULT_ACCENT_COLOR,
 }: DocumentPreviewProps) {
-  const { handleBackdropClick } = useModal({ onClose });
+  const { handleBackdropClick } = useModal({ onClose, isOpen });
   const { motion: skinMotion } = useSkinMotion();
 
   return (
     <AnimatePresence mode="wait">
+      {isOpen && (
       <motion.div
+        key="document-preview"
         className="curator-overlay rag-preview-overlay"
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
@@ -160,6 +164,7 @@ export function DocumentPreview({
         </div>
         </motion.div>
       </motion.div>
+      )}
     </AnimatePresence>
   );
 }
