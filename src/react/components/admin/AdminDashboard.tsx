@@ -24,6 +24,7 @@ import { ErrorBanner } from '../shared/ErrorBanner.js';
 import { StatChip } from '../../artifacts/stat-chip/StatChip.js';
 import { TerminalReadout, type ServiceEntry, type ServiceStatus } from '../../artifacts/terminal-readout/TerminalReadout.js';
 import { HudFrame } from '../../artifacts/hud-frame/HudFrame.js';
+import { PowerConduit } from '../../artifacts/power-conduit/PowerConduit.js';
 import type { AdminStats, AdminHealth } from '../../types.js';
 import { formatBytes, formatRelativeTime } from '../../utils/formatters.js';
 
@@ -324,6 +325,36 @@ export function AdminDashboard({
           isLoading={isLoading}
         />
       </div>
+
+      {/* System Load - PowerConduit Progress Bars */}
+      <HudFrame
+        title="SYSTEM_LOAD"
+        icon={<Activity size={16} />}
+        isLoading={isLoading}
+        className="rag-admin-panel"
+        style={{ marginBottom: '1.5rem' }}
+      >
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem', padding: '0.5rem' }}>
+          <PowerConduit
+            value={stats?.chunks.total || 0}
+            max={Math.max(stats?.chunks.total || 1, 10000)}
+            label="MEMORY ALLOCATION"
+            variant="default"
+          />
+          <PowerConduit
+            value={stats?.documents.total || 0}
+            max={Math.max(stats?.documents.total || 1, 100)}
+            label="DOCUMENT CACHE"
+            variant={stats?.documents.total && stats.documents.total > 50 ? 'warning' : 'default'}
+          />
+          <PowerConduit
+            value={parseFloat(stats?.storage.estimatedMB || '0')}
+            max={1024}
+            label="STORAGE USAGE"
+            variant={parseFloat(stats?.storage.estimatedMB || '0') > 800 ? 'critical' : parseFloat(stats?.storage.estimatedMB || '0') > 500 ? 'warning' : 'default'}
+          />
+        </div>
+      </HudFrame>
 
       {/* Main Content Grid */}
       <div className="rag-admin-content-grid">

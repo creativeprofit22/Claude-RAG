@@ -13,19 +13,17 @@ Query → Gemini Embeddings → LanceDB → Chunks → Claude Code CLI → Respo
 ```
 
 ## Pipeline State
-Phase: refactor-hunt
+Phase: refactoring
 Feature: HUD Frame Cyberpunk Artifact
-Files-Validated: HudFrame.tsx, hud-frame.base.css, hud-frame.cyberpunk.css, AdminDashboard.tsx
-Validation-Report: reports/validation-hud-frame-cyberpunk.md
+Files: HudFrame.tsx, hud-frame.base.css, hud-frame.cyberpunk.css, AdminDashboard.tsx
+Refactor-Report: reports/refactors-hud-frame-cyberpunk.md
+Refactors-Remaining: 18
 
 ## Last Session (2025-12-29)
-**HUD Frame Validation - Clean:**
-- Tests: skipped (none exist)
-- API: pass (endpoint working)
-- UI: pass (accessibility, loading, CSS, responsive)
-- Wiring: pass (imports, props, children all correct)
-- Bottlenecks: 2/7 fixed (React.memo, animation distance)
-- Bugs: 2/7 fixed (z-index traces, animation)
+**HUD Frame Refactor Hunt Complete:**
+- Report: reports/refactors-hud-frame-cyberpunk.md
+- High: 3, Medium: 9, Low: 6
+- Total: 18 refactors identified
 
 ## Completed
 - StatChip Cyberpunk Artifact (2025-12-28) - Built, validated, refactor-hunted (clean)

@@ -1,0 +1,368 @@
+/**
+ * PowerConduit Cyberpunk Skin
+ * Energy conduit with neon glow and industrial wear
+ *
+ * Features:
+ * - Segmented power cells that light up
+ * - Neon glow intensifies with fill level
+ * - Subtle pulse/flicker on active segment
+ * - Worn/scratched texture overlay
+ * - Scanline overlay for CRT feel
+ */
+
+/* ============================================
+   CYBERPUNK TOKENS - DEFAULT (CYAN)
+   ============================================ */
+[data-skin="cyberpunk"] .power-conduit {
+  --conduit-glow-color: rgba(0, 255, 255, 0.4);
+  --conduit-glow-intense: rgba(0, 255, 255, 0.8);
+  --conduit-accent: #0ff;
+  --conduit-accent-dim: rgba(0, 255, 255, 0.3);
+  --conduit-bg: rgba(10, 20, 30, 0.95);
+  --conduit-segment-empty: rgba(0, 40, 50, 0.6);
+  --conduit-segment-filled: rgba(0, 255, 255, 0.9);
+  --conduit-border: rgba(0, 255, 255, 0.5);
+}
+
+/* ============================================
+   VARIANT: WARNING (ORANGE/YELLOW)
+   ============================================ */
+[data-skin="cyberpunk"] .power-conduit--warning {
+  --conduit-glow-color: rgba(255, 200, 50, 0.4);
+  --conduit-glow-intense: rgba(255, 200, 50, 0.8);
+  --conduit-accent: #fc3;
+  --conduit-accent-dim: rgba(255, 200, 50, 0.3);
+  --conduit-segment-empty: rgba(50, 40, 10, 0.6);
+  --conduit-segment-filled: rgba(255, 200, 50, 0.9);
+  --conduit-border: rgba(255, 200, 50, 0.5);
+}
+
+/* ============================================
+   VARIANT: CRITICAL (RED)
+   ============================================ */
+[data-skin="cyberpunk"] .power-conduit--critical {
+  --conduit-glow-color: rgba(255, 80, 80, 0.4);
+  --conduit-glow-intense: rgba(255, 80, 80, 0.8);
+  --conduit-accent: #f55;
+  --conduit-accent-dim: rgba(255, 80, 80, 0.3);
+  --conduit-segment-empty: rgba(50, 15, 15, 0.6);
+  --conduit-segment-filled: rgba(255, 80, 80, 0.9);
+  --conduit-border: rgba(255, 80, 80, 0.5);
+}
+
+/* ============================================
+   SHADOW - Neon glow pool below conduit
+   ============================================ */
+[data-skin="cyberpunk"] .power-conduit__shadow {
+  background: radial-gradient(
+    ellipse at center,
+    var(--conduit-glow-color) 0%,
+    transparent 70%
+  );
+  filter: blur(8px);
+  opacity: 0.7;
+}
+
+/* ============================================
+   BODY - Industrial housing
+   ============================================ */
+[data-skin="cyberpunk"] .power-conduit__body {
+  /* Beveled industrial shape */
+  clip-path: polygon(
+    4px 0,
+    calc(100% - 4px) 0,
+    100% 4px,
+    100% calc(100% - 4px),
+    calc(100% - 4px) 100%,
+    4px 100%,
+    0 calc(100% - 4px),
+    0 4px
+  );
+
+  background: var(--conduit-bg);
+  border: 1px solid var(--conduit-border);
+
+  box-shadow:
+    inset 0 0 20px rgba(0, 0, 0, 0.5),
+    inset 0 1px 0 rgba(255, 255, 255, 0.05),
+    0 0 15px var(--conduit-glow-color);
+
+  transition: box-shadow 0.3s ease;
+}
+
+/* Hover: intensify glow */
+[data-skin="cyberpunk"] .power-conduit:hover .power-conduit__body {
+  box-shadow:
+    inset 0 0 20px rgba(0, 0, 0, 0.5),
+    inset 0 1px 0 rgba(255, 255, 255, 0.05),
+    0 0 25px var(--conduit-glow-intense);
+}
+
+/* ============================================
+   CIRCUITS - Tech pattern background
+   ============================================ */
+[data-skin="cyberpunk"] .power-conduit__circuits {
+  background:
+    /* Horizontal traces */
+    repeating-linear-gradient(
+      0deg,
+      transparent 0px,
+      transparent 6px,
+      rgba(0, 255, 255, 0.02) 6px,
+      rgba(0, 255, 255, 0.02) 7px
+    ),
+    /* Vertical dividers */
+    repeating-linear-gradient(
+      90deg,
+      transparent 0px,
+      transparent 15px,
+      rgba(0, 255, 255, 0.015) 15px,
+      rgba(0, 255, 255, 0.015) 16px
+    );
+  opacity: 0.6;
+}
+
+/* ============================================
+   SEGMENT - Power cells
+   ============================================ */
+[data-skin="cyberpunk"] .power-conduit__segment {
+  background: var(--conduit-segment-empty);
+  border-radius: 2px;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+
+  /* Beveled cell shape */
+  clip-path: polygon(
+    2px 0,
+    calc(100% - 2px) 0,
+    100% 2px,
+    100% calc(100% - 2px),
+    calc(100% - 2px) 100%,
+    2px 100%,
+    0 calc(100% - 2px),
+    0 2px
+  );
+}
+
+/* Filled segment - glowing power cell */
+[data-skin="cyberpunk"] .power-conduit__segment--filled {
+  background: linear-gradient(
+    180deg,
+    var(--conduit-segment-filled) 0%,
+    var(--conduit-accent) 50%,
+    var(--conduit-segment-filled) 100%
+  );
+
+  box-shadow:
+    inset 0 0 8px rgba(255, 255, 255, 0.3),
+    0 0 10px var(--conduit-glow-color);
+
+  border-color: var(--conduit-accent);
+}
+
+/* Active segment - the leading edge with pulse animation */
+[data-skin="cyberpunk"] .power-conduit__segment--active {
+  animation: segment-pulse 1.5s ease-in-out infinite;
+}
+
+@keyframes segment-pulse {
+  0%, 100% {
+    box-shadow:
+      inset 0 0 8px rgba(255, 255, 255, 0.3),
+      0 0 10px var(--conduit-glow-color);
+  }
+  50% {
+    box-shadow:
+      inset 0 0 15px rgba(255, 255, 255, 0.5),
+      0 0 20px var(--conduit-glow-intense),
+      0 0 30px var(--conduit-glow-color);
+  }
+}
+
+/* ============================================
+   FLOW - Energy flow effect (subtle shimmer)
+   ============================================ */
+[data-skin="cyberpunk"] .power-conduit__flow {
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(255, 255, 255, 0.1) 50%,
+    transparent 100%
+  );
+  background-size: 200% 100%;
+  animation: flow-shimmer 3s linear infinite;
+  opacity: 0.4;
+}
+
+@keyframes flow-shimmer {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+/* ============================================
+   WEAR - Surface damage and scanlines
+   ============================================ */
+[data-skin="cyberpunk"] .power-conduit__wear {
+  /* SVG noise for surface scratches */
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100' height='100'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  opacity: 0.04;
+  mix-blend-mode: overlay;
+}
+
+/* Scanline overlay */
+[data-skin="cyberpunk"] .power-conduit__wear::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: repeating-linear-gradient(
+    0deg,
+    transparent 0px,
+    transparent 2px,
+    rgba(0, 0, 0, 0.08) 2px,
+    rgba(0, 0, 0, 0.08) 4px
+  );
+  pointer-events: none;
+}
+
+/* ============================================
+   END CAPS - Industrial frame edges
+   ============================================ */
+[data-skin="cyberpunk"] .power-conduit__cap {
+  background: linear-gradient(
+    180deg,
+    rgba(60, 60, 70, 0.9) 0%,
+    rgba(30, 30, 40, 0.95) 50%,
+    rgba(60, 60, 70, 0.9) 100%
+  );
+
+  border: 1px solid rgba(100, 100, 110, 0.5);
+  border-radius: 2px;
+
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.1),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.3),
+    0 0 8px var(--conduit-glow-color);
+}
+
+/* Cap notches/details */
+[data-skin="cyberpunk"] .power-conduit__cap::before {
+  content: '';
+  position: absolute;
+  top: 25%;
+  left: 50%;
+  width: 3px;
+  height: 50%;
+  transform: translateX(-50%);
+  background: var(--conduit-accent-dim);
+  border-radius: 1px;
+  box-shadow: 0 0 4px var(--conduit-glow-color);
+}
+
+/* ============================================
+   INFO - Label and percentage display
+   ============================================ */
+[data-skin="cyberpunk"] .power-conduit__label {
+  font-family: 'Rajdhani', 'Segoe UI', sans-serif;
+  color: var(--conduit-accent);
+  opacity: 0.7;
+  text-shadow: 0 0 5px var(--conduit-glow-color);
+}
+
+[data-skin="cyberpunk"] .power-conduit__value {
+  font-family: 'Orbitron', 'Share Tech Mono', 'Courier New', monospace;
+  color: var(--conduit-accent);
+  text-shadow:
+    0 0 8px var(--conduit-glow-color),
+    0 0 15px var(--conduit-glow-color);
+}
+
+/* Glitch effect on value */
+[data-skin="cyberpunk"] .power-conduit__value::before,
+[data-skin="cyberpunk"] .power-conduit__value::after {
+  content: attr(data-text);
+  position: absolute;
+  left: 0;
+  top: 0;
+  opacity: 0;
+}
+
+[data-skin="cyberpunk"] .power-conduit__value::before {
+  animation: conduit-glitch-a 4s infinite linear;
+  clip-path: polygon(0 0, 100% 0, 100% 40%, 0 40%);
+  text-shadow: -1px 0 #f0f;
+}
+
+[data-skin="cyberpunk"] .power-conduit__value::after {
+  animation: conduit-glitch-b 4s infinite linear;
+  clip-path: polygon(0 60%, 100% 60%, 100% 100%, 0 100%);
+  text-shadow: 1px 0 #f0f;
+}
+
+@keyframes conduit-glitch-a {
+  0%, 100% { transform: translateX(0); opacity: 0; }
+  20% { transform: translateX(-2px); opacity: 0.8; }
+  21% { transform: translateX(2px); opacity: 0; }
+  22% { transform: translateX(-1px); opacity: 0.7; }
+  23% { transform: translateX(0); opacity: 0; }
+  65% { transform: translateX(2px); opacity: 0.8; }
+  66% { transform: translateX(-2px); opacity: 0; }
+}
+
+@keyframes conduit-glitch-b {
+  0%, 100% { transform: translateX(0); opacity: 0; }
+  25% { transform: translateX(2px); opacity: 0.7; }
+  26% { transform: translateX(-1px); opacity: 0; }
+  27% { transform: translateX(2px); opacity: 0.8; }
+  28% { transform: translateX(0); opacity: 0; }
+  70% { transform: translateX(-2px); opacity: 0.8; }
+  71% { transform: translateX(1px); opacity: 0; }
+}
+
+/* ============================================
+   CRITICAL VARIANT - EMERGENCY FLICKER
+   ============================================ */
+[data-skin="cyberpunk"] .power-conduit--critical .power-conduit__segment--filled {
+  animation: critical-flicker 0.5s ease-in-out infinite;
+}
+
+@keyframes critical-flicker {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.7; }
+  75% { opacity: 0.9; }
+}
+
+/* ============================================
+   FULL POWER STATE - MAX INTENSITY
+   ============================================ */
+[data-skin="cyberpunk"] .power-conduit--full .power-conduit__segment--active {
+  /* When at 100%, intensify the active segment glow */
+  animation: full-power-pulse 0.8s ease-in-out infinite;
+}
+
+@keyframes full-power-pulse {
+  0%, 100% {
+    box-shadow:
+      inset 0 0 15px rgba(255, 255, 255, 0.5),
+      0 0 25px var(--conduit-glow-intense),
+      0 0 40px var(--conduit-glow-color);
+  }
+  50% {
+    box-shadow:
+      inset 0 0 20px rgba(255, 255, 255, 0.7),
+      0 0 35px var(--conduit-glow-intense),
+      0 0 60px var(--conduit-glow-color);
+  }
+}
+
+/* ============================================
+   REDUCED MOTION - Accessibility
+   ============================================ */
+@media (prefers-reduced-motion: reduce) {
+  [data-skin="cyberpunk"] .power-conduit__segment--active,
+  [data-skin="cyberpunk"] .power-conduit__flow,
+  [data-skin="cyberpunk"] .power-conduit__value::before,
+  [data-skin="cyberpunk"] .power-conduit__value::after,
+  [data-skin="cyberpunk"] .power-conduit--critical .power-conduit__segment--filled,
+  [data-skin="cyberpunk"] .power-conduit--full .power-conduit__segment--active {
+    animation: none;
+  }
+}

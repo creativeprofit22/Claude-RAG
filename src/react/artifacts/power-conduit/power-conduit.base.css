@@ -1,0 +1,135 @@
+/**
+ * PowerConduit Base Styles
+ * Structural layout without skin-specific theming
+ */
+
+/* ============================================
+   CONTAINER
+   ============================================ */
+.power-conduit {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  width: 100%;
+  max-width: 400px;
+}
+
+/* ============================================
+   SHADOW - Ground projection
+   ============================================ */
+.power-conduit__shadow {
+  position: absolute;
+  bottom: -8px;
+  left: 10%;
+  right: 10%;
+  height: 12px;
+  z-index: 0;
+  pointer-events: none;
+}
+
+/* ============================================
+   BODY - Main conduit housing
+   ============================================ */
+.power-conduit__body {
+  position: relative;
+  height: 32px;
+  overflow: hidden;
+  z-index: 1;
+}
+
+/* ============================================
+   CIRCUITS - Background pattern layer
+   ============================================ */
+.power-conduit__circuits {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+}
+
+/* ============================================
+   TRACK - Segment container
+   ============================================ */
+.power-conduit__track {
+  position: relative;
+  display: flex;
+  gap: 3px;
+  height: 100%;
+  padding: 4px 6px;
+  z-index: 2;
+}
+
+/* ============================================
+   SEGMENT - Individual power cell
+   ============================================ */
+.power-conduit__segment {
+  flex: 1;
+  min-width: 8px;
+  position: relative;
+  transition: all 0.15s ease-out;
+}
+
+/* ============================================
+   FLOW - Energy flow effect
+   ============================================ */
+.power-conduit__flow {
+  position: absolute;
+  inset: 0;
+  z-index: 3;
+  pointer-events: none;
+  opacity: 0;
+}
+
+/* ============================================
+   WEAR - Surface damage layer
+   ============================================ */
+.power-conduit__wear {
+  position: absolute;
+  inset: 0;
+  z-index: 4;
+  pointer-events: none;
+}
+
+/* ============================================
+   INFO - Label and value display
+   ============================================ */
+.power-conduit__info {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0 4px;
+}
+
+.power-conduit__label {
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+}
+
+.power-conduit__value {
+  position: relative;
+  font-size: 0.875rem;
+  font-weight: 600;
+}
+
+/* ============================================
+   END CAPS - Frame decorations
+   ============================================ */
+.power-conduit__cap {
+  position: absolute;
+  top: 50%;
+  width: 8px;
+  height: 40px;
+  transform: translateY(-50%);
+  z-index: 5;
+  pointer-events: none;
+}
+
+.power-conduit__cap--left {
+  left: -4px;
+}
+
+.power-conduit__cap--right {
+  right: -4px;
+}

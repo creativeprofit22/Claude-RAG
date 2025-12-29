@@ -30,6 +30,8 @@ export interface HudFrameProps {
   hideReticles?: boolean;
   /** Optional className for additional styling */
   className?: string;
+  /** Optional inline styles */
+  style?: React.CSSProperties;
   /** Optional aria-label for accessibility */
   'aria-label'?: string;
 }
@@ -50,6 +52,7 @@ export const HudFrame = memo(function HudFrame({
   hideHeader = false,
   hideReticles = false,
   className = '',
+  style,
   'aria-label': ariaLabel,
 }: HudFrameProps) {
   // Build class names
@@ -67,6 +70,7 @@ export const HudFrame = memo(function HudFrame({
   return (
     <section
       className={frameClasses}
+      style={style}
       aria-label={ariaLabel || title}
       aria-busy={isLoading}
     >

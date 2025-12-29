@@ -93540,6 +93540,7 @@ var RAGBundle = (() => {
 
   // src/react/artifacts/hud-frame/HudFrame.tsx
   var RETICLE_SYMBOL = "\u2295";
+  var RETICLE_POSITIONS = ["tl", "tr", "bl", "br"];
   var HudFrame = memo(function HudFrame2({
     children,
     title,
@@ -93572,18 +93573,75 @@ var RAGBundle = (() => {
             icon && /* @__PURE__ */ jsx("span", { className: "hud-frame__title-icon", children: icon }),
             /* @__PURE__ */ jsx("span", { className: "hud-frame__title", children: title })
           ] }),
-          !hideReticles && /* @__PURE__ */ jsxs(Fragment2, { children: [
-            /* @__PURE__ */ jsx("span", { className: "hud-frame__reticle hud-frame__reticle--tl", "aria-hidden": "true", children: RETICLE_SYMBOL }),
-            /* @__PURE__ */ jsx("span", { className: "hud-frame__reticle hud-frame__reticle--tr", "aria-hidden": "true", children: RETICLE_SYMBOL }),
-            /* @__PURE__ */ jsx("span", { className: "hud-frame__reticle hud-frame__reticle--bl", "aria-hidden": "true", children: RETICLE_SYMBOL }),
-            /* @__PURE__ */ jsx("span", { className: "hud-frame__reticle hud-frame__reticle--br", "aria-hidden": "true", children: RETICLE_SYMBOL })
-          ] }),
+          !hideReticles && RETICLE_POSITIONS.map((pos) => /* @__PURE__ */ jsx(
+            "span",
+            {
+              className: `hud-frame__reticle hud-frame__reticle--${pos}`,
+              "aria-hidden": "true",
+              children: RETICLE_SYMBOL
+            },
+            pos
+          )),
           /* @__PURE__ */ jsx("div", { className: "hud-frame__content", children }),
           /* @__PURE__ */ jsx("div", { className: "hud-frame__scan", "aria-hidden": "true" })
         ] })
       }
     );
   });
+
+  // src/react/artifacts/power-conduit/PowerConduit.tsx
+  function PowerConduit({
+    value,
+    max: max3,
+    label,
+    variant = "default",
+    segments = 10,
+    className = ""
+  }) {
+    const percentage = Math.min(100, Math.max(0, value / max3 * 100));
+    const filledSegments = Math.round(percentage / 100 * segments);
+    const segmentElements = Array.from({ length: segments }, (_, i) => {
+      const isFilled = i < filledSegments;
+      const isLast = i === filledSegments - 1 && filledSegments > 0;
+      return /* @__PURE__ */ jsx(
+        "div",
+        {
+          className: `power-conduit__segment ${isFilled ? "power-conduit__segment--filled" : ""} ${isLast ? "power-conduit__segment--active" : ""}`,
+          "aria-hidden": "true"
+        },
+        i
+      );
+    });
+    return /* @__PURE__ */ jsxs(
+      "div",
+      {
+        className: `power-conduit power-conduit--${variant} ${className}`,
+        role: "progressbar",
+        "aria-valuenow": value,
+        "aria-valuemin": 0,
+        "aria-valuemax": max3,
+        "aria-label": label,
+        children: [
+          /* @__PURE__ */ jsx("div", { className: "power-conduit__shadow", "aria-hidden": "true" }),
+          /* @__PURE__ */ jsxs("div", { className: "power-conduit__body", children: [
+            /* @__PURE__ */ jsx("div", { className: "power-conduit__circuits", "aria-hidden": "true" }),
+            /* @__PURE__ */ jsx("div", { className: "power-conduit__track", children: segmentElements }),
+            /* @__PURE__ */ jsx("div", { className: "power-conduit__flow", "aria-hidden": "true" }),
+            /* @__PURE__ */ jsx("div", { className: "power-conduit__wear", "aria-hidden": "true" })
+          ] }),
+          /* @__PURE__ */ jsxs("div", { className: "power-conduit__info", children: [
+            /* @__PURE__ */ jsx("span", { className: "power-conduit__label", children: label }),
+            /* @__PURE__ */ jsxs("span", { className: "power-conduit__value", "data-text": `${Math.round(percentage)}%`, children: [
+              Math.round(percentage),
+              "%"
+            ] })
+          ] }),
+          /* @__PURE__ */ jsx("div", { className: "power-conduit__cap power-conduit__cap--left", "aria-hidden": "true" }),
+          /* @__PURE__ */ jsx("div", { className: "power-conduit__cap power-conduit__cap--right", "aria-hidden": "true" })
+        ]
+      }
+    );
+  }
 
   // src/react/utils/formatters.ts
   function formatRelativeTime(timestamp) {
@@ -93609,6 +93667,11 @@ var RAGBundle = (() => {
     unhealthy: XCircle
   };
   var SKELETON_COUNT = 4;
+  function PanelContent({ isLoading, isEmpty, skeleton, emptyMessage, children }) {
+    if (isLoading) return /* @__PURE__ */ jsx(Fragment2, { children: skeleton });
+    if (isEmpty) return /* @__PURE__ */ jsx("div", { className: "rag-admin-chart-empty", children: emptyMessage });
+    return /* @__PURE__ */ jsx(Fragment2, { children });
+  }
   function buildServiceEntries(health) {
     if (!health?.services?.database || !health?.services?.embeddings || !health?.services?.responders) {
       return [];
@@ -93855,6 +93918,45 @@ var RAGBundle = (() => {
           }
         )
       ] }),
+      /* @__PURE__ */ jsx(
+        HudFrame,
+        {
+          title: "SYSTEM_LOAD",
+          icon: /* @__PURE__ */ jsx(Activity, { size: 16 }),
+          isLoading,
+          className: "rag-admin-panel",
+          style: { marginBottom: "1.5rem" },
+          children: /* @__PURE__ */ jsxs("div", { style: { display: "flex", flexDirection: "column", gap: "1.25rem", padding: "0.5rem" }, children: [
+            /* @__PURE__ */ jsx(
+              PowerConduit,
+              {
+                value: stats?.chunks.total || 0,
+                max: Math.max(stats?.chunks.total || 1, 1e4),
+                label: "MEMORY ALLOCATION",
+                variant: "default"
+              }
+            ),
+            /* @__PURE__ */ jsx(
+              PowerConduit,
+              {
+                value: stats?.documents.total || 0,
+                max: Math.max(stats?.documents.total || 1, 100),
+                label: "DOCUMENT CACHE",
+                variant: stats?.documents.total && stats.documents.total > 50 ? "warning" : "default"
+              }
+            ),
+            /* @__PURE__ */ jsx(
+              PowerConduit,
+              {
+                value: stats?.storage.estimatedMB || 0,
+                max: 1024,
+                label: "STORAGE USAGE",
+                variant: (stats?.storage.estimatedMB || 0) > 800 ? "critical" : (stats?.storage.estimatedMB || 0) > 500 ? "warning" : "default"
+              }
+            )
+          ] })
+        }
+      ),
       /* @__PURE__ */ jsxs("div", { className: "rag-admin-content-grid", children: [
         /* @__PURE__ */ jsx(
           HudFrame,
@@ -93863,11 +93965,20 @@ var RAGBundle = (() => {
             icon: /* @__PURE__ */ jsx(Database, { size: 16 }),
             isLoading,
             className: "rag-admin-panel",
-            children: /* @__PURE__ */ jsx("div", { className: "rag-admin-chart", children: isLoading ? /* @__PURE__ */ jsx("div", { className: "rag-admin-chart-skeleton", children: Array.from({ length: SKELETON_COUNT }, (_, i) => /* @__PURE__ */ jsx("div", { className: "rag-admin-chart-skeleton-bar" }, i)) }) : (stats?.documents?.byCategory?.length ?? 0) === 0 ? /* @__PURE__ */ jsx("div", { className: "rag-admin-chart-empty", children: "No categories with documents" }) : /* @__PURE__ */ jsx(
-              SkinAwareChart,
+            children: /* @__PURE__ */ jsx("div", { className: "rag-admin-chart", children: /* @__PURE__ */ jsx(
+              PanelContent,
               {
-                option: categoryChartOption,
-                style: { height: 220 }
+                isLoading,
+                isEmpty: (stats?.documents?.byCategory?.length ?? 0) === 0,
+                skeleton: /* @__PURE__ */ jsx("div", { className: "rag-admin-chart-skeleton", children: Array.from({ length: SKELETON_COUNT }, (_, i) => /* @__PURE__ */ jsx("div", { className: "rag-admin-chart-skeleton-bar" }, i)) }),
+                emptyMessage: "No categories with documents",
+                children: /* @__PURE__ */ jsx(
+                  SkinAwareChart,
+                  {
+                    option: categoryChartOption,
+                    style: { height: 220 }
+                  }
+                )
               }
             ) })
           }
@@ -93898,17 +94009,26 @@ var RAGBundle = (() => {
             icon: /* @__PURE__ */ jsx(Clock, { size: 16 }),
             isLoading,
             className: "rag-admin-panel rag-admin-panel-wide",
-            children: /* @__PURE__ */ jsx("div", { className: "rag-admin-recent-list", children: isLoading ? /* @__PURE__ */ jsx("div", { className: "rag-admin-recent-skeleton", children: Array.from({ length: 3 }, (_, i) => /* @__PURE__ */ jsx("div", { className: "rag-admin-recent-skeleton-row" }, i)) }) : stats?.recentUploads.length === 0 ? /* @__PURE__ */ jsx("div", { className: "rag-admin-recent-empty", children: "No documents uploaded yet" }) : stats?.recentUploads.map((doc) => /* @__PURE__ */ jsxs("div", { className: "rag-admin-recent-item", children: [
-              /* @__PURE__ */ jsx(FileText, { size: 16, className: "rag-admin-recent-icon" }),
-              /* @__PURE__ */ jsxs("div", { className: "rag-admin-recent-info", children: [
-                /* @__PURE__ */ jsx("span", { className: "rag-admin-recent-name", children: doc.documentName }),
-                /* @__PURE__ */ jsxs("span", { className: "rag-admin-recent-meta", children: [
-                  doc.chunkCount,
-                  " chunks"
-                ] })
-              ] }),
-              /* @__PURE__ */ jsx("span", { className: "rag-admin-recent-time", children: formatRelativeTime(doc.timestamp) })
-            ] }, doc.documentId)) })
+            children: /* @__PURE__ */ jsx("div", { className: "rag-admin-recent-list", children: /* @__PURE__ */ jsx(
+              PanelContent,
+              {
+                isLoading,
+                isEmpty: stats?.recentUploads.length === 0,
+                skeleton: /* @__PURE__ */ jsx("div", { className: "rag-admin-recent-skeleton", children: Array.from({ length: 3 }, (_, i) => /* @__PURE__ */ jsx("div", { className: "rag-admin-recent-skeleton-row" }, i)) }),
+                emptyMessage: "No documents uploaded yet",
+                children: stats?.recentUploads.map((doc) => /* @__PURE__ */ jsxs("div", { className: "rag-admin-recent-item", children: [
+                  /* @__PURE__ */ jsx(FileText, { size: 16, className: "rag-admin-recent-icon" }),
+                  /* @__PURE__ */ jsxs("div", { className: "rag-admin-recent-info", children: [
+                    /* @__PURE__ */ jsx("span", { className: "rag-admin-recent-name", children: doc.documentName }),
+                    /* @__PURE__ */ jsxs("span", { className: "rag-admin-recent-meta", children: [
+                      doc.chunkCount,
+                      " chunks"
+                    ] })
+                  ] }),
+                  /* @__PURE__ */ jsx("span", { className: "rag-admin-recent-time", children: formatRelativeTime(doc.timestamp) })
+                ] }, doc.documentId))
+              }
+            ) })
           }
         )
       ] })
