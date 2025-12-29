@@ -13,27 +13,22 @@ Query → Gemini Embeddings → LanceDB → Chunks → Claude Code CLI → Respo
 ```
 
 ## Pipeline State
-Phase: build
+Phase: refactor-hunt
 Feature: Phase 2 - Charts + Admin Components
-Previous: Phase 1 Motion System (complete, refactored)
+Files-Validated:
+- src/react/components/admin/AdminDashboard.tsx
+- src/react/components/documents/DocumentList.tsx
+- src/react/RAGInterface.tsx
+- src/react/RAGChat.tsx
+- src/react/components/documents/DocumentLibrary.tsx
+Validation-Report: reports/validation-phase2-charts-admin.md
 
 ## Last Session (2025-12-28)
-**Phase 1 Refactors Completed:**
-- Derived VALID_SKINS from skinMotionMap keys (no duplication)
-- Consolidated MotionContextValue/UseSkinMotionReturn interfaces
-- Added exit transitions to list/button in all 4 skin variants
-- Used shared EmptyState component in RAGChat (removed inline duplication)
-
-**Phase 2 Charts Infrastructure Built:**
-- Installed echarts + echarts-for-react
-- Created `src/react/charts/` directory structure
-- Built 4 ECharts skin themes (library, cyberpunk, brutalist, glass)
-- Created SkinAwareChart wrapper component (native echarts, skin-aware theming)
-- Build passing
-
-**Next Steps:**
-- Integrate SkinAwareChart into AdminDashboard (replace CSS bar chart)
-- Add motion to DocumentList, RAGInterface, RAGChat empty state, DocumentLibrary
+**Validation Complete - 4 Bugs Fixed:**
+- AdminDashboard: Added headers to fetch, fixed null access on byCategory
+- SkinAwareChart: Removed redundant skin change effect
+- useRAGChat: Added effect to clear messages on documentId change
+- All checks passing, build + tests green
 
 ## Key Files
 - `src/server.ts` - Bun HTTP server

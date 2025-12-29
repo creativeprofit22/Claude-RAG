@@ -4,9 +4,11 @@
 
 import React, { useCallback, useEffect } from 'react';
 import { X, Upload, Loader2 } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { useFileQueue, type QueuedFile } from '../../hooks/useFileQueue.js';
 import { useCategories } from '../../hooks/useCategories.js';
 import { useModal } from '../../hooks/useModal.js';
+import { useSkinMotion } from '../../motion/hooks/useSkinMotion.js';
 import { FileDropZone } from './FileDropZone.js';
 import { FileQueue } from './FileQueue.js';
 import { CategoryFilter } from '../categories/CategoryFilter.js';
@@ -29,6 +31,7 @@ export function UploadModal({
   className = '',
 }: UploadModalProps): React.ReactElement | null {
   const { handleBackdropClick } = useModal({ onClose, isOpen });
+  const { motion: skinMotion } = useSkinMotion();
 
   // Category management - use stable endpoint reference to prevent race conditions
   const { categories, isLoading: categoriesLoading, refetch: refetchCategories } = useCategories({
@@ -113,20 +116,30 @@ export function UploadModal({
     }
   }, [isOpen, clearAll]);
 
-  if (!isOpen) return null;
-
   const queuedCount = files.filter((f) => f.status === 'queued').length;
   const canUpload = queuedCount > 0 && !isUploading;
 
   return (
-    <div
-      className={`curator-overlay rag-upload-modal-overlay ${className}`}
-      onClick={handleBackdropClick}
-      role="dialog"
-      aria-modal="true"
-      aria-labelledby="upload-modal-title"
-    >
-      <div className="rag-upload-modal">
+    <AnimatePresence mode="wait">
+      {isOpen && (
+        <motion.div
+          className={`curator-overlay rag-upload-modal-overlay ${className}`}
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          onClick={handleBackdropClick}
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="upload-modal-title"
+        >
+          <motion.div
+            className="rag-upload-modal"
+            variants={skinMotion.modal}
+            initial="hidden"
+            animate="visible"
+            exit="exit"
+            onClick={(e) => e.stopPropagation()}
+          >
         {/* Header */}
         <div className="rag-upload-modal-header">
           <div className="rag-upload-modal-title-row">
@@ -215,7 +228,9 @@ export function UploadModal({
             Successfully uploaded {completedCount} file{completedCount !== 1 ? 's' : ''}
           </div>
         )}
-      </div>
-    </div>
+          </motion.div>
+        </motion.div>
+      )}
+    </AnimatePresence>
   );
 }

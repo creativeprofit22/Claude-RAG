@@ -3,10 +3,12 @@
  */
 
 import React from 'react';
+import { AnimatePresence, motion } from 'framer-motion';
 import { FileText, X, Check, AlertCircle, Loader2, Edit2 } from 'lucide-react';
 import type { QueuedFile, FileStatus } from '../../hooks/useFileQueue.js';
 import { ProgressIndicator } from './ProgressIndicator.js';
 import { formatFileSize } from '../../utils/format.js';
+import { useSkinMotion } from '../../motion/hooks/useSkinMotion.js';
 
 export interface FileQueueProps {
   files: QueuedFile[];
@@ -168,6 +170,8 @@ export function FileQueue({
   isUploading = false,
   className = '',
 }: FileQueueProps): React.ReactElement | null {
+  const { motion: skinMotion } = useSkinMotion();
+
   if (files.length === 0) {
     return null;
   }
@@ -195,17 +199,32 @@ export function FileQueue({
         </div>
       </div>
 
-      <div className="rag-upload-queue-list">
-        {files.map((file) => (
-          <FileQueueItem
-            key={file.id}
-            file={file}
-            onRemove={() => onRemove(file.id)}
-            onRename={onRename ? (name) => onRename(file.id, name) : undefined}
-            isUploading={isUploading}
-          />
-        ))}
-      </div>
+      <motion.div
+        className="rag-upload-queue-list"
+        variants={skinMotion.list}
+        initial="hidden"
+        animate="visible"
+      >
+        <AnimatePresence mode="popLayout">
+          {files.map((file) => (
+            <motion.div
+              key={file.id}
+              variants={skinMotion.card}
+              initial="hidden"
+              animate="visible"
+              exit="exit"
+              layout
+            >
+              <FileQueueItem
+                file={file}
+                onRemove={() => onRemove(file.id)}
+                onRename={onRename ? (name) => onRename(file.id, name) : undefined}
+                isUploading={isUploading}
+              />
+            </motion.div>
+          ))}
+        </AnimatePresence>
+      </motion.div>
     </div>
   );
 }

@@ -36,6 +36,12 @@ export function useRAGChat(config: RAGChatConfig = {}): RAGChatState & RAGChatAc
     };
   }, []);
 
+  // Clear messages when documentId changes (new document scope)
+  useEffect(() => {
+    setMessages([]);
+    setError(null);
+  }, [documentId]);
+
   const sendMessage = useCallback(async (content: string) => {
     if (!content.trim()) return;
 

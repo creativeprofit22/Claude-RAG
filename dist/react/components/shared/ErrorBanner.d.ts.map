@@ -1,0 +1,1 @@
+{"version":3,"file":"ErrorBanner.d.ts","sourceRoot":"","sources":["../../../../src/react/components/shared/ErrorBanner.tsx"],"names":[],"mappings":"AAIA,MAAM,WAAW,gBAAgB;IAC/B,+BAA+B;IAC/B,KAAK,EAAE,MAAM,CAAC;IACd,8CAA8C;IAC9C,SAAS,EAAE,MAAM,IAAI,CAAC;CACvB;AAED;;;;;;;;;GASG;AACH,wBAAgB,WAAW,CAAC,EAAE,KAAK,EAAE,SAAS,EAAE,EAAE,gBAAgB,2CAejE"}

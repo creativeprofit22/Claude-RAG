@@ -1611,14 +1611,34 @@
   background-color: var(--curator-bg-hover);
 }
 
+/* Phase 3: Border pulse animation keyframe */
+@keyframes border-pulse {
+  0%, 100% {
+    border-color: var(--curator-success);
+    opacity: 1;
+  }
+  50% {
+    border-color: var(--curator-success);
+    opacity: 0.7;
+  }
+}
+
 .rag-upload-dropzone.dragging {
   border-color: var(--curator-success);
   background-color: var(--curator-success-bg);
+  animation: border-pulse 0.5s ease-in-out infinite;
 }
 
 .rag-upload-dropzone.disabled {
   opacity: 0.5;
   cursor: not-allowed;
+}
+
+/* Phase 3: Success pulse animation */
+.rag-upload-dropzone.success {
+  animation: curator-pulse 2s var(--curator-ease-in-out) 1;
+  border-color: var(--curator-success);
+  background-color: var(--curator-success-bg);
 }
 
 .rag-upload-input {

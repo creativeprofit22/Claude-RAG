@@ -2,13 +2,14 @@
 
 import { useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Database, X, AlertCircle, type LucideIcon } from 'lucide-react';
+import { Database, type LucideIcon } from 'lucide-react';
 import { useSkinMotion } from './motion/hooks/useSkinMotion.js';
 import { ChatHeader } from './components/ChatHeader.js';
 import { ChatInput } from './components/ChatInput.js';
 import { MessageBubble } from './components/MessageBubble.js';
 import { TypingIndicator } from './components/TypingIndicator.js';
 import { EmptyState } from './components/shared/EmptyState.js';
+import { ErrorBanner } from './components/shared/ErrorBanner.js';
 import { useRAGChat } from './hooks/useRAGChat.js';
 import { DEFAULT_ACCENT_COLOR, type RAGChatConfig } from './types.js';
 
@@ -124,20 +125,7 @@ export function RAGChat({
       />
 
       {/* Error Banner */}
-      {error && (
-        <div className="curator-error-banner" role="alert">
-          <AlertCircle size={16} aria-hidden="true" />
-          <span>{error}</span>
-          <button
-            type="button"
-            onClick={() => setError(null)}
-            className="curator-error-dismiss"
-            aria-label="Dismiss error"
-          >
-            <X size={14} />
-          </button>
-        </div>
-      )}
+      {error && <ErrorBanner error={error} onDismiss={() => setError(null)} />}
 
       {/* Messages Area */}
       <div ref={messagesContainerRef} className="rag-chat-messages">

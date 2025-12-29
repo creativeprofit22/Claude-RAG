@@ -3,9 +3,11 @@ import { jsx as _jsx, jsxs as _jsxs } from "react/jsx-runtime";
  * FileQueue - Display and manage queued files for upload
  */
 import React from 'react';
+import { AnimatePresence, motion } from 'framer-motion';
 import { FileText, X, Check, AlertCircle, Loader2, Edit2 } from 'lucide-react';
 import { ProgressIndicator } from './ProgressIndicator.js';
 import { formatFileSize } from '../../utils/format.js';
+import { useSkinMotion } from '../../motion/hooks/useSkinMotion.js';
 /**
  * Get status icon
  */
@@ -58,12 +60,13 @@ function FileQueueItem({ file, onRemove, onRename, isUploading, }) {
                                 }, tabIndex: canEdit ? 0 : undefined, role: canEdit ? 'button' : undefined, title: file.name, children: [file.name, canEdit && onRename && _jsx(Edit2, { size: 12, className: "edit-icon" })] }))] }), _jsxs("div", { className: "rag-upload-queue-item-actions", children: [_jsx("span", { className: "rag-upload-queue-item-size", children: formatFileSize(file.file.size) }), file.result && (_jsxs("span", { className: "rag-upload-queue-item-chunks", children: [file.result.chunks, " chunks"] })), canRemove && (_jsx("button", { type: "button", onClick: onRemove, className: "rag-upload-queue-item-remove", "aria-label": "Remove file", children: _jsx(X, { size: 14 }) }))] })] }), file.status === 'uploading' && (_jsx(ProgressIndicator, { progress: file.progress, showStages: false })), file.status === 'error' && file.error && (_jsxs("div", { className: "rag-upload-queue-item-error", children: [_jsx(AlertCircle, { size: 12 }), _jsx("span", { children: file.error })] })), file.warning && (_jsxs("div", { className: "rag-upload-queue-item-warning", children: [_jsx(AlertCircle, { size: 12 }), _jsx("span", { children: file.warning })] }))] }));
 }
 export function FileQueue({ files, onRemove, onRename, isUploading = false, className = '', }) {
+    const { motion: skinMotion } = useSkinMotion();
     if (files.length === 0) {
         return null;
     }
     const queuedCount = files.filter((f) => f.status === 'queued').length;
     const completedCount = files.filter((f) => f.status === 'complete').length;
     const errorCount = files.filter((f) => f.status === 'error').length;
-    return (_jsxs("div", { className: `rag-upload-queue ${className}`, children: [_jsxs("div", { className: "rag-upload-queue-header", children: [_jsxs("span", { className: "rag-upload-queue-title", children: ["Files (", files.length, ")"] }), _jsxs("div", { className: "rag-upload-queue-stats", children: [queuedCount > 0 && (_jsxs("span", { className: "rag-upload-queue-stat queued", children: [queuedCount, " queued"] })), completedCount > 0 && (_jsxs("span", { className: "rag-upload-queue-stat complete", children: [completedCount, " complete"] })), errorCount > 0 && (_jsxs("span", { className: "rag-upload-queue-stat error", children: [errorCount, " failed"] }))] })] }), _jsx("div", { className: "rag-upload-queue-list", children: files.map((file) => (_jsx(FileQueueItem, { file: file, onRemove: () => onRemove(file.id), onRename: onRename ? (name) => onRename(file.id, name) : undefined, isUploading: isUploading }, file.id))) })] }));
+    return (_jsxs("div", { className: `rag-upload-queue ${className}`, children: [_jsxs("div", { className: "rag-upload-queue-header", children: [_jsxs("span", { className: "rag-upload-queue-title", children: ["Files (", files.length, ")"] }), _jsxs("div", { className: "rag-upload-queue-stats", children: [queuedCount > 0 && (_jsxs("span", { className: "rag-upload-queue-stat queued", children: [queuedCount, " queued"] })), completedCount > 0 && (_jsxs("span", { className: "rag-upload-queue-stat complete", children: [completedCount, " complete"] })), errorCount > 0 && (_jsxs("span", { className: "rag-upload-queue-stat error", children: [errorCount, " failed"] }))] })] }), _jsx(motion.div, { className: "rag-upload-queue-list", variants: skinMotion.list, initial: "hidden", animate: "visible", children: _jsx(AnimatePresence, { mode: "popLayout", children: files.map((file) => (_jsx(motion.div, { variants: skinMotion.card, initial: "hidden", animate: "visible", exit: "exit", layout: true, children: _jsx(FileQueueItem, { file: file, onRemove: () => onRemove(file.id), onRename: onRename ? (name) => onRename(file.id, name) : undefined, isUploading: isUploading }) }, file.id))) }) })] }));
 }
 //# sourceMappingURL=FileQueue.js.map

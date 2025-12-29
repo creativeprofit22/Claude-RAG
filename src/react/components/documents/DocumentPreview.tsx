@@ -1,9 +1,11 @@
 'use client';
 
 import { X, FileText, Calendar, Layers, MessageSquare, ExternalLink } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
 import type { DocumentDetails } from '../../types.js';
 import { DEFAULT_ACCENT_COLOR } from '../../types.js';
 import { useModal } from '../../hooks/useModal.js';
+import { useSkinMotion } from '../../motion/hooks/useSkinMotion.js';
 import { formatDate } from '../../utils/formatDate.js';
 
 /**
@@ -34,16 +36,28 @@ export function DocumentPreview({
   accentColor = DEFAULT_ACCENT_COLOR,
 }: DocumentPreviewProps) {
   const { handleBackdropClick } = useModal({ onClose });
+  const { motion: skinMotion } = useSkinMotion();
 
   return (
-    <div
-      className="curator-overlay rag-preview-overlay"
-      onClick={handleBackdropClick}
-      role="dialog"
-      aria-modal="true"
-      aria-labelledby="preview-dialog-title"
-    >
-      <div className="rag-preview-modal">
+    <AnimatePresence mode="wait">
+      <motion.div
+        className="curator-overlay rag-preview-overlay"
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        exit={{ opacity: 0 }}
+        onClick={handleBackdropClick}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="preview-dialog-title"
+      >
+        <motion.div
+          className="rag-preview-modal"
+          variants={skinMotion.modal}
+          initial="hidden"
+          animate="visible"
+          exit="exit"
+          onClick={(e) => e.stopPropagation()}
+        >
         {/* Header */}
         <div className="rag-preview-header">
           <div className="rag-preview-title-section">
@@ -144,7 +158,8 @@ export function DocumentPreview({
             </button>
           )}
         </div>
-      </div>
-    </div>
+        </motion.div>
+      </motion.div>
+    </AnimatePresence>
   );
 }

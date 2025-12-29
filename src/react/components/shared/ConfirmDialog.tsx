@@ -1,7 +1,9 @@
 'use client';
 
+import { motion, AnimatePresence } from 'framer-motion';
 import { AlertTriangle, X } from 'lucide-react';
 import { useModal } from '../../hooks/useModal.js';
+import { useSkinMotion } from '../../motion/hooks/useSkinMotion.js';
 
 export interface ConfirmDialogProps {
   title: string;
@@ -26,16 +28,27 @@ export function ConfirmDialog({
   isDestructive = false,
 }: ConfirmDialogProps) {
   const { handleBackdropClick } = useModal({ onClose: onCancel });
+  const { motion: skinMotion } = useSkinMotion();
 
   return (
-    <div
-      className="curator-overlay rag-confirm-overlay"
-      onClick={handleBackdropClick}
-      role="dialog"
-      aria-modal="true"
-      aria-labelledby="confirm-dialog-title"
-    >
-      <div className="rag-confirm-dialog">
+    <AnimatePresence mode="wait">
+      <motion.div
+        className="curator-overlay rag-confirm-overlay"
+        onClick={handleBackdropClick}
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        exit={{ opacity: 0 }}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="confirm-dialog-title"
+      >
+        <motion.div
+          className="rag-confirm-dialog"
+          variants={skinMotion.modal}
+          initial="hidden"
+          animate="visible"
+          exit="exit"
+        >
         {/* Header */}
         <div className="rag-confirm-header">
           <div className="rag-confirm-title-row">
@@ -82,7 +95,8 @@ export function ConfirmDialog({
             {confirmLabel}
           </button>
         </div>
-      </div>
-    </div>
+        </motion.div>
+      </motion.div>
+    </AnimatePresence>
   );
 }

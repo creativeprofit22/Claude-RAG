@@ -2,12 +2,13 @@
 
 import { useState } from 'react';
 import { motion } from 'framer-motion';
-import { Library, AlertCircle, X, Upload } from 'lucide-react';
+import { Library, Upload } from 'lucide-react';
 import { DocumentSearch } from './DocumentSearch.js';
 import { DocumentList } from './DocumentList.js';
 import { DocumentPreview } from './DocumentPreview.js';
 import { ConfirmDialog } from '../shared/ConfirmDialog.js';
 import { EmptyState } from '../shared/EmptyState.js';
+import { ErrorBanner } from '../shared/ErrorBanner.js';
 import { UploadModal } from '../upload/UploadModal.js';
 import { useDocuments } from '../../hooks/useDocuments.js';
 import { useDocumentLibraryState } from '../../hooks/useDocumentLibraryState.js';
@@ -187,20 +188,7 @@ export function DocumentLibrary({
       </motion.header>
 
       {/* Error Banner */}
-      {displayError && (
-        <div className="curator-error-banner" role="alert">
-          <AlertCircle size={16} aria-hidden="true" />
-          <span>{displayError}</span>
-          <button
-            type="button"
-            onClick={dismissError}
-            className="curator-error-dismiss"
-            aria-label="Dismiss error"
-          >
-            <X size={14} />
-          </button>
-        </div>
-      )}
+      {displayError && <ErrorBanner error={displayError} onDismiss={dismissError} />}
 
       {/* Search Bar */}
       <motion.div variants={itemVariants}>

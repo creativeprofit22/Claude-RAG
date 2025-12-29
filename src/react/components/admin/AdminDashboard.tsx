@@ -21,6 +21,7 @@ import {
 } from 'lucide-react';
 import { SettingsModal } from '../settings/SettingsModal.js';
 import { SkinAwareChart } from '../../charts/SkinAwareChart.js';
+import { ErrorBanner } from '../shared/ErrorBanner.js';
 import type { AdminStats, AdminHealth } from '../../types.js';
 import { formatBytes, formatRelativeTime } from '../../utils/formatters.js';
 
@@ -111,10 +112,20 @@ export function AdminDashboard({
   const [lastRefresh, setLastRefresh] = useState<Date>(new Date());
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
 
+  // Stabilize headers to prevent infinite rerenders from inline objects
+  const headersJson = JSON.stringify(headers);
+  const stableHeaders = React.useMemo(() => headers, [headersJson]);
+
   const fetchData = useCallback(async (signal?: AbortSignal) => {
     try {
       setError(null);
-      const res = await fetch(`${endpoint}/admin/dashboard`, { signal });
+      const res = await fetch(`${endpoint}/admin/dashboard`, {
+        signal,
+        headers: {
+          'Content-Type': 'application/json',
+          ...stableHeaders,
+        },
+      });
 
       if (!res.ok) {
         throw new Error('Failed to fetch dashboard data');
@@ -131,7 +142,7 @@ export function AdminDashboard({
     } finally {
       setIsLoading(false);
     }
-  }, [endpoint]);
+  }, [endpoint, stableHeaders]);
 
   // AbortController ref for manual refresh
   const abortControllerRef = React.useRef<AbortController | null>(null);
@@ -257,15 +268,7 @@ export function AdminDashboard({
       />
 
       {/* Error Banner */}
-      {error && (
-        <div className="curator-error-banner" role="alert">
-          <AlertCircle size={16} aria-hidden="true" />
-          {error}
-          <button className="curator-error-dismiss" onClick={() => setError(null)} aria-label="Dismiss error">
-            <XCircle size={14} />
-          </button>
-        </div>
-      )}
+      {error && <ErrorBanner error={error} onDismiss={() => setError(null)} />}
 
       {/* Health Status Banner */}
       {health && (
@@ -332,7 +335,7 @@ export function AdminDashboard({
                   <div key={i} className="rag-admin-chart-skeleton-bar" />
                 ))}
               </div>
-            ) : stats?.documents.byCategory.length === 0 ? (
+            ) : (stats?.documents?.byCategory?.length ?? 0) === 0 ? (
               <div className="rag-admin-chart-empty">
                 No categories with documents
               </div>

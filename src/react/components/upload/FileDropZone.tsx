@@ -2,9 +2,11 @@
  * FileDropZone - Drag and drop area for file uploads
  */
 
-import React, { useState, useCallback, useRef } from 'react';
+import React, { useState, useCallback, useRef, useEffect } from 'react';
+import { motion } from 'framer-motion';
 import { Upload, FileText, AlertCircle } from 'lucide-react';
 import { SUPPORTED_EXTENSIONS, SUPPORTED_MIME_TYPES } from '../../../shared/file-types.js';
+import { useSkinMotion } from '../../motion/hooks/useSkinMotion.js';
 
 export interface FileDropZoneProps {
   onFilesSelected: (files: File[]) => void;
@@ -32,7 +34,9 @@ export function FileDropZone({
 }: FileDropZoneProps): React.ReactElement {
   const [isDragging, setIsDragging] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [showSuccess, setShowSuccess] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
+  const { motion: skinMotion, reducedMotion } = useSkinMotion();
 
   const handleDragEnter = useCallback((e: React.DragEvent) => {
     e.preventDefault();
@@ -73,6 +77,8 @@ export function FileDropZone({
       } else {
         onFilesSelected(validFiles);
       }
+      // Trigger success pulse animation
+      setShowSuccess(true);
     }
     // Note: onFilesSelected is included in deps; ensure parent memoizes it with useCallback
   }, [multiple, onFilesSelected]);
@@ -108,9 +114,17 @@ export function FileDropZone({
     }
   }, [disabled]);
 
+  // Reset success pulse after animation completes
+  useEffect(() => {
+    if (showSuccess) {
+      const timer = setTimeout(() => setShowSuccess(false), 2000);
+      return () => clearTimeout(timer);
+    }
+  }, [showSuccess]);
+
   return (
-    <div
-      className={`rag-upload-dropzone ${isDragging ? 'dragging' : ''} ${disabled ? 'disabled' : ''} ${className}`}
+    <motion.div
+      className={`rag-upload-dropzone ${isDragging ? 'dragging' : ''} ${showSuccess ? 'success' : ''} ${disabled ? 'disabled' : ''} ${className}`}
       onDragEnter={handleDragEnter}
       onDragLeave={handleDragLeave}
       onDragOver={handleDragOver}
@@ -120,6 +134,8 @@ export function FileDropZone({
       role="button"
       tabIndex={disabled ? -1 : 0}
       aria-label="Drop files here or click to select"
+      whileHover={!disabled && !reducedMotion ? skinMotion.hover : undefined}
+      whileTap={!disabled && !reducedMotion ? skinMotion.tap : undefined}
     >
       <input
         ref={inputRef}
@@ -153,6 +169,6 @@ export function FileDropZone({
           <span>{error}</span>
         </div>
       )}
-    </div>
+    </motion.div>
   );
 }

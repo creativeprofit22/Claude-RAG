@@ -2,13 +2,14 @@
 import { jsx as _jsx, jsxs as _jsxs } from "react/jsx-runtime";
 import { useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Database, X, AlertCircle } from 'lucide-react';
+import { Database } from 'lucide-react';
 import { useSkinMotion } from './motion/hooks/useSkinMotion.js';
 import { ChatHeader } from './components/ChatHeader.js';
 import { ChatInput } from './components/ChatInput.js';
 import { MessageBubble } from './components/MessageBubble.js';
 import { TypingIndicator } from './components/TypingIndicator.js';
 import { EmptyState } from './components/shared/EmptyState.js';
+import { ErrorBanner } from './components/shared/ErrorBanner.js';
 import { useRAGChat } from './hooks/useRAGChat.js';
 import { DEFAULT_ACCENT_COLOR } from './types.js';
 /**
@@ -67,6 +68,6 @@ export function RAGChat({ endpoint = '/api/rag/query', headers, placeholder = 'A
         }
     }, [messages.length, isTyping]);
     const defaultEmptyState = (_jsx(EmptyState, { icon: Database, iconSize: 48, iconColor: accentColor, iconShadow: `0 0 30px ${accentColor}15`, title: "Start a conversation", description: "Ask questions about your documents. Get instant, accurate answers with source citations." }));
-    return (_jsxs("div", { className: `rag-chat ${className}`, children: [_jsx(ChatHeader, { title: title, accentColor: accentColor, isTyping: isTyping, messageCount: messages.length, onClearChat: clearChat }), error && (_jsxs("div", { className: "curator-error-banner", role: "alert", children: [_jsx(AlertCircle, { size: 16, "aria-hidden": "true" }), _jsx("span", { children: error }), _jsx("button", { type: "button", onClick: () => setError(null), className: "curator-error-dismiss", "aria-label": "Dismiss error", children: _jsx(X, { size: 14 }) })] })), _jsx("div", { ref: messagesContainerRef, className: "rag-chat-messages", children: messages.length === 0 ? (_jsx(motion.div, { initial: skinMotion.modal.hidden, animate: skinMotion.modal.visible, transition: skinMotion.transition.default, children: emptyState || defaultEmptyState })) : (_jsxs(AnimatePresence, { mode: "popLayout", children: [messages.map((message) => (_jsx(MessageBubble, { message: message, accentColor: accentColor, showSources: showSources }, message.id))), isTyping && _jsx(TypingIndicator, { accentColor: accentColor }, "typing-indicator")] })) }), _jsx(ChatInput, { placeholder: placeholder, accentColor: accentColor, onSendMessage: sendMessage, disabled: isTyping })] }));
+    return (_jsxs("div", { className: `rag-chat ${className}`, children: [_jsx(ChatHeader, { title: title, accentColor: accentColor, isTyping: isTyping, messageCount: messages.length, onClearChat: clearChat }), error && _jsx(ErrorBanner, { error: error, onDismiss: () => setError(null) }), _jsx("div", { ref: messagesContainerRef, className: "rag-chat-messages", children: messages.length === 0 ? (_jsx(motion.div, { initial: skinMotion.modal.hidden, animate: skinMotion.modal.visible, transition: skinMotion.transition.default, children: emptyState || defaultEmptyState })) : (_jsxs(AnimatePresence, { mode: "popLayout", children: [messages.map((message) => (_jsx(MessageBubble, { message: message, accentColor: accentColor, showSources: showSources }, message.id))), isTyping && _jsx(TypingIndicator, { accentColor: accentColor }, "typing-indicator")] })) }), _jsx(ChatInput, { placeholder: placeholder, accentColor: accentColor, onSendMessage: sendMessage, disabled: isTyping })] }));
 }
 //# sourceMappingURL=RAGChat.js.map

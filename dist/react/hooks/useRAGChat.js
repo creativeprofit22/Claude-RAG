@@ -20,6 +20,11 @@ export function useRAGChat(config = {}) {
             abortControllerRef.current?.abort();
         };
     }, []);
+    // Clear messages when documentId changes (new document scope)
+    useEffect(() => {
+        setMessages([]);
+        setError(null);
+    }, [documentId]);
     const sendMessage = useCallback(async (content) => {
         if (!content.trim())
             return;

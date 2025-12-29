@@ -154,13 +154,6 @@ export function SkinAwareChart({
     };
   }, []);
 
-  // Update on skin change
-  useEffect(() => {
-    if (instanceRef.current) {
-      instanceRef.current.setOption(themedOption, { notMerge: true });
-    }
-  }, [skin, themedOption]);
-
   const containerStyle: CSSProperties = {
     width: '100%',
     height: 300,
