@@ -5,11 +5,12 @@ description: Run checks, commit with AI message, and push
 
 1. Run quality checks:
    ```bash
-   npx tsc --noEmit --skipLibCheck && bun test
+   npx tsc --noEmit
+   npm test
    ```
    Fix ALL errors before continuing.
 
-2. Review changes: `git status` and `git diff`
+2. Review changes: `git status` and `git diff --stat`
 
 3. Generate commit message:
    - Start with verb (Add/Update/Fix/Remove/Refactor)

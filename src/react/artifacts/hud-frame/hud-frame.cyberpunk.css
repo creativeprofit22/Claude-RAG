@@ -1,0 +1,388 @@
+/**
+ * HudFrame Cyberpunk Skin
+ * HUD panel container with neon-edged stepped corners
+ *
+ * Features:
+ * - Stepped/notched corners using clip-path
+ * - Corner targeting reticle decorations
+ * - Neon edge glow with subtle pulse
+ * - Scan line overlay
+ * - Inner content "safe zone" feel
+ */
+
+/* ============================================
+   CYBERPUNK TOKENS
+   ============================================ */
+[data-skin="cyberpunk"] {
+  --hud-glow-color: rgba(0, 255, 255, 0.4);
+  --hud-glow-intense: rgba(0, 255, 255, 0.6);
+  --hud-accent: #0ff;
+  --hud-accent-dim: rgba(0, 255, 255, 0.7);
+  --hud-accent-alt: #f0f;
+  --hud-bg: rgba(10, 15, 25, 0.85);
+  --hud-bg-header: rgba(0, 20, 30, 0.9);
+  --hud-border: rgba(0, 255, 255, 0.5);
+  --hud-border-dim: rgba(0, 255, 255, 0.25);
+}
+
+/* ============================================
+   FRAME BODY - STEPPED CORNERS
+   ============================================ */
+[data-skin="cyberpunk"] .hud-frame__body {
+  /* Stepped corner clip-path - creates bracket/HUD look */
+  -webkit-clip-path: polygon(
+    /* Top edge with corner steps */
+    0 16px,              /* Left step down */
+    16px 16px,           /* Step horizontal */
+    16px 0,              /* Step up to top */
+    calc(100% - 16px) 0, /* Top edge */
+    calc(100% - 16px) 16px, /* Right step down */
+    100% 16px,           /* Right step horizontal */
+    /* Right edge */
+    100% calc(100% - 16px), /* Right step up */
+    calc(100% - 16px) calc(100% - 16px), /* Step horizontal */
+    calc(100% - 16px) 100%, /* Step down to bottom */
+    /* Bottom edge */
+    16px 100%,           /* Bottom edge */
+    16px calc(100% - 16px), /* Left step up */
+    0 calc(100% - 16px)  /* Left step horizontal */
+  );
+  clip-path: polygon(
+    0 16px,
+    16px 16px,
+    16px 0,
+    calc(100% - 16px) 0,
+    calc(100% - 16px) 16px,
+    100% 16px,
+    100% calc(100% - 16px),
+    calc(100% - 16px) calc(100% - 16px),
+    calc(100% - 16px) 100%,
+    16px 100%,
+    16px calc(100% - 16px),
+    0 calc(100% - 16px)
+  );
+
+  /* Background material */
+  background: var(--hud-bg);
+
+  /* Inner glow only (outer glow handled by filter on container) */
+  box-shadow: inset 0 0 40px rgba(0, 255, 255, 0.1);
+
+  /* Border via pseudo-element below */
+  border: 1px solid var(--hud-border);
+
+  transition: box-shadow 0.3s ease, border-color 0.3s ease;
+}
+
+/* Hover: intensify inner glow */
+[data-skin="cyberpunk"] .hud-frame:hover .hud-frame__body {
+  box-shadow: inset 0 0 60px rgba(0, 255, 255, 0.15);
+  border-color: var(--hud-glow-intense);
+}
+
+/* ============================================
+   OUTER GLOW - Uses filter:drop-shadow to respect clip-path
+   ============================================ */
+[data-skin="cyberpunk"] .hud-frame {
+  /* drop-shadow respects clip-path unlike box-shadow */
+  filter: drop-shadow(0 0 8px var(--hud-glow-color))
+          drop-shadow(0 0 20px rgba(0, 255, 255, 0.3));
+  transition: filter 0.3s ease;
+}
+
+[data-skin="cyberpunk"] .hud-frame:hover {
+  filter: drop-shadow(0 0 12px var(--hud-glow-intense))
+          drop-shadow(0 0 30px var(--hud-glow-color));
+}
+
+/* ============================================
+   EDGE GLOW LAYER - HIDDEN (using drop-shadow instead)
+   ============================================ */
+[data-skin="cyberpunk"] .hud-frame__glow {
+  /* Glow now handled by filter:drop-shadow on container */
+  display: none;
+}
+
+/* ============================================
+   HEADER BAR
+   ============================================ */
+[data-skin="cyberpunk"] .hud-frame__header {
+  background: var(--hud-bg-header);
+  border-bottom: 1px solid var(--hud-border-dim);
+  color: var(--hud-accent);
+  text-shadow: 0 0 10px rgba(0, 255, 255, 0.5);
+
+  /* Slight clip for stepped corner alignment */
+  margin: 16px 1px 0 1px;
+}
+
+[data-skin="cyberpunk"] .hud-frame__title-icon {
+  color: var(--hud-accent);
+  filter: drop-shadow(0 0 4px rgba(0, 255, 255, 0.6));
+}
+
+[data-skin="cyberpunk"] .hud-frame__title {
+  font-family: 'Rajdhani', 'Segoe UI', sans-serif;
+}
+
+/* ============================================
+   CORNER RETICLES - CIRCUIT NODE STYLE
+   A solder pad with PCB traces extending toward edges
+   ============================================ */
+[data-skin="cyberpunk"] .hud-frame__reticle {
+  /* Hide text, use element as the central node pad */
+  font-size: 0;
+  color: transparent;
+
+  /* The node pad - small square */
+  width: 6px;
+  height: 6px;
+  background: var(--hud-accent);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  box-shadow:
+    0 0 4px var(--hud-accent),
+    0 0 8px var(--hud-accent),
+    inset 0 0 2px rgba(255, 255, 255, 0.5);
+
+  opacity: 0.9;
+  transition: opacity 0.3s ease, box-shadow 0.3s ease;
+}
+
+/* Traces extending from node - ::before horizontal, ::after vertical */
+[data-skin="cyberpunk"] .hud-frame__reticle::before,
+[data-skin="cyberpunk"] .hud-frame__reticle::after {
+  content: '';
+  position: absolute;
+  background: var(--hud-accent);
+  opacity: 0.7;
+  box-shadow: 0 0 3px var(--hud-accent);
+  z-index: 5; /* Match parent z-index to prevent layering issues */
+}
+
+/* Horizontal trace */
+[data-skin="cyberpunk"] .hud-frame__reticle::before {
+  width: 14px;
+  height: 2px;
+}
+
+/* Vertical trace */
+[data-skin="cyberpunk"] .hud-frame__reticle::after {
+  width: 2px;
+  height: 14px;
+}
+
+/* Top-left: traces extend up and left from node */
+[data-skin="cyberpunk"] .hud-frame__reticle--tl::before {
+  right: 100%;
+  top: 50%;
+  transform: translateY(-50%);
+  margin-right: 1px;
+}
+[data-skin="cyberpunk"] .hud-frame__reticle--tl::after {
+  bottom: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  margin-bottom: 1px;
+}
+
+/* Top-right: traces extend up and right from node */
+[data-skin="cyberpunk"] .hud-frame__reticle--tr::before {
+  left: 100%;
+  top: 50%;
+  transform: translateY(-50%);
+  margin-left: 1px;
+}
+[data-skin="cyberpunk"] .hud-frame__reticle--tr::after {
+  bottom: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  margin-bottom: 1px;
+}
+
+/* Bottom-left: traces extend down and left from node */
+[data-skin="cyberpunk"] .hud-frame__reticle--bl::before {
+  right: 100%;
+  top: 50%;
+  transform: translateY(-50%);
+  margin-right: 1px;
+}
+[data-skin="cyberpunk"] .hud-frame__reticle--bl::after {
+  top: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  margin-top: 1px;
+}
+
+/* Bottom-right: traces extend down and right from node */
+[data-skin="cyberpunk"] .hud-frame__reticle--br::before {
+  left: 100%;
+  top: 50%;
+  transform: translateY(-50%);
+  margin-left: 1px;
+}
+[data-skin="cyberpunk"] .hud-frame__reticle--br::after {
+  top: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  margin-top: 1px;
+}
+
+/* Position nodes inward from corners */
+[data-skin="cyberpunk"] .hud-frame__reticle--tl {
+  top: 24px;
+  left: 24px;
+}
+
+[data-skin="cyberpunk"] .hud-frame__reticle--tr {
+  top: 24px;
+  right: 24px;
+}
+
+[data-skin="cyberpunk"] .hud-frame__reticle--bl {
+  bottom: 24px;
+  left: 24px;
+}
+
+[data-skin="cyberpunk"] .hud-frame__reticle--br {
+  bottom: 24px;
+  right: 24px;
+}
+
+/* HIDE top-left reticle when header is present (overlaps with icon) */
+[data-skin="cyberpunk"] .hud-frame:not(.hud-frame--no-header) .hud-frame__reticle--tl {
+  display: none;
+}
+
+/* Hover: nodes glow brighter */
+[data-skin="cyberpunk"] .hud-frame:hover .hud-frame__reticle {
+  opacity: 1;
+  box-shadow:
+    0 0 6px var(--hud-accent),
+    0 0 12px var(--hud-accent),
+    0 0 20px rgba(0, 255, 255, 0.4),
+    inset 0 0 2px rgba(255, 255, 255, 0.6);
+}
+
+[data-skin="cyberpunk"] .hud-frame:hover .hud-frame__reticle::before,
+[data-skin="cyberpunk"] .hud-frame:hover .hud-frame__reticle::after {
+  opacity: 1;
+  box-shadow: 0 0 5px var(--hud-accent), 0 0 10px rgba(0, 255, 255, 0.5);
+}
+
+/* ============================================
+   SCAN OVERLAY - CRT SCANLINES
+   ============================================ */
+/* Static scanline texture - visible CRT effect */
+[data-skin="cyberpunk"] .hud-frame__scan::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: repeating-linear-gradient(
+    0deg,
+    transparent 0px,
+    transparent 2px,
+    rgba(0, 0, 0, 0.08) 2px,
+    rgba(0, 0, 0, 0.08) 4px
+  );
+  pointer-events: none;
+}
+
+/* Moving scan bar - slow and visible */
+[data-skin="cyberpunk"] .hud-frame__scan::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 3px;
+  top: 0;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(0, 255, 255, 0.4) 10%,
+    rgba(0, 255, 255, 0.6) 50%,
+    rgba(0, 255, 255, 0.4) 90%,
+    transparent 100%
+  );
+  box-shadow: 0 0 8px rgba(0, 255, 255, 0.5), 0 0 20px rgba(0, 255, 255, 0.3);
+  animation: hud-scan-sweep 15s linear infinite;
+  will-change: transform;
+  pointer-events: none;
+}
+
+@keyframes hud-scan-sweep {
+  0% { transform: translateY(0); }
+  100% { transform: translateY(300px); } /* Reduced from 500px for better visibility */
+}
+
+/* ============================================
+   CONTENT AREA
+   ============================================ */
+[data-skin="cyberpunk"] .hud-frame__content {
+  /* Safe zone padding to keep content away from clipped edges */
+  padding: 1.25rem;
+  margin: 0 1px 1px 1px;
+}
+
+/* Adjust for header presence */
+[data-skin="cyberpunk"] .hud-frame:not(.hud-frame--no-header) .hud-frame__content {
+  margin-top: 0;
+  padding-top: 1rem;
+}
+
+/* ============================================
+   SIZE VARIANTS
+   ============================================ */
+[data-skin="cyberpunk"] .hud-frame--compact .hud-frame__content {
+  padding: 0.75rem;
+}
+
+[data-skin="cyberpunk"] .hud-frame--spacious .hud-frame__content {
+  padding: 2rem;
+}
+
+/* ============================================
+   LOADING STATE
+   ============================================ */
+[data-skin="cyberpunk"] .hud-frame--loading .hud-frame__body {
+  animation: hud-loading-pulse 1.5s ease-in-out infinite;
+}
+
+@keyframes hud-loading-pulse {
+  0%, 100% {
+    box-shadow:
+      inset 0 0 40px rgba(0, 255, 255, 0.05),
+      0 0 20px rgba(0, 255, 255, 0.3);
+  }
+  50% {
+    box-shadow:
+      inset 0 0 60px rgba(0, 255, 255, 0.15),
+      0 0 30px rgba(0, 255, 255, 0.5);
+  }
+}
+
+/* ============================================
+   VARIANT: ALERT / WARNING STATES
+   ============================================ */
+[data-skin="cyberpunk"] .hud-frame--alert {
+  --hud-glow-color: rgba(255, 100, 100, 0.4);
+  --hud-glow-intense: rgba(255, 100, 100, 0.6);
+  --hud-accent: #f66;
+  --hud-border: rgba(255, 100, 100, 0.5);
+  --hud-border-dim: rgba(255, 100, 100, 0.25);
+}
+
+[data-skin="cyberpunk"] .hud-frame--warning {
+  --hud-glow-color: rgba(255, 200, 50, 0.4);
+  --hud-glow-intense: rgba(255, 200, 50, 0.6);
+  --hud-accent: #fc3;
+  --hud-border: rgba(255, 200, 50, 0.5);
+  --hud-border-dim: rgba(255, 200, 50, 0.25);
+}
+
+[data-skin="cyberpunk"] .hud-frame--success {
+  --hud-glow-color: rgba(100, 255, 150, 0.4);
+  --hud-glow-intense: rgba(100, 255, 150, 0.6);
+  --hud-accent: #6f9;
+  --hud-border: rgba(100, 255, 150, 0.5);
+  --hud-border-dim: rgba(100, 255, 150, 0.25);
+}

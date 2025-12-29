@@ -1,0 +1,150 @@
+/**
+ * HudFrame Base Styles
+ * Structural CSS shared across all skins
+ * A panel container with stepped corners and targeting reticle decorations
+ */
+
+/* Container - the outer frame boundary */
+.hud-frame {
+  position: relative;
+  width: 100%;
+}
+
+/* Main frame body with stepped corners */
+.hud-frame__body {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  min-height: 100px;
+}
+
+/* Inner content safe zone - padded away from edges */
+.hud-frame__content {
+  position: relative;
+  z-index: 2;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Title bar (optional) */
+.hud-frame__header {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1rem;
+  font-family: monospace;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+}
+
+.hud-frame__title-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.hud-frame__title-icon svg {
+  width: 16px;
+  height: 16px;
+}
+
+.hud-frame__title {
+  flex: 1;
+}
+
+/* Corner reticle decorations - positioned at each corner */
+.hud-frame__reticle {
+  position: absolute;
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  font-weight: bold;
+  pointer-events: none;
+  z-index: 5;
+}
+
+.hud-frame__reticle--tl {
+  top: 8px;
+  left: 8px;
+}
+
+.hud-frame__reticle--tr {
+  top: 8px;
+  right: 8px;
+}
+
+.hud-frame__reticle--bl {
+  bottom: 8px;
+  left: 8px;
+}
+
+.hud-frame__reticle--br {
+  bottom: 8px;
+  right: 8px;
+}
+
+/* Edge glow layer */
+.hud-frame__glow {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 1;
+}
+
+/* Scan overlay layer */
+.hud-frame__scan {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 10;
+  overflow: hidden;
+}
+
+/* Size variants */
+.hud-frame--compact .hud-frame__content {
+  padding: 0.75rem;
+}
+
+.hud-frame--default .hud-frame__content {
+  padding: 1rem;
+}
+
+.hud-frame--spacious .hud-frame__content {
+  padding: 1.5rem;
+}
+
+/* No header variant */
+.hud-frame--no-header .hud-frame__header {
+  display: none;
+}
+
+/* Reduced motion - disable animations */
+@media (prefers-reduced-motion: reduce) {
+  .hud-frame__glow,
+  .hud-frame__scan {
+    animation: none !important;
+  }
+
+  .hud-frame__reticle {
+    animation: none !important;
+  }
+}
+
+/* Responsive: tighter padding on narrow screens */
+@media (max-width: 400px) {
+  .hud-frame--default .hud-frame__content {
+    padding: 0.75rem;
+  }
+
+  .hud-frame__reticle {
+    width: 20px;
+    height: 20px;
+    font-size: 12px;
+  }
+}

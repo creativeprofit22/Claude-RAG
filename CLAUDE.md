@@ -14,18 +14,18 @@ Query → Gemini Embeddings → LanceDB → Chunks → Claude Code CLI → Respo
 
 ## Pipeline State
 Phase: refactor-hunt
-Feature: Terminal Readout Cyberpunk Artifact
-Files-Validated: TerminalReadout.tsx, terminal-readout.base.css, terminal-readout.cyberpunk.css, AdminDashboard.tsx
-Validation-Report: reports/validation-terminal-readout-cyberpunk.md
+Feature: HUD Frame Cyberpunk Artifact
+Files-Validated: HudFrame.tsx, hud-frame.base.css, hud-frame.cyberpunk.css, AdminDashboard.tsx
+Validation-Report: reports/validation-hud-frame-cyberpunk.md
 
 ## Last Session (2025-12-29)
-**Terminal Readout Validation - Clean:**
+**HUD Frame Validation - Clean:**
 - Tests: skipped (none exist)
-- API: pass (all endpoints working)
-- UI: pass (accessibility, states, CSS coverage)
-- Wiring: pass (data flow verified)
-- Bottlenecks: 3/4 fixed (memoization, keys, overflow)
-- Bugs: 1/5 fixed (null safety - medium priority)
+- API: pass (endpoint working)
+- UI: pass (accessibility, loading, CSS, responsive)
+- Wiring: pass (imports, props, children all correct)
+- Bottlenecks: 2/7 fixed (React.memo, animation distance)
+- Bugs: 2/7 fixed (z-index traces, animation)
 
 ## Completed
 - StatChip Cyberpunk Artifact (2025-12-28) - Built, validated, refactor-hunted (clean)

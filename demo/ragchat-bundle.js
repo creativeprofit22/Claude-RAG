@@ -93518,7 +93518,7 @@ var RAGBundle = (() => {
                     /* @__PURE__ */ jsx("span", { className: "terminal-readout__status-text", children: getStatusText(service.status, service.statusText) })
                   ]
                 },
-                index
+                service.label
               )),
               services.length === 0 && !isLoading && /* @__PURE__ */ jsx("div", { className: "terminal-readout__empty", children: "NO SERVICES DETECTED" }),
               isLoading && services.length === 0 && /* @__PURE__ */ jsx(Fragment2, { children: Array.from({ length: 4 }, (_, i) => /* @__PURE__ */ jsxs("div", { className: "terminal-readout__service terminal-readout__service--skeleton", children: [
@@ -93537,6 +93537,53 @@ var RAGBundle = (() => {
       }
     );
   }
+
+  // src/react/artifacts/hud-frame/HudFrame.tsx
+  var RETICLE_SYMBOL = "\u2295";
+  var HudFrame = memo(function HudFrame2({
+    children,
+    title,
+    icon,
+    size = "default",
+    variant = "default",
+    isLoading = false,
+    hideHeader = false,
+    hideReticles = false,
+    className = "",
+    "aria-label": ariaLabel
+  }) {
+    const frameClasses = [
+      "hud-frame",
+      `hud-frame--${size}`,
+      variant !== "default" && `hud-frame--${variant}`,
+      isLoading && "hud-frame--loading",
+      (hideHeader || !title) && "hud-frame--no-header",
+      className
+    ].filter(Boolean).join(" ");
+    return /* @__PURE__ */ jsx(
+      "section",
+      {
+        className: frameClasses,
+        "aria-label": ariaLabel || title,
+        "aria-busy": isLoading,
+        children: /* @__PURE__ */ jsxs("div", { className: "hud-frame__body", children: [
+          /* @__PURE__ */ jsx("div", { className: "hud-frame__glow", "aria-hidden": "true" }),
+          !hideHeader && title && /* @__PURE__ */ jsxs("header", { className: "hud-frame__header", children: [
+            icon && /* @__PURE__ */ jsx("span", { className: "hud-frame__title-icon", children: icon }),
+            /* @__PURE__ */ jsx("span", { className: "hud-frame__title", children: title })
+          ] }),
+          !hideReticles && /* @__PURE__ */ jsxs(Fragment2, { children: [
+            /* @__PURE__ */ jsx("span", { className: "hud-frame__reticle hud-frame__reticle--tl", "aria-hidden": "true", children: RETICLE_SYMBOL }),
+            /* @__PURE__ */ jsx("span", { className: "hud-frame__reticle hud-frame__reticle--tr", "aria-hidden": "true", children: RETICLE_SYMBOL }),
+            /* @__PURE__ */ jsx("span", { className: "hud-frame__reticle hud-frame__reticle--bl", "aria-hidden": "true", children: RETICLE_SYMBOL }),
+            /* @__PURE__ */ jsx("span", { className: "hud-frame__reticle hud-frame__reticle--br", "aria-hidden": "true", children: RETICLE_SYMBOL })
+          ] }),
+          /* @__PURE__ */ jsx("div", { className: "hud-frame__content", children }),
+          /* @__PURE__ */ jsx("div", { className: "hud-frame__scan", "aria-hidden": "true" })
+        ] })
+      }
+    );
+  });
 
   // src/react/utils/formatters.ts
   function formatRelativeTime(timestamp) {
@@ -93563,35 +93610,41 @@ var RAGBundle = (() => {
   };
   var SKELETON_COUNT = 4;
   function buildServiceEntries(health) {
-    if (!health) return [];
+    if (!health?.services?.database || !health?.services?.embeddings || !health?.services?.responders) {
+      return [];
+    }
     const getStatus = (isUp, isDegraded) => {
       if (isDegraded) return "degraded";
       return isUp ? "up" : "down";
     };
+    const db = health.services.database;
+    const embed = health.services.embeddings;
+    const claude = health.services.responders.claude;
+    const gemini = health.services.responders.gemini;
     return [
       {
         icon: /* @__PURE__ */ jsx(Database, { size: 16 }),
         label: "DATABASE",
-        status: getStatus(health.services.database.status === "up"),
-        statusText: health.services.database.status === "up" ? `${health.services.database.documentCount} docs` : health.services.database.status
+        status: getStatus(db.status === "up"),
+        statusText: db.status === "up" ? `${db.documentCount} docs` : db.status
       },
       {
         icon: /* @__PURE__ */ jsx(Layers, { size: 16 }),
         label: "EMBEDDINGS",
-        status: getStatus(health.services.embeddings.status === "up"),
-        statusText: health.services.embeddings.provider || "N/A"
+        status: getStatus(embed.status === "up"),
+        statusText: embed.provider || "N/A"
       },
       {
         icon: /* @__PURE__ */ jsx(Activity, { size: 16 }),
         label: "CLAUDE CLI",
-        status: getStatus(health.services.responders.claude.available ?? false),
-        statusText: health.services.responders.claude.available ? "OK" : "N/A"
+        status: getStatus(claude?.available ?? false),
+        statusText: claude?.available ? "OK" : "N/A"
       },
       {
         icon: /* @__PURE__ */ jsx(Activity, { size: 16 }),
         label: "GEMINI API",
-        status: getStatus(health.services.responders.gemini.available ?? false),
-        statusText: health.services.responders.gemini.available ? "OK" : "N/A"
+        status: getStatus(gemini?.available ?? false),
+        statusText: gemini?.available ? "OK" : "N/A"
       }
     ];
   }
@@ -93609,6 +93662,7 @@ var RAGBundle = (() => {
     const [isSettingsOpen, setIsSettingsOpen] = useState(false);
     const headersJson = JSON.stringify(headers);
     const stableHeaders = react_shim_default.useMemo(() => headers, [headersJson]);
+    const serviceEntries = react_shim_default.useMemo(() => buildServiceEntries(health), [health]);
     const fetchData = useCallback(async (signal) => {
       try {
         setError(null);
@@ -93802,45 +93856,61 @@ var RAGBundle = (() => {
         )
       ] }),
       /* @__PURE__ */ jsxs("div", { className: "rag-admin-content-grid", children: [
-        /* @__PURE__ */ jsxs("div", { className: "rag-admin-panel", children: [
-          /* @__PURE__ */ jsxs("h3", { className: "rag-admin-panel-title", children: [
-            /* @__PURE__ */ jsx(Database, { size: 16 }),
-            "Documents by Category"
-          ] }),
-          /* @__PURE__ */ jsx("div", { className: "rag-admin-chart", children: isLoading ? /* @__PURE__ */ jsx("div", { className: "rag-admin-chart-skeleton", children: Array.from({ length: SKELETON_COUNT }, (_, i) => /* @__PURE__ */ jsx("div", { className: "rag-admin-chart-skeleton-bar" }, i)) }) : (stats?.documents?.byCategory?.length ?? 0) === 0 ? /* @__PURE__ */ jsx("div", { className: "rag-admin-chart-empty", children: "No categories with documents" }) : /* @__PURE__ */ jsx(
-            SkinAwareChart,
-            {
-              option: categoryChartOption,
-              style: { height: 220 }
-            }
-          ) })
-        ] }),
-        /* @__PURE__ */ jsx("div", { className: "rag-admin-panel", children: /* @__PURE__ */ jsx(
-          TerminalReadout,
+        /* @__PURE__ */ jsx(
+          HudFrame,
           {
-            title: "SYSTEM_HEALTH.exe",
-            services: buildServiceEntries(health),
-            burnInText: "SYSTEM INITIALIZED // SECTOR 7G",
-            isLoading
+            title: "CATEGORY_INDEX",
+            icon: /* @__PURE__ */ jsx(Database, { size: 16 }),
+            isLoading,
+            className: "rag-admin-panel",
+            children: /* @__PURE__ */ jsx("div", { className: "rag-admin-chart", children: isLoading ? /* @__PURE__ */ jsx("div", { className: "rag-admin-chart-skeleton", children: Array.from({ length: SKELETON_COUNT }, (_, i) => /* @__PURE__ */ jsx("div", { className: "rag-admin-chart-skeleton-bar" }, i)) }) : (stats?.documents?.byCategory?.length ?? 0) === 0 ? /* @__PURE__ */ jsx("div", { className: "rag-admin-chart-empty", children: "No categories with documents" }) : /* @__PURE__ */ jsx(
+              SkinAwareChart,
+              {
+                option: categoryChartOption,
+                style: { height: 220 }
+              }
+            ) })
           }
-        ) }),
-        /* @__PURE__ */ jsxs("div", { className: "rag-admin-panel rag-admin-panel-wide", children: [
-          /* @__PURE__ */ jsxs("h3", { className: "rag-admin-panel-title", children: [
-            /* @__PURE__ */ jsx(Clock, { size: 16 }),
-            "Recent Uploads"
-          ] }),
-          /* @__PURE__ */ jsx("div", { className: "rag-admin-recent-list", children: isLoading ? /* @__PURE__ */ jsx("div", { className: "rag-admin-recent-skeleton", children: Array.from({ length: 3 }, (_, i) => /* @__PURE__ */ jsx("div", { className: "rag-admin-recent-skeleton-row" }, i)) }) : stats?.recentUploads.length === 0 ? /* @__PURE__ */ jsx("div", { className: "rag-admin-recent-empty", children: "No documents uploaded yet" }) : stats?.recentUploads.map((doc) => /* @__PURE__ */ jsxs("div", { className: "rag-admin-recent-item", children: [
-            /* @__PURE__ */ jsx(FileText, { size: 16, className: "rag-admin-recent-icon" }),
-            /* @__PURE__ */ jsxs("div", { className: "rag-admin-recent-info", children: [
-              /* @__PURE__ */ jsx("span", { className: "rag-admin-recent-name", children: doc.documentName }),
-              /* @__PURE__ */ jsxs("span", { className: "rag-admin-recent-meta", children: [
-                doc.chunkCount,
-                " chunks"
-              ] })
-            ] }),
-            /* @__PURE__ */ jsx("span", { className: "rag-admin-recent-time", children: formatRelativeTime(doc.timestamp) })
-          ] }, doc.documentId)) })
-        ] })
+        ),
+        /* @__PURE__ */ jsx(
+          HudFrame,
+          {
+            hideHeader: true,
+            hideReticles: true,
+            size: "compact",
+            isLoading,
+            className: "rag-admin-panel",
+            children: /* @__PURE__ */ jsx(
+              TerminalReadout,
+              {
+                title: "SYSTEM_HEALTH.exe",
+                services: serviceEntries,
+                burnInText: "SYSTEM INITIALIZED // SECTOR 7G",
+                isLoading
+              }
+            )
+          }
+        ),
+        /* @__PURE__ */ jsx(
+          HudFrame,
+          {
+            title: "UPLOAD_MANIFEST",
+            icon: /* @__PURE__ */ jsx(Clock, { size: 16 }),
+            isLoading,
+            className: "rag-admin-panel rag-admin-panel-wide",
+            children: /* @__PURE__ */ jsx("div", { className: "rag-admin-recent-list", children: isLoading ? /* @__PURE__ */ jsx("div", { className: "rag-admin-recent-skeleton", children: Array.from({ length: 3 }, (_, i) => /* @__PURE__ */ jsx("div", { className: "rag-admin-recent-skeleton-row" }, i)) }) : stats?.recentUploads.length === 0 ? /* @__PURE__ */ jsx("div", { className: "rag-admin-recent-empty", children: "No documents uploaded yet" }) : stats?.recentUploads.map((doc) => /* @__PURE__ */ jsxs("div", { className: "rag-admin-recent-item", children: [
+              /* @__PURE__ */ jsx(FileText, { size: 16, className: "rag-admin-recent-icon" }),
+              /* @__PURE__ */ jsxs("div", { className: "rag-admin-recent-info", children: [
+                /* @__PURE__ */ jsx("span", { className: "rag-admin-recent-name", children: doc.documentName }),
+                /* @__PURE__ */ jsxs("span", { className: "rag-admin-recent-meta", children: [
+                  doc.chunkCount,
+                  " chunks"
+                ] })
+              ] }),
+              /* @__PURE__ */ jsx("span", { className: "rag-admin-recent-time", children: formatRelativeTime(doc.timestamp) })
+            ] }, doc.documentId)) })
+          }
+        )
       ] })
     ] });
   }

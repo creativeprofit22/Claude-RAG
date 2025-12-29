@@ -23,6 +23,7 @@ import { SkinAwareChart } from '../../charts/SkinAwareChart.js';
 import { ErrorBanner } from '../shared/ErrorBanner.js';
 import { StatChip } from '../../artifacts/stat-chip/StatChip.js';
 import { TerminalReadout, type ServiceEntry, type ServiceStatus } from '../../artifacts/terminal-readout/TerminalReadout.js';
+import { HudFrame } from '../../artifacts/hud-frame/HudFrame.js';
 import type { AdminStats, AdminHealth } from '../../types.js';
 import { formatBytes, formatRelativeTime } from '../../utils/formatters.js';
 
@@ -311,12 +312,13 @@ export function AdminDashboard({
 
       {/* Main Content Grid */}
       <div className="rag-admin-content-grid">
-        {/* Documents by Category */}
-        <div className="rag-admin-panel">
-          <h3 className="rag-admin-panel-title">
-            <Database size={16} />
-            Documents by Category
-          </h3>
+        {/* Documents by Category - Wrapped in HUD Frame */}
+        <HudFrame
+          title="CATEGORY_INDEX"
+          icon={<Database size={16} />}
+          isLoading={isLoading}
+          className="rag-admin-panel"
+        >
           <div className="rag-admin-chart">
             {isLoading ? (
               <div className="rag-admin-chart-skeleton">
@@ -335,24 +337,31 @@ export function AdminDashboard({
               />
             )}
           </div>
-        </div>
+        </HudFrame>
 
         {/* Service Health - Cyberpunk: Busted Terminal Readout */}
-        <div className="rag-admin-panel">
+        <HudFrame
+          hideHeader
+          hideReticles
+          size="compact"
+          isLoading={isLoading}
+          className="rag-admin-panel"
+        >
           <TerminalReadout
             title="SYSTEM_HEALTH.exe"
             services={serviceEntries}
             burnInText="SYSTEM INITIALIZED // SECTOR 7G"
             isLoading={isLoading}
           />
-        </div>
+        </HudFrame>
 
-        {/* Recent Uploads */}
-        <div className="rag-admin-panel rag-admin-panel-wide">
-          <h3 className="rag-admin-panel-title">
-            <Clock size={16} />
-            Recent Uploads
-          </h3>
+        {/* Recent Uploads - Wrapped in HUD Frame */}
+        <HudFrame
+          title="UPLOAD_MANIFEST"
+          icon={<Clock size={16} />}
+          isLoading={isLoading}
+          className="rag-admin-panel rag-admin-panel-wide"
+        >
           <div className="rag-admin-recent-list">
             {isLoading ? (
               <div className="rag-admin-recent-skeleton">
@@ -381,7 +390,7 @@ export function AdminDashboard({
               ))
             )}
           </div>
-        </div>
+        </HudFrame>
       </div>
     </div>
   );
