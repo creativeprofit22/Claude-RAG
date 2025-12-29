@@ -93287,63 +93287,71 @@ var RAGBundle = (() => {
     const { skin, reducedMotion } = useSkinMotion();
     const theme2 = getChartTheme(skin);
     const themedOption = useMemo(() => {
+      const { xAxis, yAxis, tooltip, legend, grid, color: color4, backgroundColor: backgroundColor2, textStyle, ...restOption } = option;
       return {
-        // Theme colors
+        // Pass through series and other unhandled options FIRST
+        ...restOption,
+        // Theme colors (theme wins)
         color: theme2.colors,
         backgroundColor: theme2.backgroundColor,
-        // Global text style
+        // Global text style (theme wins)
         textStyle: theme2.textStyle,
-        // Default xAxis styling
+        // xAxis: user values first, then theme overrides for styling
         xAxis: {
+          ...typeof xAxis === "object" && !Array.isArray(xAxis) ? xAxis : {},
           axisLine: theme2.axisLine,
-          splitLine: { show: false },
-          axisLabel: { color: theme2.textStyle.color },
-          ...typeof option.xAxis === "object" && !Array.isArray(option.xAxis) ? option.xAxis : {}
+          axisLabel: {
+            ...xAxis?.axisLabel ?? {},
+            color: theme2.textStyle.color
+          }
         },
-        // Default yAxis styling
+        // yAxis: user values first, then theme overrides for styling
         yAxis: {
+          ...typeof yAxis === "object" && !Array.isArray(yAxis) ? yAxis : {},
           axisLine: theme2.axisLine,
           splitLine: theme2.splitLine,
-          axisLabel: { color: theme2.textStyle.color },
-          ...typeof option.yAxis === "object" && !Array.isArray(option.yAxis) ? option.yAxis : {}
+          axisLabel: {
+            ...yAxis?.axisLabel ?? {},
+            color: theme2.textStyle.color
+          }
         },
-        // Tooltip styling
+        // Tooltip: user values first, then theme overrides
         tooltip: {
+          ...typeof tooltip === "object" ? tooltip : {},
           backgroundColor: theme2.tooltip.backgroundColor,
           borderColor: theme2.tooltip.borderColor,
           borderWidth: 1,
-          textStyle: theme2.tooltip.textStyle,
-          ...typeof option.tooltip === "object" ? option.tooltip : {}
+          textStyle: theme2.tooltip.textStyle
         },
-        // Legend styling
+        // Legend: user values first, then theme overrides
         legend: {
-          textStyle: theme2.legend.textStyle,
-          ...typeof option.legend === "object" ? option.legend : {}
+          ...typeof legend === "object" ? legend : {},
+          textStyle: theme2.legend.textStyle
         },
         // Animation settings (respect reduced motion)
         animation: !reducedMotion,
         animationDuration: reducedMotion ? 0 : 500,
         animationEasing: "cubicOut",
-        // Grid defaults
+        // Grid: user values first, then theme defaults
         grid: {
           containLabel: true,
           left: 16,
           right: 16,
           top: 32,
           bottom: 16,
-          ...typeof option.grid === "object" ? option.grid : {}
-        },
-        // Pass through series and other options
-        ...option
+          ...typeof grid === "object" ? grid : {}
+        }
       };
     }, [option, theme2, reducedMotion]);
     useEffect(() => {
       if (!chartRef.current) return;
-      if (!instanceRef.current) {
-        instanceRef.current = init2(chartRef.current);
+      if (instanceRef.current) {
+        instanceRef.current.dispose();
+        instanceRef.current = null;
       }
+      instanceRef.current = init2(chartRef.current);
       const chart = instanceRef.current;
-      chart.setOption(themedOption, { notMerge, lazyUpdate });
+      chart.setOption(themedOption, { notMerge: true, lazyUpdate });
       if (loading) {
         chart.showLoading();
       } else {
@@ -93364,7 +93372,7 @@ var RAGBundle = (() => {
           });
         }
       };
-    }, [themedOption, loading, notMerge, lazyUpdate, onEvents]);
+    }, [themedOption, loading, notMerge, lazyUpdate, onEvents, skin]);
     useEffect(() => {
       return () => {
         if (instanceRef.current) {
@@ -93536,7 +93544,8 @@ var RAGBundle = (() => {
             label: {
               show: true,
               position: "right",
-              formatter: "{c}"
+              formatter: "{c}",
+              color: "inherit"
             }
           }
         ]

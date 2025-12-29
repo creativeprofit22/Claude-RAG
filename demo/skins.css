@@ -106,7 +106,8 @@
    SKIN: CYBERPUNK (Neon / Tech Noir)
    Sharp angular cuts, neon glow, scan lines
    ========================================================================== */
-[data-skin="cyberpunk"] {
+[data-skin="cyberpunk"],
+:root:has(body[data-skin="cyberpunk"]) {
   /* === SHAPE SYSTEM === */
   --skin-btn-clip: polygon(
     0 0, calc(100% - 12px) 0, 100% 12px,
@@ -213,7 +214,8 @@
    SKIN: BRUTALIST (Hard Geometric / Bauhaus)
    No curves, harsh shadows, bold contrast
    ========================================================================== */
-[data-skin="brutalist"] {
+[data-skin="brutalist"],
+:root:has(body[data-skin="brutalist"]) {
   /* === SHAPE SYSTEM === */
   --skin-btn-clip: none;
   --skin-card-clip: none;
@@ -320,7 +322,8 @@
    SKIN: GLASS (Frosted Morphism / Modern)
    Blur, transparency, soft gradients
    ========================================================================== */
-[data-skin="glass"] {
+[data-skin="glass"],
+:root:has(body[data-skin="glass"]) {
   /* === SHAPE SYSTEM === */
   --skin-btn-clip: none;
   --skin-card-clip: none;
@@ -498,6 +501,14 @@
     var(--skin-shadow-emboss),
     var(--skin-shadow-brutal-sm);
   position: relative;
+  transition: transform 0.2s ease-out, box-shadow 0.2s ease-out;
+}
+
+[data-skin="library"] .rag-admin-stat-card:hover {
+  transform: translateY(-3px);
+  box-shadow:
+    var(--skin-shadow-emboss),
+    var(--skin-shadow-brutal);
 }
 
 /* Double border effect for stat cards */
@@ -717,10 +728,11 @@
     var(--skin-shadow-inset),
     0 0 20px var(--skin-primary-glow);
   position: relative;
-  transition: box-shadow 0.3s ease, border-color 0.3s ease;
+  transition: transform 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease;
 }
 
 [data-skin="cyberpunk"] .rag-admin-stat-card:hover {
+  transform: scale(1.02) translateY(-2px);
   border-color: var(--skin-primary-bright);
   box-shadow:
     var(--skin-shadow-inset),

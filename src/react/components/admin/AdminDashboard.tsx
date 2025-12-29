@@ -217,6 +217,7 @@ export function AdminDashboard({
             show: true,
             position: 'right',
             formatter: '{c}',
+            color: 'inherit',
           },
         },
       ],
