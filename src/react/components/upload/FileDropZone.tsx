@@ -8,6 +8,9 @@ import { Upload, FileText, AlertCircle } from 'lucide-react';
 import { SUPPORTED_EXTENSIONS, SUPPORTED_MIME_TYPES } from '../../../shared/file-types.js';
 import { useSkinMotion } from '../../motion/hooks/useSkinMotion.js';
 
+/** Pre-computed accept string for file input (avoids recreating on each render) */
+const DEFAULT_ACCEPT = [...SUPPORTED_EXTENSIONS, ...SUPPORTED_MIME_TYPES].join(',');
+
 export interface FileDropZoneProps {
   onFilesSelected: (files: File[]) => void;
   accept?: string;
@@ -27,7 +30,7 @@ function isAcceptableFile(file: File): boolean {
 
 export function FileDropZone({
   onFilesSelected,
-  accept = [...SUPPORTED_EXTENSIONS, ...SUPPORTED_MIME_TYPES].join(','),
+  accept = DEFAULT_ACCEPT,
   multiple = true,
   disabled = false,
   className = '',

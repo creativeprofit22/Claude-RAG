@@ -2,7 +2,7 @@
  * FileQueue - Display and manage queued files for upload
  */
 
-import React from 'react';
+import React, { useCallback, useEffect } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { FileText, X, Check, AlertCircle, Loader2, Edit2 } from 'lucide-react';
 import type { QueuedFile, FileStatus } from '../../hooks/useFileQueue.js';
@@ -20,8 +20,9 @@ export interface FileQueueProps {
 
 interface FileQueueItemProps {
   file: QueuedFile;
-  onRemove: () => void;
-  onRename?: (name: string) => void;
+  fileId: string;
+  onRemove: (id: string) => void;
+  onRename?: (id: string, name: string) => void;
   isUploading?: boolean;
 }
 
@@ -41,8 +42,9 @@ function getStatusIcon(status: FileStatus): React.ReactNode {
   }
 }
 
-function FileQueueItem({
+const FileQueueItem = React.memo(function FileQueueItem({
   file,
+  fileId,
   onRemove,
   onRename,
   isUploading,
@@ -51,24 +53,33 @@ function FileQueueItem({
   const [editName, setEditName] = React.useState(file.name);
   const inputRef = React.useRef<HTMLInputElement>(null);
 
+  // Sync editName with file.name when not actively editing
+  useEffect(() => {
+    if (!isEditing) {
+      setEditName(file.name);
+    }
+  }, [file.name, isEditing]);
+
   const canEdit = file.status === 'queued' && !isUploading;
   const canRemove = file.status !== 'uploading';
 
-  const handleStartEdit = () => {
+  const handleRemove = useCallback(() => onRemove(fileId), [onRemove, fileId]);
+
+  const handleStartEdit = useCallback(() => {
     if (canEdit && onRename) {
       setEditName(file.name);
       setIsEditing(true);
       // Use requestAnimationFrame for safer focus timing (no cleanup needed)
       requestAnimationFrame(() => inputRef.current?.focus());
     }
-  };
+  }, [canEdit, onRename, file.name]);
 
-  const handleSaveEdit = () => {
+  const handleSaveEdit = useCallback(() => {
     if (editName.trim() && editName !== file.name) {
-      onRename?.(editName.trim());
+      onRename?.(fileId, editName.trim());
     }
     setIsEditing(false);
-  };
+  }, [editName, file.name, onRename, fileId]);
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter') {
@@ -129,7 +140,7 @@ function FileQueueItem({
           {canRemove && (
             <button
               type="button"
-              onClick={onRemove}
+              onClick={handleRemove}
               className="rag-upload-queue-item-remove"
               aria-label="Remove file"
             >
@@ -161,7 +172,7 @@ function FileQueueItem({
       )}
     </div>
   );
-}
+});
 
 export function FileQueue({
   files,
@@ -176,9 +187,14 @@ export function FileQueue({
     return null;
   }
 
-  const queuedCount = files.filter((f) => f.status === 'queued').length;
-  const completedCount = files.filter((f) => f.status === 'complete').length;
-  const errorCount = files.filter((f) => f.status === 'error').length;
+  const counts = files.reduce(
+    (acc, f) => {
+      acc[f.status] = (acc[f.status] || 0) + 1;
+      return acc;
+    },
+    {} as Record<string, number>
+  );
+  const { queued: queuedCount = 0, complete: completedCount = 0, error: errorCount = 0 } = counts;
 
   return (
     <div className={`rag-upload-queue ${className}`}>
@@ -217,8 +233,9 @@ export function FileQueue({
             >
               <FileQueueItem
                 file={file}
-                onRemove={() => onRemove(file.id)}
-                onRename={onRename ? (name) => onRename(file.id, name) : undefined}
+                fileId={file.id}
+                onRemove={onRemove}
+                onRename={onRename}
                 isUploading={isUploading}
               />
             </motion.div>

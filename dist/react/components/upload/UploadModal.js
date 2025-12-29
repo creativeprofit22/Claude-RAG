@@ -2,7 +2,7 @@ import { jsx as _jsx, jsxs as _jsxs, Fragment as _Fragment } from "react/jsx-run
 /**
  * UploadModal - Enhanced upload modal with file queue and category selection
  */
-import React, { useCallback, useEffect } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { X, Upload, Loader2 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useFileQueue } from '../../hooks/useFileQueue.js';
@@ -22,7 +22,7 @@ export function UploadModal({ isOpen, onClose, onUploadComplete, endpoint = '/ap
         autoFetch: false, // Manual control to prevent race conditions
     });
     // Fetch categories when modal opens, abort if it closes before completing
-    React.useEffect(() => {
+    useEffect(() => {
         if (!isOpen)
             return;
         const abortController = new AbortController();
@@ -39,18 +39,25 @@ export function UploadModal({ isOpen, onClose, onUploadComplete, endpoint = '/ap
             abortController.abort();
         };
     }, [isOpen, refetchCategories]);
-    const [selectedCategoryId, setSelectedCategoryId] = React.useState(null);
+    const [selectedCategoryId, setSelectedCategoryId] = useState(null);
+    // Ref to track latest files state for stale closure prevention
+    const filesRef = useRef([]);
     // File queue management
     const { files, addFiles, removeFile, updateFileName, clearAll, startUpload, cancelUpload, isUploading, hasFiles, completedCount, } = useFileQueue({
         endpoint: `${endpoint}/upload/stream`,
         headers,
-        onAllComplete: (results) => {
+        onAllComplete: () => {
             if (onUploadComplete) {
-                const completedFiles = files.filter((f) => f.status === 'complete');
+                // Use ref to get current files, avoiding stale closure
+                const completedFiles = filesRef.current.filter((f) => f.status === 'complete');
                 onUploadComplete(completedFiles);
             }
         },
     });
+    // Keep ref in sync with files state
+    useEffect(() => {
+        filesRef.current = files;
+    }, [files]);
     // Handle file selection
     const handleFilesSelected = useCallback((newFiles) => {
         addFiles(newFiles);

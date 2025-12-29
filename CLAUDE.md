@@ -13,22 +13,18 @@ Query → Gemini Embeddings → LanceDB → Chunks → Claude Code CLI → Respo
 ```
 
 ## Pipeline State
-Phase: refactor-hunt
+Phase: complete
 Feature: Phase 3 - Modals + Upload Motion System
-Files-Validated:
-- src/react/components/upload/UploadModal.tsx
-- src/react/components/documents/DocumentPreview.tsx
-- src/react/components/shared/ConfirmDialog.tsx
-- src/react/components/upload/FileDropZone.tsx
-- src/react/components/upload/FileQueue.tsx
-Validation-Report: reports/validation-phase3-modals-motion.md
+Status: Built, validated, refactored
+
+## Completed
+- Phase 3: Modals + Upload Motion System (2025-12-28)
 
 ## Last Session (2025-12-28)
-**Phase 3 Validation Complete - 4 Bugs Fixed:**
-- DocumentPreview: Added isOpen prop + AnimatePresence conditional
-- ConfirmDialog: Added isOpen prop + AnimatePresence conditional + stopPropagation
-- Both modals: Added key props on motion.div inside AnimatePresence
-- 18 performance bottlenecks documented for refactor-hunt
+**Phase 3 Refactoring Complete - All 7 Fixes Applied:**
+- High: Triple filter → single reduce (FileQueue), React.memo + useCallback (FileQueueItem)
+- Med: useMemo for accent styles (DocumentPreview), DEFAULT_ACCEPT constant (FileDropZone), consistent imports (UploadModal), filesRef for stale closure (UploadModal)
+- Low: editName sync effect (FileQueue)
 - Build + tests green (21 pass)
 
 ## Key Files

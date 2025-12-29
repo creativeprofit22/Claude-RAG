@@ -7,6 +7,8 @@ import { motion } from 'framer-motion';
 import { Upload, FileText, AlertCircle } from 'lucide-react';
 import { SUPPORTED_EXTENSIONS, SUPPORTED_MIME_TYPES } from '../../../shared/file-types.js';
 import { useSkinMotion } from '../../motion/hooks/useSkinMotion.js';
+/** Pre-computed accept string for file input (avoids recreating on each render) */
+const DEFAULT_ACCEPT = [...SUPPORTED_EXTENSIONS, ...SUPPORTED_MIME_TYPES].join(',');
 /**
  * Check if a file is acceptable by MIME type or extension
  */
@@ -15,7 +17,7 @@ function isAcceptableFile(file) {
     return SUPPORTED_MIME_TYPES.includes(file.type) ||
         SUPPORTED_EXTENSIONS.includes(ext);
 }
-export function FileDropZone({ onFilesSelected, accept = [...SUPPORTED_EXTENSIONS, ...SUPPORTED_MIME_TYPES].join(','), multiple = true, disabled = false, className = '', }) {
+export function FileDropZone({ onFilesSelected, accept = DEFAULT_ACCEPT, multiple = true, disabled = false, className = '', }) {
     const [isDragging, setIsDragging] = useState(false);
     const [error, setError] = useState(null);
     const [showSuccess, setShowSuccess] = useState(false);

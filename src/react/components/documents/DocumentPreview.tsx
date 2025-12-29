@@ -1,5 +1,6 @@
 'use client';
 
+import { useMemo } from 'react';
 import { X, FileText, Calendar, Layers, MessageSquare, ExternalLink } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import type { DocumentDetails } from '../../types.js';
@@ -40,6 +41,14 @@ export function DocumentPreview({
   const { handleBackdropClick } = useModal({ onClose, isOpen });
   const { motion: skinMotion } = useSkinMotion();
 
+  // Memoize accent color styles to avoid object recreation on each render
+  const accentStyles = useMemo(() => ({
+    iconContainer: { backgroundColor: `${accentColor}20`, borderColor: `${accentColor}40` },
+    icon: { color: accentColor },
+    badge: { backgroundColor: `${accentColor}20`, color: accentColor },
+    primaryBtn: { backgroundColor: accentColor },
+  }), [accentColor]);
+
   return (
     <AnimatePresence mode="wait">
       {isOpen && (
@@ -67,9 +76,9 @@ export function DocumentPreview({
           <div className="rag-preview-title-section">
             <div
               className="rag-preview-icon"
-              style={{ backgroundColor: `${accentColor}20`, borderColor: `${accentColor}40` }}
+              style={accentStyles.iconContainer}
             >
-              <FileText size={24} style={{ color: accentColor }} aria-hidden="true" />
+              <FileText size={24} style={accentStyles.icon} aria-hidden="true" />
             </div>
             <div className="rag-preview-title-info">
               <h2 id="preview-dialog-title" className="rag-preview-title">
@@ -77,7 +86,7 @@ export function DocumentPreview({
               </h2>
               <span
                 className="rag-preview-type-badge"
-                style={{ backgroundColor: `${accentColor}20`, color: accentColor }}
+                style={accentStyles.badge}
               >
                 {getFileType(docDetails)}
               </span>
@@ -155,7 +164,7 @@ export function DocumentPreview({
               type="button"
               onClick={() => onQueryDocument(docDetails)}
               className="rag-preview-btn rag-preview-btn-primary"
-              style={{ backgroundColor: accentColor }}
+              style={accentStyles.primaryBtn}
             >
               <MessageSquare size={16} aria-hidden="true" />
               Chat about this document
