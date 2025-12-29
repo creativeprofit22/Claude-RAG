@@ -35,6 +35,7 @@ export function PowerConduit({
   const percentage = max > 0
     ? Math.min(100, Math.max(0, (value / max) * 100))
     : 0;
+  const roundedPct = Math.round(percentage);
   const filledSegments = Math.round((percentage / 100) * segments);
   const isFull = percentage === 100;
 
@@ -84,8 +85,8 @@ export function PowerConduit({
       {/* Label and value display */}
       <div className="power-conduit__info">
         <span className="power-conduit__label">{label}</span>
-        <span className="power-conduit__value" data-text={`${Math.round(percentage)}%`}>
-          {Math.round(percentage)}%
+        <span className="power-conduit__value" data-text={`${roundedPct}%`}>
+          {roundedPct}%
         </span>
       </div>
 

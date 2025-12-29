@@ -26,7 +26,7 @@ import { TerminalReadout, type ServiceEntry, type ServiceStatus } from '../../ar
 import { HudFrame } from '../../artifacts/hud-frame/HudFrame.js';
 import { PowerConduit } from '../../artifacts/power-conduit/PowerConduit.js';
 import type { AdminStats, AdminHealth } from '../../types.js';
-import { formatBytes, formatRelativeTime } from '../../utils/formatters.js';
+import { formatRelativeTime } from '../../utils/formatters.js';
 
 export interface AdminDashboardProps {
   /** Base API endpoint (default: /api/rag) */
@@ -237,6 +237,9 @@ export function AdminDashboard({
     };
   }, [stats?.documents.byCategory]);
 
+  // Derived value to avoid repeated parseFloat calls
+  const storageMB = parseFloat(stats?.storage.estimatedMB || '0');
+
   return (
     <div className="rag-admin-dashboard" style={{ '--rag-accent': accentColor } as React.CSSProperties}>
       {/* Header */}
@@ -348,10 +351,10 @@ export function AdminDashboard({
             variant={stats?.documents.total && stats.documents.total > 50 ? 'warning' : 'default'}
           />
           <PowerConduit
-            value={parseFloat(stats?.storage.estimatedMB || '0')}
+            value={storageMB}
             max={1024}
             label="STORAGE USAGE"
-            variant={parseFloat(stats?.storage.estimatedMB || '0') > 800 ? 'critical' : parseFloat(stats?.storage.estimatedMB || '0') > 500 ? 'warning' : 'default'}
+            variant={storageMB > 800 ? 'critical' : storageMB > 500 ? 'warning' : 'default'}
           />
         </div>
       </HudFrame>
