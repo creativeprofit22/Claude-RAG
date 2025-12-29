@@ -155,7 +155,12 @@ export function FileManifest({
 
   return (
     <article
-      className={`file-manifest file-manifest--printout ${isLoading ? 'file-manifest--loading' : ''} ${className}`}
+      className={[
+        'file-manifest',
+        'file-manifest--printout',
+        isLoading && 'file-manifest--loading',
+        className,
+      ].filter(Boolean).join(' ')}
       aria-label="File Manifest"
       aria-busy={isLoading}
     >

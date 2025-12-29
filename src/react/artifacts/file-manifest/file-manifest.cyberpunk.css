@@ -45,8 +45,7 @@
    ============================================ */
 [data-skin="cyberpunk"] .file-manifest__printout {
   background: var(--manifest-screen-base);
-  border-radius: 4px;
-  /* CRT screen curvature */
+  /* CRT screen curvature - asymmetric radius */
   border-radius: 4px / 20px;
   box-shadow:
     /* Screen depth */

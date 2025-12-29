@@ -34,9 +34,6 @@
   flex-direction: column;
 }
 
-.file-manifest--printout {
-  /* Modifier for printout variant */
-}
 
 /* ============================================
    PRINTOUT WRAPPER - Physical paper effect

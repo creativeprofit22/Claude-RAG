@@ -13,23 +13,24 @@ Query → Gemini Embeddings → LanceDB → Chunks → Claude Code CLI → Respo
 ```
 
 ## Pipeline State
-Phase: refactor-hunt
+Phase: complete
 Feature: FileManifest Cyberpunk Artifact
-Files: FileManifest.tsx, file-manifest.base.css, file-manifest.cyberpunk.css, AdminDashboard.tsx
-Validation-Report: reports/validation-file-manifest-cyberpunk.md
+Status: Production-ready
 
 ## Last Session (2025-12-29)
-**FileManifest Cyberpunk Validation + Fixes:**
-- Report: reports/validation-file-manifest-cyberpunk.md
-- Tests: MISSING (no coverage)
-- API: PASS (types match)
-- Wiring: PASS (imports/exports correct)
-- Fixes Applied:
-  - B2: Removed derived `corruptionIntensity` from useMemo deps
-  - BUG-1: Added `--hole-index` CSS variable to feed holes
-- Remaining: B1 (deferred), B3-B5 (long-term optimizations)
+**FileManifest Cyberpunk - Complete:**
+- Validation: reports/validation-file-manifest-cyberpunk.md
+- Refactors: reports/refactors-file-manifest-cyberpunk.md
+- Fixes Applied: 5 total
+  - B2: Removed derived dep from useMemo
+  - BUG-1: Added --hole-index CSS variable
+  - #2: Removed duplicate border-radius
+  - #5: Cleaned className concatenation
+  - #6: Removed empty CSS rule
+- Deferred: B1, B3-B5 (performance), #3-4 (magic numbers), #7-8 (optional)
 
 ## Completed
+- FileManifest Cyberpunk Artifact (2025-12-29) - Built, validated, refactored (5 fixes)
 - PowerConduit Cyberpunk Artifact (2025-12-29) - Built, validated, refactored (4 items)
 - StatChip Cyberpunk Artifact (2025-12-28) - Built, validated, refactor-hunted (clean)
 - Phase 3: Modals + Upload Motion System (2025-12-28)
