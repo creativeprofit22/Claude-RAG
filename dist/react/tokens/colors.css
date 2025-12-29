@@ -240,7 +240,7 @@
   /* === Background Colors === */
   --curator-bg-deep: var(--skin-bg-deep, oklch(0.147 0.004 49.25));
   --curator-bg-surface: var(--skin-bg-surface, oklch(0.216 0.006 56.043));
-  --curator-bg-elevated: var(--skin-bg-surface, oklch(0.27 0.006 56));
+  --curator-bg-elevated: var(--skin-bg-elevated, oklch(0.27 0.006 56));
   --curator-bg-hover: var(--skin-bg-hover, oklch(0.25 0.005 55));
   --curator-bg-subtle: var(--skin-bg-subtle, oklch(0.18 0.005 52));
 

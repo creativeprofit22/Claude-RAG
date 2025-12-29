@@ -1,0 +1,146 @@
+/**
+ * StatChip Base Styles
+ * Structural CSS shared across all skins
+ * Skin-specific effects are in separate files
+ */
+
+/* Container - establishes perspective for 3D effects */
+.stat-chip {
+  position: relative;
+  -webkit-perspective: 1000px;
+  perspective: 1000px;
+  margin-bottom: 40px; /* Space for shadow projection */
+}
+
+/* Main chip body - the physical object */
+.stat-chip__body {
+  position: relative;
+  padding: 1.5rem;
+  min-height: 120px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  transform-style: preserve-3d;
+  transition: transform 0.4s ease, box-shadow 0.4s ease;
+}
+
+/* Circuitry layer - positioned behind content */
+.stat-chip__circuits {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 1;
+}
+
+/* Holographic projection zone - the data */
+.stat-chip__holo {
+  position: relative;
+  z-index: 5;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+/* Stat value */
+.stat-chip__value {
+  font-size: 2rem;
+  font-weight: 700;
+  line-height: 1.2;
+  position: relative;
+  /* Overflow protection */
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Label */
+.stat-chip__label {
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  /* Overflow protection */
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Meta text */
+.stat-chip__meta {
+  font-size: 0.625rem;
+  opacity: 0.7;
+  margin-top: 0.25rem;
+  /* Overflow protection */
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Wear layer - scratches, grime */
+.stat-chip__wear {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 10;
+}
+
+/* Icon badge */
+.stat-chip__icon {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 6;
+}
+
+/* Connector pins container */
+.stat-chip__pins {
+  position: absolute;
+  bottom: -8px;
+  left: 20%;
+  right: 20%;
+  height: 8px;
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+  z-index: -1;
+}
+
+/* Individual pin */
+.stat-chip__pin {
+  width: 8px;
+  height: 100%;
+  display: block;
+}
+
+/* Shadow projection */
+.stat-chip__shadow {
+  position: absolute;
+  bottom: -25px;
+  left: 15%;
+  right: 15%;
+  height: 15px;
+  pointer-events: none;
+  z-index: -2;
+}
+
+/* Reduced motion - disable transforms and animations */
+@media (prefers-reduced-motion: reduce) {
+  .stat-chip__body {
+    transform: none !important;
+    transition: none !important;
+  }
+
+  .stat-chip__value::before,
+  .stat-chip__value::after {
+    animation: none !important;
+    display: none !important;
+  }
+}

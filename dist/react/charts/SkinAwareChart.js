@@ -29,68 +29,79 @@ export function SkinAwareChart({ option, style, className = '', loading = false,
     const { skin, reducedMotion } = useSkinMotion();
     const theme = getChartTheme(skin);
     // Merge user option with theme defaults
+    // IMPORTANT: Theme values must override user values for consistent styling
     const themedOption = useMemo(() => {
+        // Extract only the properties we DON'T handle specially
+        const { xAxis, yAxis, tooltip, legend, grid, color, backgroundColor, textStyle, ...restOption } = option;
         return {
-            // Theme colors
+            // Pass through series and other unhandled options FIRST
+            ...restOption,
+            // Theme colors (theme wins)
             color: theme.colors,
             backgroundColor: theme.backgroundColor,
-            // Global text style
+            // Global text style (theme wins)
             textStyle: theme.textStyle,
-            // Default xAxis styling
+            // xAxis: user values first, then theme overrides for styling
             xAxis: {
+                ...(typeof xAxis === 'object' && !Array.isArray(xAxis) ? xAxis : {}),
                 axisLine: theme.axisLine,
-                splitLine: { show: false },
-                axisLabel: { color: theme.textStyle.color },
-                ...(typeof option.xAxis === 'object' && !Array.isArray(option.xAxis) ? option.xAxis : {}),
+                axisLabel: {
+                    ...(xAxis?.axisLabel ?? {}),
+                    color: theme.textStyle.color
+                },
             },
-            // Default yAxis styling
+            // yAxis: user values first, then theme overrides for styling
             yAxis: {
+                ...(typeof yAxis === 'object' && !Array.isArray(yAxis) ? yAxis : {}),
                 axisLine: theme.axisLine,
                 splitLine: theme.splitLine,
-                axisLabel: { color: theme.textStyle.color },
-                ...(typeof option.yAxis === 'object' && !Array.isArray(option.yAxis) ? option.yAxis : {}),
+                axisLabel: {
+                    ...(yAxis?.axisLabel ?? {}),
+                    color: theme.textStyle.color
+                },
             },
-            // Tooltip styling
+            // Tooltip: user values first, then theme overrides
             tooltip: {
+                ...(typeof tooltip === 'object' ? tooltip : {}),
                 backgroundColor: theme.tooltip.backgroundColor,
                 borderColor: theme.tooltip.borderColor,
                 borderWidth: 1,
                 textStyle: theme.tooltip.textStyle,
-                ...(typeof option.tooltip === 'object' ? option.tooltip : {}),
             },
-            // Legend styling
+            // Legend: user values first, then theme overrides
             legend: {
+                ...(typeof legend === 'object' ? legend : {}),
                 textStyle: theme.legend.textStyle,
-                ...(typeof option.legend === 'object' ? option.legend : {}),
             },
             // Animation settings (respect reduced motion)
             animation: !reducedMotion,
             animationDuration: reducedMotion ? 0 : 500,
             animationEasing: 'cubicOut',
-            // Grid defaults
+            // Grid: user values first, then theme defaults
             grid: {
                 containLabel: true,
                 left: 16,
                 right: 16,
                 top: 32,
                 bottom: 16,
-                ...(typeof option.grid === 'object' ? option.grid : {}),
+                ...(typeof grid === 'object' ? grid : {}),
             },
-            // Pass through series and other options
-            ...option,
         };
     }, [option, theme, reducedMotion]);
-    // Initialize chart
+    // Initialize chart - recreate on skin change for proper theme application
     useEffect(() => {
         if (!chartRef.current)
             return;
-        // Create instance if not exists
-        if (!instanceRef.current) {
-            instanceRef.current = echarts.init(chartRef.current);
+        // Dispose existing instance on skin change to apply new theme
+        if (instanceRef.current) {
+            instanceRef.current.dispose();
+            instanceRef.current = null;
         }
+        // Create new instance
+        instanceRef.current = echarts.init(chartRef.current);
         const chart = instanceRef.current;
         // Set option
-        chart.setOption(themedOption, { notMerge, lazyUpdate });
+        chart.setOption(themedOption, { notMerge: true, lazyUpdate });
         // Handle loading state
         if (loading) {
             chart.showLoading();
@@ -115,7 +126,7 @@ export function SkinAwareChart({ option, style, className = '', loading = false,
                 });
             }
         };
-    }, [themedOption, loading, notMerge, lazyUpdate, onEvents]);
+    }, [themedOption, loading, notMerge, lazyUpdate, onEvents, skin]);
     // Cleanup on unmount
     useEffect(() => {
         return () => {

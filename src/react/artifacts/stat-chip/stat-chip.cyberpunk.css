@@ -1,0 +1,381 @@
+/**
+ * StatChip Cyberpunk Skin
+ * Holographic data chip with worn tech aesthetic
+ *
+ * Features:
+ * - Parallelogram shape with tapered edges
+ * - 3D floating angle (perspective + rotateY)
+ * - Circuitry pattern layer
+ * - Glitch text effect on values
+ * - Scanline overlay
+ * - Wear/grime textures
+ * - Neon edge glow that bleeds
+ */
+
+/* ============================================
+   CYBERPUNK TOKENS
+   ============================================ */
+[data-skin="cyberpunk"] {
+  --chip-glow-color: rgba(0, 255, 255, 0.5);
+  --chip-glow-intense: rgba(0, 255, 255, 0.7);
+  --chip-accent: #0ff;
+  --chip-accent-alt: #f0f;
+  --chip-bg-dark: rgba(0, 20, 30, 0.95);
+  --chip-bg-light: rgba(10, 40, 50, 0.9);
+  --chip-border: rgba(0, 255, 255, 0.6);
+}
+
+/* ============================================
+   CHIP CONTAINER
+   ============================================ */
+[data-skin="cyberpunk"] .stat-chip {
+  /* Neon glow projection on surface */
+}
+
+/* Shadow projection - neon pool of light below chip */
+[data-skin="cyberpunk"] .stat-chip__shadow {
+  background: radial-gradient(
+    ellipse at center,
+    var(--chip-glow-color) 0%,
+    transparent 70%
+  );
+  filter: blur(10px);
+  transform: rotateX(60deg);
+  opacity: 0.8;
+}
+
+/* ============================================
+   CHIP BODY - THE PHYSICAL OBJECT
+   ============================================ */
+[data-skin="cyberpunk"] .stat-chip__body {
+  /* Parallelogram shape with tapered edges and connector cutouts */
+  -webkit-clip-path: polygon(
+    0 8%,           /* Top-left tapered */
+    8% 0,           /* Top-left corner */
+    92% 0,          /* Top-right corner */
+    100% 8%,        /* Top-right tapered */
+    100% 85%,       /* Bottom-right before pins */
+    85% 100%,       /* Bottom-right taper */
+    15% 100%,       /* Bottom-left taper */
+    0 85%           /* Bottom-left before pins */
+  );
+  clip-path: polygon(
+    0 8%,           /* Top-left tapered */
+    8% 0,           /* Top-left corner */
+    92% 0,          /* Top-right corner */
+    100% 8%,        /* Top-right tapered */
+    100% 85%,       /* Bottom-right before pins */
+    85% 100%,       /* Bottom-right taper */
+    15% 100%,       /* Bottom-left taper */
+    0 85%           /* Bottom-left before pins */
+  );
+
+  /* 3D floating transform - tilted like examining a chip */
+  -webkit-transform: rotateY(-8deg) rotateX(3deg);
+  transform: rotateY(-8deg) rotateX(3deg);
+
+  /* Performance: hint browser about animated properties */
+  will-change: transform, box-shadow;
+
+  /* Base material - dark translucent substrate */
+  background: linear-gradient(
+    135deg,
+    var(--chip-bg-dark) 0%,
+    var(--chip-bg-light) 100%
+  );
+
+  /* Neon edge glow that bleeds */
+  box-shadow:
+    /* Inner glow */
+    inset 0 0 30px rgba(0, 255, 255, 0.15),
+    /* Edge bleed - multiple layers for intensity */
+    0 0 20px var(--chip-glow-color),
+    0 0 40px rgba(0, 255, 255, 0.3),
+    0 0 60px rgba(0, 255, 255, 0.15);
+
+  /* Border glow line */
+  border: 1px solid var(--chip-border);
+}
+
+/* Hover: chip tilts more, glow intensifies */
+[data-skin="cyberpunk"] .stat-chip:hover .stat-chip__body {
+  -webkit-transform: rotateY(-12deg) rotateX(5deg) translateZ(10px);
+  transform: rotateY(-12deg) rotateX(5deg) translateZ(10px);
+  box-shadow:
+    inset 0 0 40px rgba(0, 255, 255, 0.25),
+    0 0 30px var(--chip-glow-intense),
+    0 0 60px var(--chip-glow-color),
+    0 0 100px rgba(0, 255, 255, 0.3);
+}
+
+/* Hover: shadow intensifies */
+[data-skin="cyberpunk"] .stat-chip:hover .stat-chip__shadow {
+  opacity: 1;
+  background: radial-gradient(
+    ellipse at center,
+    var(--chip-glow-intense) 0%,
+    transparent 70%
+  );
+}
+
+/* ============================================
+   CIRCUITRY LAYER
+   ============================================ */
+[data-skin="cyberpunk"] .stat-chip__circuits {
+  background:
+    /* Horizontal traces */
+    repeating-linear-gradient(
+      0deg,
+      transparent 0px,
+      transparent 8px,
+      rgba(0, 255, 255, 0.03) 8px,
+      rgba(0, 255, 255, 0.03) 9px
+    ),
+    /* Vertical traces */
+    repeating-linear-gradient(
+      90deg,
+      transparent 0px,
+      transparent 20px,
+      rgba(0, 255, 255, 0.02) 20px,
+      rgba(0, 255, 255, 0.02) 21px
+    ),
+    /* Diagonal accent traces */
+    repeating-linear-gradient(
+      45deg,
+      transparent 0px,
+      transparent 30px,
+      rgba(0, 255, 255, 0.015) 30px,
+      rgba(0, 255, 255, 0.015) 31px
+    );
+  opacity: 0.7;
+}
+
+/* ============================================
+   HOLOGRAPHIC VALUE - GLITCH EFFECT
+   ============================================ */
+[data-skin="cyberpunk"] .stat-chip__value {
+  font-family: 'Orbitron', 'Share Tech Mono', 'Courier New', monospace;
+  font-size: 2.5rem;
+  color: var(--chip-accent);
+  text-shadow:
+    0 0 10px rgba(0, 255, 255, 0.9),
+    0 0 20px rgba(0, 255, 255, 0.6),
+    0 0 40px rgba(0, 255, 255, 0.4);
+  letter-spacing: 0.1em;
+}
+
+/* Glitch pseudo-elements - chromatic split */
+[data-skin="cyberpunk"] .stat-chip__value::before,
+[data-skin="cyberpunk"] .stat-chip__value::after {
+  content: attr(data-text);
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  opacity: 0;
+}
+
+/* Top slice - cyan with magenta offset */
+[data-skin="cyberpunk"] .stat-chip__value::before {
+  animation: glitch-top 3s infinite linear;
+  -webkit-clip-path: polygon(0 0, 100% 0, 100% 35%, 0 35%);
+  clip-path: polygon(0 0, 100% 0, 100% 35%, 0 35%);
+  color: var(--chip-accent);
+  text-shadow: -2px 0 var(--chip-accent-alt);
+  will-change: opacity, transform;
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+/* Bottom slice - cyan with magenta offset */
+[data-skin="cyberpunk"] .stat-chip__value::after {
+  animation: glitch-bottom 3s infinite linear;
+  -webkit-clip-path: polygon(0 65%, 100% 65%, 100% 100%, 0 100%);
+  clip-path: polygon(0 65%, 100% 65%, 100% 100%, 0 100%);
+  color: var(--chip-accent);
+  text-shadow: 2px 0 var(--chip-accent-alt);
+  will-change: opacity, transform;
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+/* Glitch keyframes - sporadic, not constant */
+@keyframes glitch-top {
+  0%, 90%, 100% {
+    transform: translateX(0);
+    opacity: 0;
+  }
+  92% {
+    transform: translateX(-2px);
+    opacity: 0.8;
+  }
+  94% {
+    transform: translateX(2px);
+    opacity: 0;
+  }
+  96% {
+    transform: translateX(-1px);
+    opacity: 0.8;
+  }
+  98% {
+    transform: translateX(1px);
+    opacity: 0;
+  }
+}
+
+@keyframes glitch-bottom {
+  0%, 88%, 100% {
+    transform: translateX(0);
+    opacity: 0;
+  }
+  90% {
+    transform: translateX(2px);
+    opacity: 0.8;
+  }
+  93% {
+    transform: translateX(-2px);
+    opacity: 0;
+  }
+  95% {
+    transform: translateX(1px);
+    opacity: 0.8;
+  }
+  97% {
+    transform: translateX(-1px);
+    opacity: 0;
+  }
+}
+
+/* ============================================
+   LABEL
+   ============================================ */
+[data-skin="cyberpunk"] .stat-chip__label {
+  font-family: 'Rajdhani', 'Segoe UI', sans-serif;
+  color: rgba(0, 255, 255, 0.7);
+  letter-spacing: 0.15em;
+}
+
+/* ============================================
+   META TEXT
+   ============================================ */
+[data-skin="cyberpunk"] .stat-chip__meta {
+  font-family: 'Share Tech Mono', monospace;
+  color: rgba(0, 255, 255, 0.5);
+  font-size: 0.625rem;
+}
+
+/* ============================================
+   WEAR LAYER - SCRATCHES, GRIME, SCANLINES
+   ============================================ */
+[data-skin="cyberpunk"] .stat-chip__wear {
+  /* SVG noise texture for surface imperfection */
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100' height='100'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  opacity: 0.06;
+  mix-blend-mode: overlay;
+}
+
+/* Grime accumulation in corners */
+[data-skin="cyberpunk"] .stat-chip__wear::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(
+      ellipse 150px 100px at 0% 100%,
+      rgba(0, 0, 0, 0.25),
+      transparent 60%
+    ),
+    radial-gradient(
+      ellipse 100px 80px at 100% 0%,
+      rgba(0, 0, 0, 0.15),
+      transparent 50%
+    );
+  pointer-events: none;
+}
+
+/* Scanline overlay */
+[data-skin="cyberpunk"] .stat-chip__wear::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: repeating-linear-gradient(
+    0deg,
+    transparent 0px,
+    transparent 2px,
+    rgba(0, 0, 0, 0.1) 2px,
+    rgba(0, 0, 0, 0.1) 4px
+  );
+  pointer-events: none;
+  animation: scanline-drift 10s linear infinite;
+  will-change: background-position;
+}
+
+@keyframes scanline-drift {
+  0% { background-position: 0 0; }
+  100% { background-position: 0 100px; }
+}
+
+/* ============================================
+   ICON BADGE - ANGULAR SHAPE
+   ============================================ */
+[data-skin="cyberpunk"] .stat-chip__icon {
+  /* Angular cut shape */
+  -webkit-clip-path: polygon(
+    0 0,
+    calc(100% - 8px) 0,
+    100% 8px,
+    100% 100%,
+    8px 100%,
+    0 calc(100% - 8px)
+  );
+  clip-path: polygon(
+    0 0,
+    calc(100% - 8px) 0,
+    100% 8px,
+    100% 100%,
+    8px 100%,
+    0 calc(100% - 8px)
+  );
+
+  /* Gradient from cyan to magenta */
+  background: linear-gradient(135deg, var(--chip-accent), var(--chip-accent-alt));
+  box-shadow: 0 0 15px var(--chip-glow-color);
+  color: #0a0a12;
+}
+
+[data-skin="cyberpunk"] .stat-chip__icon svg {
+  width: 20px;
+  height: 20px;
+}
+
+/* ============================================
+   CONNECTOR PINS
+   ============================================ */
+[data-skin="cyberpunk"] .stat-chip__pin {
+  background: linear-gradient(to bottom, #444, #1a1a1a);
+  border-radius: 0 0 2px 2px;
+  box-shadow:
+    0 2px 4px rgba(0, 0, 0, 0.5),
+    inset 0 1px 0 rgba(255, 255, 255, 0.1);
+}
+
+/* Subtle glow on pins */
+[data-skin="cyberpunk"] .stat-chip:hover .stat-chip__pin {
+  box-shadow:
+    0 2px 4px rgba(0, 0, 0, 0.5),
+    0 0 8px rgba(0, 255, 255, 0.3),
+    inset 0 1px 0 rgba(255, 255, 255, 0.1);
+}
+
+/* ============================================
+   LOADING STATE
+   ============================================ */
+[data-skin="cyberpunk"] .stat-chip--loading .stat-chip__value {
+  animation: loading-pulse 1.5s ease-in-out infinite;
+}
+
+@keyframes loading-pulse {
+  0%, 100% { opacity: 0.3; }
+  50% { opacity: 0.7; }
+}

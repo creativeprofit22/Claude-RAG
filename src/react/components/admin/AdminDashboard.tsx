@@ -22,6 +22,7 @@ import {
 import { SettingsModal } from '../settings/SettingsModal.js';
 import { SkinAwareChart } from '../../charts/SkinAwareChart.js';
 import { ErrorBanner } from '../shared/ErrorBanner.js';
+import { StatChip } from '../../artifacts/stat-chip/StatChip.js';
 import type { AdminStats, AdminHealth } from '../../types.js';
 import { formatBytes, formatRelativeTime } from '../../utils/formatters.js';
 
@@ -45,34 +46,6 @@ const HEALTH_STATUS_ICONS = {
 
 /** Skeleton loader count */
 const SKELETON_COUNT = 4;
-
-/** Reusable stat card component */
-interface StatCardProps {
-  icon: React.ReactNode;
-  iconBgColor: string;
-  iconColor: string;
-  value: string | number;
-  label: string;
-  meta?: string;
-  isLoading?: boolean;
-}
-
-function StatCard({ icon, iconBgColor, iconColor, value, label, meta, isLoading }: StatCardProps) {
-  return (
-    <div className="rag-admin-stat-card">
-      <div className="rag-admin-stat-icon" style={{ backgroundColor: iconBgColor, color: iconColor }}>
-        {icon}
-      </div>
-      <div className="rag-admin-stat-info">
-        <span className="rag-admin-stat-value">
-          {isLoading ? '-' : value}
-        </span>
-        <span className="rag-admin-stat-label">{label}</span>
-      </div>
-      {meta && <span className="rag-admin-stat-meta">{meta}</span>}
-    </div>
-  );
-}
 
 /** Reusable service status item component */
 interface ServiceStatusItemProps {
@@ -284,37 +257,29 @@ export function AdminDashboard({
         </div>
       )}
 
-      {/* Stats Cards */}
+      {/* Stats Cards - Cyberpunk: Holographic Data Chips */}
       <div className="rag-admin-stats-grid">
-        <StatCard
+        <StatChip
           icon={<FileText size={20} />}
-          iconBgColor="#3b82f620"
-          iconColor="#3b82f6"
           value={stats?.documents.total || 0}
           label="Documents"
           isLoading={isLoading}
         />
-        <StatCard
+        <StatChip
           icon={<Layers size={20} />}
-          iconBgColor="#10b98120"
-          iconColor="#10b981"
           value={(stats?.chunks.total ?? 0).toLocaleString()}
           label="Total Chunks"
           meta={`~${stats?.chunks.averagePerDocument || 0} per doc`}
           isLoading={isLoading}
         />
-        <StatCard
+        <StatChip
           icon={<HardDrive size={20} />}
-          iconBgColor="#f59e0b20"
-          iconColor="#f59e0b"
           value={`${stats?.storage.estimatedMB || '0'} MB`}
           label="Est. Storage"
           isLoading={isLoading}
         />
-        <StatCard
+        <StatChip
           icon={<Activity size={20} />}
-          iconBgColor="#8b5cf620"
-          iconColor="#8b5cf6"
           value={stats?.chunks.averagePerDocument || 0}
           label="Avg Chunks/Doc"
           isLoading={isLoading}
