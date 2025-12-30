@@ -39,6 +39,46 @@ const STORAGE_KEY = 'typewriter-sound-muted';
 const DEBOUNCE_MS = 30;
 
 /**
+ * Bell harmonic configuration
+ */
+interface BellHarmonic {
+  freq: number;
+  gain: number;
+  decay: number;
+}
+
+/**
+ * Create bell harmonics sound with configurable parameters
+ */
+function playBellHarmonics(
+  ctx: AudioContext,
+  master: GainNode,
+  baseVolume: number,
+  fundamentalFreq: number,
+  startTime: number,
+  harmonics: BellHarmonic[],
+  gainMultiplier: number = 1.0
+): void {
+  harmonics.forEach(({ freq, gain: relGain, decay }) => {
+    const osc = ctx.createOscillator();
+    const gainNode = ctx.createGain();
+
+    osc.type = 'sine';
+    osc.frequency.value = freq;
+
+    gainNode.gain.setValueAtTime(0, startTime);
+    gainNode.gain.linearRampToValueAtTime(baseVolume * relGain * gainMultiplier, startTime + 0.002);
+    gainNode.gain.exponentialRampToValueAtTime(0.001, startTime + decay);
+
+    osc.connect(gainNode);
+    gainNode.connect(master);
+
+    osc.start(startTime);
+    osc.stop(startTime + decay + 0.01);
+  });
+}
+
+/**
  * Creates Web Audio context for sound synthesis
  */
 function createAudioContext(): AudioContext | null {
@@ -330,7 +370,7 @@ export function useTypewriterSound(config: Partial<SoundConfig> = {}) {
     const fundamentalFreq = 2200;
 
     // Bell harmonics (approximating a real bell spectrum)
-    const harmonics = [
+    const harmonics: BellHarmonic[] = [
       { freq: fundamentalFreq, gain: 1.0, decay: 0.8 },       // Fundamental
       { freq: fundamentalFreq * 2.0, gain: 0.5, decay: 0.6 }, // 2nd harmonic
       { freq: fundamentalFreq * 3.0, gain: 0.25, decay: 0.4 },// 3rd harmonic
@@ -338,24 +378,7 @@ export function useTypewriterSound(config: Partial<SoundConfig> = {}) {
       { freq: fundamentalFreq * 5.4, gain: 0.1, decay: 0.25 },// Inharmonic
     ];
 
-    harmonics.forEach(({ freq, gain: relGain, decay }) => {
-      const osc = ctx.createOscillator();
-      const gainNode = ctx.createGain();
-
-      osc.type = 'sine';
-      osc.frequency.value = freq;
-
-      // Bell-like envelope: quick attack, slow exponential decay
-      gainNode.gain.setValueAtTime(0, now);
-      gainNode.gain.linearRampToValueAtTime(baseVolume * relGain, now + 0.002);
-      gainNode.gain.exponentialRampToValueAtTime(0.001, now + decay);
-
-      osc.connect(gainNode);
-      gainNode.connect(master);
-
-      osc.start(now);
-      osc.stop(now + decay + 0.01);
-    });
+    playBellHarmonics(ctx, master, baseVolume, fundamentalFreq, now, harmonics);
 
     // === Add subtle strike transient ===
     const strikeOsc = ctx.createOscillator();
@@ -454,29 +477,13 @@ export function useTypewriterSound(config: Partial<SoundConfig> = {}) {
     // === Component 4: Bell ring at end (the payoff moment) ===
     const bellDelay = swooshDuration - 0.05;
     const bellFundamental = 2400;
-    const bellHarmonics = [
+    const bellHarmonics: BellHarmonic[] = [
       { freq: bellFundamental, gain: 1.0, decay: 0.6 },
       { freq: bellFundamental * 2.0, gain: 0.4, decay: 0.4 },
       { freq: bellFundamental * 3.2, gain: 0.2, decay: 0.3 },
     ];
 
-    bellHarmonics.forEach(({ freq, gain: relGain, decay }) => {
-      const osc = ctx.createOscillator();
-      const gainNode = ctx.createGain();
-
-      osc.type = 'sine';
-      osc.frequency.value = freq;
-
-      gainNode.gain.setValueAtTime(0, now + bellDelay);
-      gainNode.gain.linearRampToValueAtTime(baseVolume * relGain * 0.5, now + bellDelay + 0.002);
-      gainNode.gain.exponentialRampToValueAtTime(0.001, now + bellDelay + decay);
-
-      osc.connect(gainNode);
-      gainNode.connect(master);
-
-      osc.start(now + bellDelay);
-      osc.stop(now + bellDelay + decay + 0.01);
-    });
+    playBellHarmonics(ctx, master, baseVolume, bellFundamental, now + bellDelay, bellHarmonics, 0.5);
   }, [createNoiseBuffer, volume]);
 
   /**

@@ -80,7 +80,6 @@ export function TypewriterInput({
 
   // Last backspace time for rapid deletion detection
   const lastBackspaceRef = useRef<number>(0);
-  const rapidDeletionRef = useRef<boolean>(false);
 
   /**
    * Calculate carriage position based on current line length
@@ -238,12 +237,11 @@ export function TypewriterInput({
         x: 0,
         duration: TIMING.carriageReturn / 2000,
         ease: 'power2.out',
-      });
-
-    // Reset bell state after animation
-    setTimeout(() => {
-      setState((prev) => ({ ...prev, bellRinging: false }));
-    }, TIMING.bellRing);
+      })
+      // Reset bell state after bell ring duration
+      .call(() => {
+        setState((prev) => ({ ...prev, bellRinging: false }));
+      }, [], `+=${TIMING.bellRing / 1000}`);
 
     return tl;
   }, [playSound]);
@@ -266,19 +264,19 @@ export function TypewriterInput({
       animateKeyPress(key, true);
       playSound('keystroke');
 
-      // 2. Typebar swing
-      tl.add(animateTypebar() || [], '+=0.015');
+      // 2. Typebar swing (after key down completes)
+      tl.add(animateTypebar() || [], `+=${TIMING.keyDown / 1000}`);
 
-      // 3. Carriage shift
-      tl.call(() => animateCarriageShift('left'), [], '+=0.005');
+      // 3. Carriage shift (after strike)
+      tl.call(() => animateCarriageShift('left'), [], `+=${TIMING.strike / 1000}`);
 
-      // 4. Key release
-      tl.call(() => animateKeyPress(key, false), [], '+=0.02');
+      // 4. Key release (after typebar return starts)
+      tl.call(() => animateKeyPress(key, false), [], `+=${TIMING.typebarReturn / 1000}`);
 
-      // 5. Reset state
+      // 5. Reset state (after key up completes)
       tl.call(() => {
         setState((prev) => ({ ...prev, activeKey: null, isTyping: false }));
-      }, [], '+=0.015');
+      }, [], `+=${TIMING.keyUp / 1000}`);
     },
     [animateKeyPress, animateTypebar, animateCarriageShift, playSound]
   );
@@ -293,7 +291,6 @@ export function TypewriterInput({
 
     // Detect rapid deletion (holding backspace)
     const isRapid = timeSinceLastBackspace < 100;
-    rapidDeletionRef.current = isRapid;
 
     // Carriage shift right
     animateCarriageShift('right');

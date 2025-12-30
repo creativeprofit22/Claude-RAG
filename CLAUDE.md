@@ -13,17 +13,20 @@ Query → Gemini Embeddings → LanceDB → Chunks → Claude Code CLI → Respo
 ```
 
 ## Pipeline State
-Phase: refactor-hunt
-Feature: TypewriterInput SVG Integration
-Files-Validated: TypewriterInput.tsx, TypewriterSVG.tsx, useTypewriterSound.ts, TypewriterInput.css
-Validation-Report: reports/validation-typewriter-svg-integration.md
+Phase: build
+Feature: Card Catalog
+Last-Completed: TypewriterInput SVG Integration (built, validated, refactored)
 
 ## Last Session (2025-12-29)
-**TypewriterInput Validation Complete:**
-- Ran 6 parallel validation checks (Tests, API, UI, Wiring, Bottlenecks, Bugs)
-- Fixed 4 critical issues: GSAP cleanup, React.memo, aria-label, flex layout
-- 21/21 tests pass, 15/15 API endpoints functional
-- Deferred 15 lower-priority issues (documented in validation report)
+**TypewriterInput Refactoring Complete:**
+- H1: Fixed invalid SVG fill syntax (BUG)
+- H2: Removed dead rapidDeletionRef code
+- H3: Extracted bell harmonics helper (DRY, -14 lines)
+- H4: Applied CSS variables for ink colors
+- M3: Replaced setTimeout with GSAP timeline
+- M5: Referenced TIMING constants instead of magic numbers
+- Skipped: M1 (high complexity), M2 (valid design), M4 (medium complexity), L1-L4 (per recommendations)
+- Validation: tsc clean, 21/21 tests pass
 
 ## Library Skin V2 Progress
 | Phase | Status | Notes |

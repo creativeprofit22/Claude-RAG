@@ -277,6 +277,12 @@ export const TypewriterSVG = memo(forwardRef<TypewriterSVGRefs, TypewriterSVGPro
           <clipPath id="tw-paper-clip">
             <rect x="50" y="35" width="500" height="100" rx="2" />
           </clipPath>
+
+          {/* --- Paper Edge Shadow Gradient --- */}
+          <linearGradient id="tw-paper-shadow" x1="0%" y1="0%" x2="0%" y2="100%">
+            <stop offset="0%" stopColor="rgba(0,0,0,0.15)" />
+            <stop offset="100%" stopColor="rgba(0,0,0,0)" />
+          </linearGradient>
         </defs>
 
         {/* ============================================
@@ -390,7 +396,7 @@ export const TypewriterSVG = memo(forwardRef<TypewriterSVGRefs, TypewriterSVGPro
             y="35"
             width="500"
             height="8"
-            fill="linear-gradient(180deg, rgba(0,0,0,0.15) 0%, transparent 100%)"
+            fill="url(#tw-paper-shadow)"
           />
           {/* Subtle horizontal lines (typing guide) */}
           {[...Array(4)].map((_, i) => (
