@@ -44,4 +44,6 @@ export { useRAGChat } from './hooks/useRAGChat.js';
 export { useDocuments } from './hooks/useDocuments.js';
 export { useCategories } from './hooks/useCategories.js';
 export { useUploadStream, useFileQueue, useApiKeyConfig } from './hooks/index.js';
+// Library Skin V2 Components
+export * from './components/library/index.js';
 //# sourceMappingURL=index.js.map

@@ -1,15 +1,18 @@
 'use client';
 
-import { useRef, useEffect } from 'react';
+import { useRef, useEffect, useState, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Database, type LucideIcon } from 'lucide-react';
 import { useSkinMotion } from './motion/hooks/useSkinMotion.js';
+import { useSkinDetect } from './motion/hooks/useSkinDetect.js';
 import { ChatHeader } from './components/ChatHeader.js';
 import { ChatInput } from './components/ChatInput.js';
+import { TypewriterInput } from './components/library/index.js';
 import { MessageBubble } from './components/MessageBubble.js';
 import { TypingIndicator } from './components/TypingIndicator.js';
 import { EmptyState } from './components/shared/EmptyState.js';
 import { ErrorBanner } from './components/shared/ErrorBanner.js';
+import { InkFilters } from './components/library/InkEffects/InkFilters.js';
 import { useRAGChat } from './hooks/useRAGChat.js';
 import { DEFAULT_ACCENT_COLOR, type RAGChatConfig } from './types.js';
 
@@ -57,6 +60,20 @@ export function RAGChat({
   const messagesContainerRef = useRef<HTMLDivElement>(null);
 
   const { motion: skinMotion } = useSkinMotion();
+  const skin = useSkinDetect();
+
+  // TypewriterInput state (controlled component)
+  const [typewriterValue, setTypewriterValue] = useState('');
+
+  // Mobile detection for keyboard visibility
+  const [isMobile, setIsMobile] = useState(false);
+  useEffect(() => {
+    const mediaQuery = window.matchMedia('(max-width: 768px)');
+    setIsMobile(mediaQuery.matches);
+    const handler = (e: MediaQueryListEvent) => setIsMobile(e.matches);
+    mediaQuery.addEventListener('change', handler);
+    return () => mediaQuery.removeEventListener('change', handler);
+  }, []);
 
   const {
     messages,
@@ -102,6 +119,17 @@ export function RAGChat({
     }
   }, [messages.length, isTyping]);
 
+  // TypewriterInput submit handler - clears value after send
+  const handleTypewriterSubmit = useCallback(
+    (value: string) => {
+      const trimmed = value.trim();
+      if (!trimmed || isTyping) return;
+      sendMessage(trimmed);
+      setTypewriterValue('');
+    },
+    [sendMessage, isTyping]
+  );
+
   const defaultEmptyState = (
     <EmptyState
       icon={Database}
@@ -115,6 +143,9 @@ export function RAGChat({
 
   return (
     <div className={`rag-chat ${className}`}>
+      {/* SVG Filters for Library Skin InkEffects - must be in DOM for filters to work */}
+      {skin === 'library' && <InkFilters />}
+
       {/* Header */}
       <ChatHeader
         title={title}
@@ -153,12 +184,24 @@ export function RAGChat({
       </div>
 
       {/* Input Area */}
-      <ChatInput
-        placeholder={placeholder}
-        accentColor={accentColor}
-        onSendMessage={sendMessage}
-        disabled={isTyping}
-      />
+      {skin === 'library' ? (
+        <TypewriterInput
+          value={typewriterValue}
+          onChange={setTypewriterValue}
+          onSubmit={handleTypewriterSubmit}
+          placeholder={placeholder}
+          disabled={isTyping}
+          soundEnabled={true}
+          showKeyboard={!isMobile}
+        />
+      ) : (
+        <ChatInput
+          placeholder={placeholder}
+          accentColor={accentColor}
+          onSendMessage={sendMessage}
+          disabled={isTyping}
+        />
+      )}
     </div>
   );
 }

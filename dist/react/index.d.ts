@@ -46,4 +46,5 @@ export { useCategories } from './hooks/useCategories.js';
 export { useUploadStream, useFileQueue, useApiKeyConfig } from './hooks/index.js';
 export type { UploadProgress, UploadResult, UploadOptions, UploadStage, QueuedFile, FileStatus } from './hooks/index.js';
 export type { ChatMessage, MessageSource, RAGQueryResponse, RAGChatConfig, RAGChatState, RAGChatActions, Category, DocumentSummary, DocumentDetails, DocumentLibraryState, AdminStats, AdminHealth, } from './types.js';
+export * from './components/library/index.js';
 //# sourceMappingURL=index.d.ts.map

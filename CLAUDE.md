@@ -13,24 +13,35 @@ Query → Gemini Embeddings → LanceDB → Chunks → Claude Code CLI → Respo
 ```
 
 ## Pipeline State
-Phase: complete
-Feature: Library Skin - Aged Brass Colors
-Status: Built, validated, refactored - COMPLETE
+Phase: refactor-hunt
+Feature: TypewriterInput SVG Integration
+Files-Validated: TypewriterInput.tsx, TypewriterSVG.tsx, useTypewriterSound.ts, TypewriterInput.css
+Validation-Report: reports/validation-typewriter-svg-integration.md
 
 ## Last Session (2025-12-29)
-**Library Skin - Aged Brass Refactoring:**
-- Fixed remaining bright gold rgba values → aged brass (139, 112, 40)
-- Removed redundant `-webkit-clip-path: none` from stat-chip
-- Already had `:is()` selector in terminal-readout
-- All shared tokens already in use via library-base.css
-- Tests: 21 pass | Build: success (97.9kb CSS bundle)
+**TypewriterInput Validation Complete:**
+- Ran 6 parallel validation checks (Tests, API, UI, Wiring, Bottlenecks, Bugs)
+- Fixed 4 critical issues: GSAP cleanup, React.memo, aria-label, flex layout
+- 21/21 tests pass, 15/15 API endpoints functional
+- Deferred 15 lower-priority issues (documented in validation report)
+
+## Library Skin V2 Progress
+| Phase | Status | Notes |
+|-------|--------|-------|
+| 1. Foundation | ✅ Done | Color tokens, SVG assets, sound infra |
+| 2. Typewriter Core | ✅ Done | Key press, typebar swing, carriage, sounds |
+| 3. Correction Tape | ✅ Done | Backspace animation, rapid deletion |
+| 4. Card Catalog | ❌ Not Started | Drawer + index card components |
+| 5. Ink System | ⏳ Partial | InkFilters exists, full effects pending |
+| 6. Pre-loader | ✅ Done | LibraryPreloader + skip logic |
+| 7. Polish | ⏳ Ongoing | Mobile, a11y, cross-browser |
 
 ## Completed
-- Library Skin Aged Brass (2025-12-29) - Colors fixed, refactored, committed
-- Library Skin Artifacts (2025-12-29) - Built, validated, refactored (8 items)
-- FileManifest Cyberpunk Artifact (2025-12-29) - Built, validated, refactored (5 fixes)
-- PowerConduit Cyberpunk Artifact (2025-12-29) - Built, validated, refactored (4 items)
-- StatChip Cyberpunk Artifact (2025-12-28) - Built, validated, refactor-hunted (clean)
+- TypewriterInput SVG Integration (2025-12-29) - Flex layout fix, full SVG rendering
+- Library Skin V2 Design (2025-12-29) - Spec + TypewriterInput prototype
+- Library Skin Aged Brass (2025-12-29) - Colors fixed, refactored
+- Library Skin Artifacts (2025-12-29) - Built, validated, refactored
+- All Cyberpunk Artifacts (2025-12-29) - StatChip, PowerConduit, FileManifest
 - Phase 3: Modals + Upload Motion System (2025-12-28)
 - Final E2E Validation (2025-12-29)
 
@@ -41,6 +52,8 @@ Status: Built, validated, refactored - COMPLETE
 - `src/react/` - React components and hooks
 - `src/react/tokens/` - Curator design tokens
 - `src/react/fonts/` - Self-hosted Fraunces + Satoshi
+- `src/react/components/library/` - Library Skin V2 components
+- `reports/SPEC-library-skin-v2-typewriter.md` - Full design specification
 
 ## Environment
 ```

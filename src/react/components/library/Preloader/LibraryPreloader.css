@@ -1,0 +1,703 @@
+/**
+ * LibraryPreloader Styles
+ * Library Skin V2: "The Library Opens" Sequence
+ *
+ * Premium opening curtain experience with:
+ * - Banker's lamp amber glow
+ * - Typewriter silhouette materialization
+ * - Paper roll animation
+ * - Character-by-character typing
+ */
+
+/* ==========================================================================
+   Container & Base
+   ========================================================================== */
+
+.library-preloader {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: #000000;
+  overflow: hidden;
+  font-family: 'American Typewriter', 'Courier New', Courier, monospace;
+}
+
+.library-preloader.reduced-motion {
+  transition: opacity 200ms ease-out;
+}
+
+.library-preloader.fade-out {
+  opacity: 0;
+  pointer-events: none;
+}
+
+/* ==========================================================================
+   Amber Glow Effect (Frame 1-2)
+   ========================================================================== */
+
+.preloader-glow {
+  position: absolute;
+  width: 200vmax;
+  height: 200vmax;
+  border-radius: 50%;
+  background: radial-gradient(
+    circle at center,
+    rgba(255, 248, 230, 0.6) 0%,
+    rgba(255, 248, 230, 0.3) 20%,
+    rgba(255, 248, 230, 0.1) 40%,
+    rgba(255, 248, 230, 0.05) 60%,
+    transparent 80%
+  );
+  transform: scale(0);
+  opacity: 0;
+  pointer-events: none;
+}
+
+.preloader-glow.active {
+  animation: glowSpread 1000ms cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+
+@keyframes glowSpread {
+  0% {
+    transform: scale(0);
+    opacity: 0;
+  }
+  30% {
+    opacity: 1;
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+/* Lamp chain pull indicator */
+.preloader-lamp-chain {
+  position: absolute;
+  top: 10%;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 2px;
+  height: 0;
+  background: linear-gradient(
+    to bottom,
+    transparent 0%,
+    rgba(255, 248, 230, 0.3) 30%,
+    rgba(255, 248, 230, 0.6) 100%
+  );
+  opacity: 0;
+}
+
+.preloader-lamp-chain.active {
+  animation: chainPull 500ms ease-out forwards;
+}
+
+@keyframes chainPull {
+  0% {
+    height: 0;
+    opacity: 0;
+  }
+  50% {
+    height: 60px;
+    opacity: 1;
+  }
+  80% {
+    height: 60px;
+    opacity: 1;
+  }
+  100% {
+    height: 40px;
+    opacity: 0.6;
+  }
+}
+
+.preloader-lamp-pull {
+  position: absolute;
+  bottom: -8px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: radial-gradient(
+    circle at 30% 30%,
+    #d4a55c 0%,
+    #8b6914 100%
+  );
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.4);
+}
+
+/* ==========================================================================
+   Desk Surface (Frame 3)
+   ========================================================================== */
+
+.preloader-desk {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 45%;
+  background: linear-gradient(
+    to bottom,
+    #3a2510 0%,
+    #2d1c0c 50%,
+    #241606 100%
+  );
+  transform: translateY(100%);
+  opacity: 0;
+  /* Wood grain overlay */
+  background-image:
+    linear-gradient(
+      to bottom,
+      #3a2510 0%,
+      #2d1c0c 50%,
+      #241606 100%
+    ),
+    repeating-linear-gradient(
+      90deg,
+      transparent 0px,
+      transparent 30px,
+      rgba(0, 0, 0, 0.05) 30px,
+      rgba(0, 0, 0, 0.05) 32px
+    ),
+    repeating-linear-gradient(
+      95deg,
+      transparent 0px,
+      transparent 50px,
+      rgba(255, 255, 255, 0.02) 50px,
+      rgba(255, 255, 255, 0.02) 51px
+    );
+}
+
+.preloader-desk.active {
+  animation: deskFadeIn 500ms ease-out forwards;
+}
+
+@keyframes deskFadeIn {
+  0% {
+    transform: translateY(100%);
+    opacity: 0;
+  }
+  100% {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+/* Desk edge highlight */
+.preloader-desk::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: linear-gradient(
+    to right,
+    transparent 0%,
+    rgba(255, 248, 230, 0.3) 20%,
+    rgba(255, 248, 230, 0.5) 50%,
+    rgba(255, 248, 230, 0.3) 80%,
+    transparent 100%
+  );
+}
+
+/* ==========================================================================
+   Typewriter Silhouette (Frame 3)
+   ========================================================================== */
+
+.preloader-typewriter {
+  position: relative;
+  width: 320px;
+  height: 200px;
+  opacity: 0;
+  transform: scale(0.9);
+}
+
+.preloader-typewriter.active {
+  animation: typewriterMaterialize 600ms cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+
+@keyframes typewriterMaterialize {
+  0% {
+    opacity: 0;
+    transform: scale(0.9);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+/* Typewriter body */
+.typewriter-body {
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 280px;
+  height: 80px;
+  background: linear-gradient(
+    to bottom,
+    #2a2a2a 0%,
+    #1a1a1a 100%
+  );
+  border-radius: 8px 8px 4px 4px;
+  box-shadow:
+    0 4px 8px rgba(0, 0, 0, 0.5),
+    inset 0 1px 0 rgba(255, 255, 255, 0.1);
+}
+
+/* Keyboard area */
+.typewriter-keys-silhouette {
+  position: absolute;
+  bottom: 10px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 240px;
+  height: 50px;
+  background: rgba(0, 0, 0, 0.4);
+  border-radius: 4px;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-content: flex-start;
+  gap: 4px;
+  padding: 6px;
+}
+
+.key-silhouette {
+  width: 18px;
+  height: 14px;
+  background: rgba(50, 50, 50, 0.8);
+  border-radius: 2px;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.4);
+}
+
+/* Platen (paper roller) */
+.typewriter-platen {
+  position: absolute;
+  top: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 300px;
+  height: 24px;
+  background: linear-gradient(
+    to bottom,
+    #1a1a1a 0%,
+    #0a0a0a 100%
+  );
+  border-radius: 12px;
+  box-shadow:
+    0 2px 4px rgba(0, 0, 0, 0.5),
+    inset 0 1px 2px rgba(255, 255, 255, 0.05);
+}
+
+/* Paper guide rails */
+.typewriter-rails {
+  position: absolute;
+  top: 10px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 320px;
+  height: 8px;
+  display: flex;
+  justify-content: space-between;
+}
+
+.rail {
+  width: 20px;
+  height: 100%;
+  background: #2a2a2a;
+  border-radius: 2px;
+}
+
+/* ==========================================================================
+   Paper Animation (Frame 4)
+   ========================================================================== */
+
+.preloader-paper {
+  position: absolute;
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%) translateY(100%);
+  width: 260px;
+  height: 160px;
+  background: linear-gradient(
+    to bottom,
+    #f5f0e1 0%,
+    #ebe6d7 100%
+  );
+  border-radius: 2px;
+  box-shadow:
+    0 2px 8px rgba(0, 0, 0, 0.3),
+    inset 0 0 40px rgba(0, 0, 0, 0.03);
+  opacity: 0;
+  /* Paper texture */
+  background-image:
+    linear-gradient(
+      to bottom,
+      #f5f0e1 0%,
+      #ebe6d7 100%
+    ),
+    url("data:image/svg+xml,%3Csvg viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.03'/%3E%3C/svg%3E");
+}
+
+.preloader-paper.active {
+  animation: paperRoll 500ms cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+
+@keyframes paperRoll {
+  0% {
+    transform: translateX(-50%) translateY(100%);
+    opacity: 0;
+  }
+  20% {
+    opacity: 1;
+  }
+  100% {
+    transform: translateX(-50%) translateY(-30px);
+    opacity: 1;
+  }
+}
+
+/* Paper curl at top */
+.preloader-paper::before {
+  content: '';
+  position: absolute;
+  top: -4px;
+  left: 10%;
+  right: 10%;
+  height: 8px;
+  background: linear-gradient(
+    to bottom,
+    transparent 0%,
+    rgba(0, 0, 0, 0.1) 100%
+  );
+  border-radius: 50%;
+  transform: scaleY(0.5);
+}
+
+/* ==========================================================================
+   Typing Animation (Frame 5)
+   ========================================================================== */
+
+.preloader-text-container {
+  position: absolute;
+  top: 30px;
+  left: 20px;
+  right: 20px;
+  font-family: 'American Typewriter', 'Courier New', Courier, monospace;
+  font-size: 16px;
+  line-height: 1.6;
+  color: #1a1a1a;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.typed-char {
+  opacity: 0;
+  display: inline;
+}
+
+.typed-char.visible {
+  opacity: 1;
+  animation: charStrike 50ms ease-out forwards;
+}
+
+@keyframes charStrike {
+  0% {
+    opacity: 0;
+    transform: translateY(-2px);
+  }
+  50% {
+    transform: translateY(1px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Typing cursor */
+.typing-cursor {
+  display: inline-block;
+  width: 2px;
+  height: 1em;
+  background: #1a1a1a;
+  margin-left: 2px;
+  vertical-align: text-bottom;
+  animation: cursorBlink 600ms step-end infinite;
+}
+
+.typing-cursor.typing {
+  animation: none;
+  opacity: 1;
+}
+
+@keyframes cursorBlink {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0;
+  }
+}
+
+/* ==========================================================================
+   Inkwell & Pen Rest (Frame 3)
+   ========================================================================== */
+
+.preloader-accessories {
+  position: absolute;
+  bottom: 25%;
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  gap: 200px;
+  opacity: 0;
+}
+
+.preloader-accessories.active {
+  animation: accessoriesFadeIn 500ms ease-out 200ms forwards;
+}
+
+@keyframes accessoriesFadeIn {
+  0% {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.inkwell {
+  width: 40px;
+  height: 50px;
+  background: radial-gradient(
+    ellipse at center,
+    #1a1a1a 0%,
+    #0a0a0a 100%
+  );
+  border-radius: 4px 4px 8px 8px;
+  box-shadow:
+    0 4px 8px rgba(0, 0, 0, 0.5),
+    inset 0 -10px 15px rgba(0, 0, 50, 0.3);
+  position: relative;
+}
+
+/* Ink surface reflection */
+.inkwell::before {
+  content: '';
+  position: absolute;
+  top: 8px;
+  left: 6px;
+  right: 6px;
+  height: 6px;
+  background: radial-gradient(
+    ellipse at 30% 50%,
+    rgba(100, 100, 200, 0.3) 0%,
+    transparent 70%
+  );
+  border-radius: 50%;
+}
+
+.pen-rest {
+  width: 60px;
+  height: 12px;
+  background: linear-gradient(
+    to bottom,
+    #3a2510 0%,
+    #2d1c0c 100%
+  );
+  border-radius: 3px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.4);
+  position: relative;
+}
+
+/* Pen silhouette */
+.pen-rest::after {
+  content: '';
+  position: absolute;
+  top: -4px;
+  left: 5px;
+  right: 5px;
+  height: 8px;
+  background: linear-gradient(
+    to right,
+    #2a2a2a 0%,
+    #2a2a2a 85%,
+    #d4a55c 85%,
+    #8b6914 100%
+  );
+  border-radius: 2px;
+  transform: rotate(-5deg);
+}
+
+/* ==========================================================================
+   Skip Button
+   ========================================================================== */
+
+.preloader-skip {
+  position: absolute;
+  bottom: 24px;
+  right: 24px;
+  padding: 8px 16px;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 4px;
+  color: rgba(255, 255, 255, 0.6);
+  font-family: inherit;
+  font-size: 12px;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  cursor: pointer;
+  opacity: 0;
+  transform: translateY(10px);
+  transition:
+    opacity 300ms ease-out,
+    transform 300ms ease-out,
+    background 150ms ease,
+    color 150ms ease;
+}
+
+.preloader-skip.visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.preloader-skip:hover {
+  background: rgba(255, 255, 255, 0.15);
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.preloader-skip:active {
+  transform: translateY(1px);
+}
+
+.preloader-skip:focus {
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(255, 248, 230, 0.4);
+}
+
+/* ==========================================================================
+   Completion State (Frame 6)
+   ========================================================================== */
+
+.library-preloader.completing {
+  animation: preloaderFadeOut 500ms ease-out forwards;
+}
+
+@keyframes preloaderFadeOut {
+  0% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+
+/* Carriage return effect */
+.carriage-return-line {
+  position: absolute;
+  top: 30px;
+  left: 20px;
+  width: 0;
+  height: 2px;
+  background: rgba(255, 248, 230, 0.6);
+  box-shadow: 0 0 8px rgba(255, 248, 230, 0.8);
+}
+
+.carriage-return-line.active {
+  animation: carriageReturn 200ms ease-out forwards;
+}
+
+@keyframes carriageReturn {
+  0% {
+    width: 0;
+  }
+  100% {
+    width: 220px;
+  }
+}
+
+/* ==========================================================================
+   Reduced Motion Preferences
+   ========================================================================== */
+
+@media (prefers-reduced-motion: reduce) {
+  .library-preloader,
+  .library-preloader * {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+
+  .preloader-glow {
+    transform: scale(1);
+    opacity: 1;
+  }
+
+  .preloader-desk {
+    transform: translateY(0);
+    opacity: 1;
+  }
+
+  .preloader-typewriter {
+    opacity: 1;
+    transform: scale(1);
+  }
+
+  .preloader-paper {
+    transform: translateX(-50%) translateY(-30px);
+    opacity: 1;
+  }
+
+  .typed-char {
+    opacity: 1;
+  }
+}
+
+/* ==========================================================================
+   Responsive Adjustments
+   ========================================================================== */
+
+@media (max-width: 480px) {
+  .preloader-typewriter {
+    width: 280px;
+    height: 180px;
+    transform: scale(0.85);
+  }
+
+  .preloader-typewriter.active {
+    animation: typewriterMaterializeMobile 600ms cubic-bezier(0.22, 1, 0.36, 1) forwards;
+  }
+
+  @keyframes typewriterMaterializeMobile {
+    0% {
+      opacity: 0;
+      transform: scale(0.75);
+    }
+    100% {
+      opacity: 1;
+      transform: scale(0.85);
+    }
+  }
+
+  .preloader-accessories {
+    gap: 120px;
+  }
+
+  .preloader-skip {
+    bottom: 16px;
+    right: 16px;
+    padding: 6px 12px;
+    font-size: 11px;
+  }
+}

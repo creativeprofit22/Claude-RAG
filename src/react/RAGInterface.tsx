@@ -4,8 +4,10 @@ import { useState, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { MessageSquare, Library, X, FileText } from 'lucide-react';
 import { useSkinMotion } from './motion/hooks/useSkinMotion.js';
+import { useSkinDetect } from './motion/hooks/useSkinDetect.js';
 import { RAGChat, type RAGChatProps } from './RAGChat.js';
 import { DocumentLibrary, type DocumentLibraryProps } from './components/documents/DocumentLibrary.js';
+import { LibraryPreloader } from './components/library/Preloader/LibraryPreloader.js';
 import { DEFAULT_ACCENT_COLOR, type DocumentSummary } from './types.js';
 
 export type RAGInterfaceView = 'chat' | 'documents';
@@ -43,6 +45,12 @@ export interface RAGInterfaceProps {
   chatEmptyState?: React.ReactNode;
   /** Custom empty state for documents */
   documentsEmptyState?: React.ReactNode;
+  /** Show preloader animation for library skin (default: true) */
+  showPreloader?: boolean;
+  /** Custom welcome text for preloader (default: "Welcome to the Library...") */
+  preloaderWelcomeText?: string;
+  /** Enable preloader sound effects (default: true) */
+  preloaderSoundEnabled?: boolean;
 }
 
 /**
@@ -80,10 +88,15 @@ export function RAGInterface({
   onDocumentSelect,
   chatEmptyState,
   documentsEmptyState,
+  showPreloader = true,
+  preloaderWelcomeText,
+  preloaderSoundEnabled = true,
 }: RAGInterfaceProps) {
   const [activeView, setActiveView] = useState<RAGInterfaceView>(defaultView);
   const [scopedDocument, setScopedDocument] = useState<DocumentSummary | null>(null);
+  const [preloaderComplete, setPreloaderComplete] = useState(false);
   const { motion: skinMotion } = useSkinMotion();
+  const skin = useSkinDetect();
 
   // Handle document selection from library
   const handleDocumentSelect = useCallback((doc: DocumentSummary) => {
@@ -100,6 +113,25 @@ export function RAGInterface({
 
   // Build chat endpoint with query path
   const chatEndpoint = `${endpoint}/query`;
+
+  // Handle preloader completion
+  const handlePreloaderComplete = useCallback(() => {
+    setPreloaderComplete(true);
+  }, []);
+
+  // Show preloader for library skin on first visit (if enabled)
+  // LibraryPreloader handles localStorage check internally via usePreloaderState
+  const shouldShowPreloader = showPreloader && skin === 'library' && !preloaderComplete;
+
+  if (shouldShowPreloader) {
+    return (
+      <LibraryPreloader
+        onComplete={handlePreloaderComplete}
+        welcomeText={preloaderWelcomeText}
+        soundEnabled={preloaderSoundEnabled}
+      />
+    );
+  }
 
   return (
     <div className={`rag-interface ${className}`}>

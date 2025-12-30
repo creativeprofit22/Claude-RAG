@@ -1,0 +1,744 @@
+/**
+ * CardCatalog Component Styles
+ * Library Skin V2: Card Catalog Edition
+ *
+ * Materials:
+ * - Drawer Face: Dark walnut with brass fittings
+ * - Index Cards: Aged paper, ruled lines, typewriter text
+ * - Brass Pull: Antique patina with light reflection
+ *
+ * Colors from library-base.css:
+ * - Walnut: #3D2B1F (base), #5C4332 (light), #241810 (dark)
+ * - Brass: #8B7028 (base), #B8A050 (highlight), #4A3A10 (shadow)
+ * - Paper: #f4e6c8 (aged)
+ */
+
+/* ============================================
+   CARD CATALOG CONTAINER
+   ============================================ */
+
+.card-catalog {
+  position: relative;
+  width: 100%;
+  max-width: 320px;
+  perspective: 1000px;
+  font-family: 'Courier New', 'Courier', monospace;
+}
+
+.card-catalog.open {
+  z-index: 10;
+}
+
+/* Card Count Badge */
+.card-catalog-count {
+  position: absolute;
+  bottom: -8px;
+  right: 8px;
+  background: var(--lib-wood-walnut-dark, #241810);
+  color: var(--lib-gold-light, #A89040);
+  font-size: 10px;
+  padding: 2px 6px;
+  border-radius: 2px;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+/* ============================================
+   DRAWER COMPONENT
+   ============================================ */
+
+.catalog-drawer {
+  position: relative;
+  width: 100%;
+  height: 60px;
+  overflow: visible;
+}
+
+.catalog-drawer.open {
+  height: auto;
+  min-height: 200px;
+}
+
+/* Drawer Face - Always Visible */
+.drawer-face {
+  position: relative;
+  width: 100%;
+  height: 60px;
+  background: linear-gradient(
+    180deg,
+    #5C4332 0%,
+    #3D2B1F 20%,
+    #3D2B1F 80%,
+    #241810 100%
+  );
+  border-radius: 4px;
+  cursor: pointer;
+  z-index: 5;
+
+  /* Wood grain texture */
+  background-image:
+    /* Horizontal grain lines */
+    repeating-linear-gradient(
+      0deg,
+      transparent 0px,
+      transparent 3px,
+      rgba(60, 40, 30, 0.15) 3px,
+      rgba(60, 40, 30, 0.15) 4px,
+      transparent 4px,
+      transparent 8px,
+      rgba(80, 50, 35, 0.1) 8px,
+      rgba(80, 50, 35, 0.1) 9px
+    ),
+    /* Base gradient */
+    linear-gradient(
+      180deg,
+      #5C4332 0%,
+      #3D2B1F 20%,
+      #3D2B1F 80%,
+      #241810 100%
+    );
+
+  /* Wood bevel */
+  box-shadow:
+    /* Top edge highlight */
+    inset 0 2px 0 0 rgba(140, 100, 70, 0.3),
+    /* Bottom shadow */
+    inset 0 -2px 0 0 rgba(0, 0, 0, 0.4),
+    /* Left highlight */
+    inset 2px 0 0 0 rgba(140, 100, 70, 0.15),
+    /* Right shadow */
+    inset -2px 0 0 0 rgba(0, 0, 0, 0.2),
+    /* Drop shadow */
+    0 4px 8px rgba(0, 0, 0, 0.4);
+
+  transition: box-shadow 0.15s ease;
+}
+
+.drawer-face:hover {
+  box-shadow:
+    inset 0 2px 0 0 rgba(140, 100, 70, 0.4),
+    inset 0 -2px 0 0 rgba(0, 0, 0, 0.4),
+    inset 2px 0 0 0 rgba(140, 100, 70, 0.2),
+    inset -2px 0 0 0 rgba(0, 0, 0, 0.2),
+    0 6px 12px rgba(0, 0, 0, 0.5);
+}
+
+.drawer-face:active {
+  box-shadow:
+    inset 0 2px 0 0 rgba(140, 100, 70, 0.2),
+    inset 0 -2px 0 0 rgba(0, 0, 0, 0.5),
+    inset 2px 0 0 0 rgba(140, 100, 70, 0.1),
+    inset -2px 0 0 0 rgba(0, 0, 0, 0.3),
+    0 2px 4px rgba(0, 0, 0, 0.4);
+}
+
+/* ============================================
+   BRASS LABEL HOLDER
+   ============================================ */
+
+.drawer-label-holder {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 120px;
+  height: 28px;
+  padding: 2px;
+  background: linear-gradient(
+    180deg,
+    #B8A050 0%,
+    #9A8030 15%,
+    #8B7028 40%,
+    #7A6020 85%,
+    #4A3A10 100%
+  );
+  border-radius: 3px;
+
+  /* Brass bevel */
+  box-shadow:
+    /* Top highlight */
+    inset 0 1px 0 0 rgba(255, 255, 255, 0.2),
+    /* Bottom shadow */
+    inset 0 -1px 0 0 rgba(0, 0, 0, 0.3),
+    /* Outer drop shadow */
+    0 2px 4px rgba(0, 0, 0, 0.3),
+    0 1px 1px rgba(0, 0, 0, 0.2);
+}
+
+.drawer-label {
+  width: 100%;
+  height: 100%;
+  background: #f8f0e0;
+  border-radius: 2px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+
+  /* Inset paper effect */
+  box-shadow:
+    inset 0 1px 2px rgba(0, 0, 0, 0.15),
+    inset 0 -1px 1px rgba(255, 255, 255, 0.5);
+}
+
+.drawer-label-text {
+  font-family: 'Courier New', 'American Typewriter', monospace;
+  font-size: 11px;
+  font-weight: 600;
+  color: #2a1810;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  text-shadow: 0 1px 0 rgba(255, 255, 255, 0.5);
+}
+
+/* ============================================
+   BRASS PULL HANDLE
+   ============================================ */
+
+.drawer-pull {
+  --pull-highlight: 0.15;
+
+  position: absolute;
+  bottom: 8px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 40px;
+  height: 12px;
+  background: linear-gradient(
+    180deg,
+    #B8A050 0%,
+    #8B7028 50%,
+    #4A3A10 100%
+  );
+  border-radius: 2px;
+  cursor: grab;
+
+  /* Brass 3D effect */
+  box-shadow:
+    /* Top highlight */
+    inset 0 2px 0 0 rgba(255, 255, 255, calc(var(--pull-highlight) + 0.05)),
+    /* Bottom shadow */
+    inset 0 -2px 0 0 rgba(0, 0, 0, 0.4),
+    /* Left/right edges */
+    inset 1px 0 0 0 rgba(255, 255, 255, 0.1),
+    inset -1px 0 0 0 rgba(0, 0, 0, 0.2),
+    /* Drop shadow */
+    0 2px 4px rgba(0, 0, 0, 0.3);
+
+  transition: box-shadow 0.15s ease;
+}
+
+.drawer-pull-inner {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 30px;
+  height: 4px;
+  background: linear-gradient(
+    180deg,
+    #4A3A10 0%,
+    #241810 100%
+  );
+  border-radius: 1px;
+
+  /* Finger grip indent */
+  box-shadow:
+    inset 0 1px 1px rgba(0, 0, 0, 0.5),
+    0 1px 0 rgba(255, 255, 255, 0.1);
+}
+
+.drawer-pull:hover {
+  box-shadow:
+    inset 0 2px 0 0 rgba(255, 255, 255, 0.25),
+    inset 0 -2px 0 0 rgba(0, 0, 0, 0.4),
+    inset 1px 0 0 0 rgba(255, 255, 255, 0.15),
+    inset -1px 0 0 0 rgba(0, 0, 0, 0.2),
+    0 3px 6px rgba(0, 0, 0, 0.4),
+    0 0 8px rgba(139, 112, 40, 0.2);
+}
+
+.drawer-pull:active {
+  cursor: grabbing;
+}
+
+/* ============================================
+   DRAWER INTERIOR
+   ============================================ */
+
+.drawer-inner {
+  position: absolute;
+  top: 60px;
+  left: 4px;
+  right: 4px;
+  height: 180px;
+  transform: translateY(0%);
+  z-index: 3;
+  pointer-events: none;
+}
+
+.catalog-drawer.open .drawer-inner {
+  pointer-events: auto;
+}
+
+.drawer-interior {
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(
+    180deg,
+    #2a1a10 0%,
+    #1a1008 100%
+  );
+  border-radius: 0 0 4px 4px;
+  padding: 8px;
+  box-sizing: border-box;
+
+  /* Interior shadow - recessed look */
+  box-shadow:
+    inset 0 4px 8px rgba(0, 0, 0, 0.5),
+    inset 2px 0 4px rgba(0, 0, 0, 0.3),
+    inset -2px 0 4px rgba(0, 0, 0, 0.3),
+    0 4px 8px rgba(0, 0, 0, 0.4);
+}
+
+/* Drawer Bottom with Rails */
+.drawer-bottom {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 8px;
+  background: #1a1008;
+  border-radius: 0 0 4px 4px;
+}
+
+.drawer-rail {
+  position: absolute;
+  bottom: 2px;
+  width: 4px;
+  height: 4px;
+  background: linear-gradient(
+    90deg,
+    #4A3A10,
+    #8B7028,
+    #4A3A10
+  );
+  border-radius: 1px;
+}
+
+.drawer-rail.left {
+  left: 8px;
+}
+
+.drawer-rail.right {
+  right: 8px;
+}
+
+/* Card Container */
+.drawer-cards {
+  position: relative;
+  width: 100%;
+  height: calc(100% - 12px);
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  perspective: 800px;
+}
+
+/* ============================================
+   CARD STACK
+   ============================================ */
+
+.card-stack {
+  position: relative;
+  width: 100%;
+  height: 140px;
+  display: flex;
+  flex-direction: column-reverse;
+  align-items: center;
+  perspective: 1000px;
+  transform-style: preserve-3d;
+}
+
+.card-stack-empty {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  color: rgba(168, 144, 64, 0.4);
+  font-size: 12px;
+  font-style: italic;
+  letter-spacing: 0.5px;
+}
+
+.card-overflow-indicator {
+  position: absolute;
+  bottom: 4px;
+  right: 8px;
+  font-size: 10px;
+  color: rgba(168, 144, 64, 0.6);
+  letter-spacing: 0.5px;
+}
+
+/* ============================================
+   INDEX CARD
+   ============================================ */
+
+.index-card-wrapper {
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 260px;
+  height: 100px;
+  transform-style: preserve-3d;
+}
+
+.index-card-wrapper.selected {
+  z-index: 100;
+}
+
+/* Card Shadow */
+.index-card-shadow {
+  position: absolute;
+  bottom: -4px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 90%;
+  height: 8px;
+  background: rgba(0, 0, 0, 0.3);
+  border-radius: 50%;
+  filter: blur(4px);
+  opacity: 0.2;
+  pointer-events: none;
+}
+
+/* Main Card */
+.index-card {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  background: #f4e6c8;
+  border-radius: 2px;
+  cursor: pointer;
+  transform-style: preserve-3d;
+  transform-origin: center bottom;
+  overflow: hidden;
+
+  /* Aged paper effect */
+  box-shadow:
+    /* Card edge shadow */
+    0 1px 2px rgba(0, 0, 0, 0.15),
+    /* Subtle depth */
+    0 4px 6px rgba(0, 0, 0, 0.1),
+    /* Paper edge highlight */
+    inset 0 1px 0 rgba(255, 255, 255, 0.8),
+    inset 1px 0 0 rgba(255, 255, 255, 0.5),
+    /* Bottom/right shadow for thickness */
+    inset 0 -1px 0 rgba(0, 0, 0, 0.05),
+    inset -1px 0 0 rgba(0, 0, 0, 0.03);
+
+  transition: box-shadow 0.15s ease;
+}
+
+.index-card:hover {
+  box-shadow:
+    0 2px 4px rgba(0, 0, 0, 0.2),
+    0 8px 12px rgba(0, 0, 0, 0.15),
+    inset 0 1px 0 rgba(255, 255, 255, 0.8),
+    inset 1px 0 0 rgba(255, 255, 255, 0.5),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.05),
+    inset -1px 0 0 rgba(0, 0, 0, 0.03);
+}
+
+/* Ruled Lines */
+.index-card-lines {
+  position: absolute;
+  top: 24px;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: repeating-linear-gradient(
+    180deg,
+    transparent 0px,
+    transparent 15px,
+    rgba(100, 150, 200, 0.2) 15px,
+    rgba(100, 150, 200, 0.2) 16px
+  );
+  pointer-events: none;
+}
+
+/* Top Rule (Red Line) */
+.index-card-top-rule {
+  position: absolute;
+  top: 20px;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: rgba(200, 80, 80, 0.4);
+  pointer-events: none;
+}
+
+/* Card Content */
+.index-card-content {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  padding: 6px 12px 8px;
+  box-sizing: border-box;
+  z-index: 2;
+}
+
+/* Title Line */
+.index-card-title {
+  font-family: 'Courier New', 'American Typewriter', monospace;
+  font-size: 12px;
+  font-weight: 600;
+  color: #1a1008;
+  letter-spacing: 0.3px;
+  line-height: 14px;
+  margin-bottom: 6px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Date */
+.index-card-date {
+  position: absolute;
+  top: 6px;
+  right: 12px;
+  font-family: 'Courier New', monospace;
+  font-size: 9px;
+  color: rgba(26, 16, 8, 0.5);
+  letter-spacing: 0.5px;
+}
+
+/* Content Body */
+.index-card-body {
+  margin-top: 8px;
+  font-family: 'Courier New', monospace;
+  font-size: 10px;
+  line-height: 16px;
+  color: rgba(26, 16, 8, 0.8);
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-line-clamp: 4;
+  -webkit-box-orient: vertical;
+}
+
+/* Card Edge Effects */
+.index-card-edge {
+  position: absolute;
+  pointer-events: none;
+}
+
+.index-card-edge.top {
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: linear-gradient(
+    90deg,
+    rgba(255, 255, 255, 0.4),
+    rgba(255, 255, 255, 0.8),
+    rgba(255, 255, 255, 0.4)
+  );
+}
+
+.index-card-edge.bottom {
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: rgba(0, 0, 0, 0.1);
+}
+
+.index-card-edge.left {
+  top: 0;
+  left: 0;
+  bottom: 0;
+  width: 1px;
+  background: linear-gradient(
+    180deg,
+    rgba(255, 255, 255, 0.5),
+    rgba(255, 255, 255, 0.3)
+  );
+}
+
+.index-card-edge.right {
+  top: 0;
+  right: 0;
+  bottom: 0;
+  width: 1px;
+  background: rgba(0, 0, 0, 0.05);
+}
+
+/* Aged Paper Texture */
+.index-card-texture {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background:
+    /* Subtle noise */
+    radial-gradient(
+      ellipse 2px 3px at 30% 40%,
+      rgba(180, 160, 120, 0.1) 0%,
+      transparent 100%
+    ),
+    radial-gradient(
+      ellipse 3px 2px at 70% 60%,
+      rgba(160, 140, 100, 0.08) 0%,
+      transparent 100%
+    ),
+    radial-gradient(
+      ellipse 2px 2px at 50% 80%,
+      rgba(140, 120, 80, 0.06) 0%,
+      transparent 100%
+    );
+  opacity: 0.5;
+  pointer-events: none;
+}
+
+/* ============================================
+   SELECTED CARD PREVIEW
+   ============================================ */
+
+.selected-card-preview {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(10, 8, 6, 0.8);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  backdrop-filter: blur(4px);
+  animation: fadeIn 0.2s ease;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.preview-card {
+  width: 90%;
+  max-width: 400px;
+  max-height: 80vh;
+  background: #f4e6c8;
+  border-radius: 4px;
+  overflow: hidden;
+  animation: slideUp 0.25s ease;
+
+  box-shadow:
+    0 8px 32px rgba(0, 0, 0, 0.4),
+    0 2px 8px rgba(0, 0, 0, 0.2),
+    inset 0 1px 0 rgba(255, 255, 255, 0.8);
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px) scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.preview-header {
+  position: relative;
+  padding: 16px 40px 12px 16px;
+  background: linear-gradient(
+    180deg,
+    #f8f0e0 0%,
+    #f4e6c8 100%
+  );
+  border-bottom: 2px solid rgba(200, 80, 80, 0.4);
+}
+
+.preview-title {
+  margin: 0;
+  font-family: 'Courier New', 'American Typewriter', monospace;
+  font-size: 16px;
+  font-weight: 600;
+  color: #1a1008;
+  letter-spacing: 0.3px;
+}
+
+.preview-date {
+  display: block;
+  margin-top: 4px;
+  font-family: 'Courier New', monospace;
+  font-size: 11px;
+  color: rgba(26, 16, 8, 0.5);
+}
+
+.preview-close {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  width: 24px;
+  height: 24px;
+  background: rgba(26, 16, 8, 0.1);
+  border: none;
+  border-radius: 2px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: 'Courier New', monospace;
+  font-size: 14px;
+  color: rgba(26, 16, 8, 0.6);
+  transition: all 0.15s ease;
+}
+
+.preview-close:hover {
+  background: rgba(26, 16, 8, 0.2);
+  color: rgba(26, 16, 8, 0.9);
+}
+
+.preview-content {
+  padding: 16px;
+  font-family: 'Courier New', monospace;
+  font-size: 13px;
+  line-height: 24px;
+  color: rgba(26, 16, 8, 0.85);
+  max-height: 400px;
+  overflow-y: auto;
+
+  /* Ruled lines */
+  background: repeating-linear-gradient(
+    180deg,
+    transparent 0px,
+    transparent 23px,
+    rgba(100, 150, 200, 0.15) 23px,
+    rgba(100, 150, 200, 0.15) 24px
+  );
+}
+
+/* Scrollbar styling for preview */
+.preview-content::-webkit-scrollbar {
+  width: 8px;
+}
+
+.preview-content::-webkit-scrollbar-track {
+  background: rgba(26, 16, 8, 0.05);
+}
+
+.preview-content::-webkit-scrollbar-thumb {
+  background: rgba(139, 112, 40, 0.3);
+  border-radius: 4px;
+}
+
+.preview-content::-webkit-scrollbar-thumb:hover {
+  background: rgba(139, 112, 40, 0.5);
+}

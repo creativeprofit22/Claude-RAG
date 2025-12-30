@@ -474,6 +474,24 @@
   animation: curator-bounce 1s infinite;
 }
 
+/* Typing indicator - Library skin variant */
+.rag-typing-indicator--library {
+  background: transparent;
+  border: none;
+  max-width: none;
+  padding: 0.5rem;
+  backdrop-filter: none;
+}
+
+/* Error banner - Library skin variant */
+.rag-error-banner--library {
+  display: flex;
+  justify-content: center;
+  padding: 0.5rem;
+  background: transparent;
+  border: none;
+}
+
 /* Input area */
 .rag-chat-input-container {
   flex-shrink: 0;
@@ -2780,4 +2798,372 @@
 .rag-api-config-btn:hover:not(:disabled) {
   background-color: var(--curator-bg-elevated);
   color: var(--curator-text-primary);
+}
+
+/* =========================================
+   Library Skin - Chat Area Styles
+   SKEUOMORPHIC EDITION - Premium Collection
+   ========================================= */
+
+/* ─── Chat Messages Container ─── */
+[data-skin="library"] .rag-chat-messages {
+  /* Dark velvet display interior */
+  background:
+    /* Subtle velvet texture */
+    var(--lib-texture-velvet),
+    /* Deep wood interior gradient */
+    linear-gradient(
+      180deg,
+      var(--lib-vellum-shadow) 0%,
+      var(--lib-vellum) 50%,
+      var(--lib-cream) 100%
+    );
+  background-blend-mode: soft-light, normal;
+
+  /* Inset panel effect - carved into wood */
+  box-shadow: var(--lib-bevel-inset);
+
+  /* Wood frame border */
+  border: 2px solid var(--lib-wood-walnut-dark);
+  border-top: none;
+}
+
+/* ─── Message Bubbles - Paper Cards ─── */
+[data-skin="library"] .rag-message-bubble {
+  /* Paper texture base */
+  background:
+    /* Subtle paper fiber */
+    url("data:image/svg+xml,%3Csvg viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='paper'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23paper)' opacity='0.03'/%3E%3C/svg%3E"),
+    var(--lib-vellum);
+  background-blend-mode: multiply, normal;
+
+  border: 1px solid var(--lib-gold-shadow);
+  backdrop-filter: none;
+
+  /* Paper card shadow */
+  box-shadow:
+    inset 0 1px 0 0 rgba(232, 213, 163, 0.1),
+    0 2px 4px rgba(0, 0, 0, 0.3),
+    0 4px 8px rgba(0, 0, 0, 0.2);
+
+  transition: all var(--lib-duration) var(--lib-ease);
+}
+
+/* User Message - Slightly warmer paper */
+[data-skin="library"] .rag-message-bubble-user {
+  background:
+    url("data:image/svg+xml,%3Csvg viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='paper'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23paper)' opacity='0.03'/%3E%3C/svg%3E"),
+    linear-gradient(
+      180deg,
+      var(--lib-cream-warm) 0%,
+      var(--lib-cream) 100%
+    );
+  background-blend-mode: multiply, normal;
+
+  /* Gold accent border for user */
+  border: 1px solid var(--lib-gold-deep);
+  border-radius: var(--curator-radius-2xl) var(--curator-radius-2xl) var(--curator-radius-sm) var(--curator-radius-2xl);
+}
+
+/* Assistant Message - Vellum paper */
+[data-skin="library"] .rag-message-bubble-assistant {
+  background:
+    url("data:image/svg+xml,%3Csvg viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='paper'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23paper)' opacity='0.03'/%3E%3C/svg%3E"),
+    var(--lib-vellum);
+  background-blend-mode: multiply, normal;
+
+  box-shadow: var(--lib-bevel-inset);
+  border: 1px solid var(--lib-gold-shadow);
+  border-radius: var(--curator-radius-2xl) var(--curator-radius-2xl) var(--curator-radius-2xl) var(--curator-radius-sm);
+}
+
+/* ─── Message Text - Ink Effect ─── */
+[data-skin="library"] .rag-message-text {
+  font-family: 'Cormorant Garamond', 'EB Garamond', Georgia, serif;
+  color: var(--lib-ink);
+  /* Engraved/ink bleed text effect */
+  text-shadow: var(--lib-text-engraved);
+  font-weight: 500;
+  letter-spacing: 0.01em;
+}
+
+/* User message text slightly different weight */
+[data-skin="library"] .rag-message-bubble-user .rag-message-text {
+  font-weight: 600;
+}
+
+/* ─── Message Time - Faded notation ─── */
+[data-skin="library"] .rag-message-time {
+  font-family: 'Cormorant Garamond', serif;
+  font-style: italic;
+  color: var(--lib-ink-faded);
+  font-size: var(--curator-text-sm);
+}
+
+/* ─── Loading Dots - Brass dots ─── */
+[data-skin="library"] .rag-loading-dots span,
+[data-skin="library"] .rag-typing-dot {
+  background-color: var(--lib-gold);
+  box-shadow: 0 0 4px rgba(139, 112, 40, 0.4);
+}
+
+/* ─── Sources Toggle - Brass button ─── */
+[data-skin="library"] .rag-sources-toggle {
+  background: var(--lib-gold-shimmer);
+  border: 1px solid var(--lib-gold-shadow);
+  color: #2A1F15;
+  text-shadow: var(--lib-text-engraved);
+  font-family: 'Cormorant Garamond', serif;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+
+  box-shadow:
+    inset 0 1px 0 0 rgba(180, 160, 80, 0.3),
+    inset 0 -1px 0 0 rgba(0, 0, 0, 0.2),
+    0 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+[data-skin="library"] .rag-sources-toggle:hover:not(:disabled) {
+  background: var(--lib-gold-shimmer-v);
+  box-shadow:
+    inset 0 1px 0 0 rgba(180, 160, 80, 0.4),
+    inset 0 -1px 0 0 rgba(0, 0, 0, 0.25),
+    0 3px 6px rgba(0, 0, 0, 0.35);
+}
+
+[data-skin="library"] .rag-sources-toggle:focus-visible {
+  outline: 2px solid var(--lib-gold-light);
+  outline-offset: 2px;
+}
+
+/* ─── Source Items - Specimen cards ─── */
+[data-skin="library"] .rag-source-item {
+  background:
+    url("data:image/svg+xml,%3Csvg viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='paper'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23paper)' opacity='0.02'/%3E%3C/svg%3E"),
+    var(--lib-vellum-shadow);
+  background-blend-mode: multiply, normal;
+
+  border: 1px solid var(--lib-gold-shadow);
+
+  box-shadow:
+    inset 0 1px 0 0 rgba(232, 213, 163, 0.08),
+    0 1px 3px rgba(0, 0, 0, 0.25);
+}
+
+[data-skin="library"] .rag-source-name {
+  font-family: 'Cormorant Garamond', serif;
+  font-weight: 600;
+  color: var(--lib-ink);
+  text-shadow: var(--lib-text-engraved);
+}
+
+[data-skin="library"] .rag-source-snippet {
+  font-family: 'Cormorant Garamond', serif;
+  color: var(--lib-ink-soft);
+  font-style: italic;
+}
+
+[data-skin="library"] .rag-source-chunk,
+[data-skin="library"] .rag-source-badge {
+  font-family: 'Cormorant Garamond', serif;
+  color: var(--lib-ink-faded);
+}
+
+/* ─── Empty State - Library styling ─── */
+[data-skin="library"] .rag-chat-messages .curator-empty-state {
+  padding: 3rem 2rem;
+}
+
+[data-skin="library"] .rag-chat-messages .curator-empty-state-icon {
+  /* Wood frame with brass corners */
+  background:
+    var(--lib-texture-wood),
+    linear-gradient(
+      180deg,
+      var(--lib-wood-walnut-light) 0%,
+      var(--lib-wood-walnut) 50%,
+      var(--lib-wood-walnut-dark) 100%
+    );
+  background-blend-mode: overlay, normal;
+
+  border: 2px solid var(--lib-gold-shadow);
+  border-radius: var(--curator-radius-lg);
+
+  box-shadow:
+    /* Wood bevel */
+    inset 0 2px 0 0 rgba(140, 100, 70, 0.2),
+    inset 0 -2px 0 0 rgba(0, 0, 0, 0.4),
+    /* Brass corner accents */
+    inset 4px 4px 0 0 var(--lib-gold),
+    inset -4px 4px 0 0 var(--lib-gold-deep),
+    inset 4px -4px 0 0 var(--lib-gold-deep),
+    inset -4px -4px 0 0 var(--lib-gold-shadow),
+    /* Drop shadow */
+    0 4px 8px rgba(0, 0, 0, 0.3);
+}
+
+[data-skin="library"] .rag-chat-messages .curator-empty-state-icon svg {
+  color: var(--lib-gold-light);
+  filter: drop-shadow(0 1px 1px rgba(0, 0, 0, 0.3));
+}
+
+[data-skin="library"] .rag-chat-messages .curator-empty-state-title {
+  font-family: 'Cormorant Garamond', 'EB Garamond', serif;
+  font-weight: 700;
+  color: var(--lib-ink);
+  text-shadow: var(--lib-text-engraved);
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  font-size: 1rem;
+}
+
+[data-skin="library"] .rag-chat-messages .curator-empty-state-description {
+  font-family: 'Cormorant Garamond', serif;
+  font-style: italic;
+  color: var(--lib-ink-soft);
+  text-shadow: 0 1px 0 rgba(200, 180, 120, 0.15);
+}
+
+/* ─── Chat Header - Brass plaque ─── */
+[data-skin="library"] .rag-chat-header {
+  /* Aged brass header bar */
+  background: var(--lib-gold-shimmer);
+  border-bottom: 2px solid var(--lib-gold-shadow);
+  backdrop-filter: none;
+
+  box-shadow:
+    inset 0 2px 0 0 rgba(180, 160, 80, 0.25),
+    inset 0 -2px 0 0 rgba(0, 0, 0, 0.2),
+    0 3px 6px rgba(0, 0, 0, 0.3);
+}
+
+[data-skin="library"] .rag-chat-header-icon {
+  background:
+    var(--lib-texture-wood),
+    linear-gradient(
+      180deg,
+      var(--lib-wood-walnut-light) 0%,
+      var(--lib-wood-walnut) 100%
+    );
+  background-blend-mode: overlay, normal;
+
+  border: 1px solid var(--lib-gold-shadow);
+  box-shadow: var(--lib-bevel-wood);
+}
+
+[data-skin="library"] .rag-chat-header-icon svg {
+  color: var(--lib-gold-light);
+}
+
+[data-skin="library"] .rag-chat-header-title {
+  font-family: 'Cormorant Garamond', 'EB Garamond', serif;
+  font-weight: 700;
+  color: #2A1F15;
+  text-shadow: var(--lib-text-engraved);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+[data-skin="library"] .rag-chat-header-status {
+  font-family: 'Cormorant Garamond', serif;
+  font-style: italic;
+  color: #3A2A1A;
+  text-shadow: 0 1px 0 rgba(200, 180, 120, 0.25);
+}
+
+[data-skin="library"] .rag-chat-header-clear {
+  background: var(--lib-gold-shimmer-v);
+  border: 1px solid var(--lib-gold-shadow);
+
+  box-shadow:
+    inset 0 1px 0 0 rgba(180, 160, 80, 0.2),
+    inset 0 -1px 0 0 rgba(0, 0, 0, 0.15);
+}
+
+[data-skin="library"] .rag-chat-header-clear svg {
+  color: #3A2A1A;
+}
+
+[data-skin="library"] .rag-chat-header-clear:hover:not(:disabled) {
+  background: linear-gradient(180deg, #C04040 0%, #8B2020 100%);
+}
+
+[data-skin="library"] .rag-chat-header-clear:hover:not(:disabled) svg {
+  color: #FFF5F5;
+}
+
+/* ─── Input Area - Wood frame ─── */
+[data-skin="library"] .rag-chat-input-container {
+  /* Wood panel base */
+  background:
+    var(--lib-texture-wood),
+    linear-gradient(
+      180deg,
+      var(--lib-wood-walnut-light) 0%,
+      var(--lib-wood-walnut) 50%,
+      var(--lib-wood-walnut-dark) 100%
+    );
+  background-blend-mode: overlay, normal;
+
+  border-top: 2px solid var(--lib-gold-shadow);
+  backdrop-filter: none;
+
+  box-shadow:
+    inset 0 2px 4px rgba(0, 0, 0, 0.3),
+    0 -2px 4px rgba(0, 0, 0, 0.2);
+}
+
+[data-skin="library"] .rag-chat-input {
+  /* Paper/vellum input field */
+  background:
+    url("data:image/svg+xml,%3Csvg viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='paper'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23paper)' opacity='0.03'/%3E%3C/svg%3E"),
+    var(--lib-vellum);
+  background-blend-mode: multiply, normal;
+
+  border: 2px solid var(--lib-gold-shadow);
+  color: var(--lib-ink);
+  font-family: 'Cormorant Garamond', serif;
+
+  box-shadow: var(--lib-bevel-inset);
+}
+
+[data-skin="library"] .rag-chat-input::placeholder {
+  color: var(--lib-ink-faded);
+  font-style: italic;
+}
+
+[data-skin="library"] .rag-chat-input:focus {
+  border-color: var(--lib-gold);
+  box-shadow:
+    var(--lib-bevel-inset),
+    0 0 0 2px rgba(139, 112, 40, 0.15);
+}
+
+[data-skin="library"] .rag-chat-send-button {
+  /* Brass send button */
+  background: var(--lib-gold-shimmer-v);
+  border: 1px solid var(--lib-gold-shadow);
+
+  box-shadow:
+    inset 0 2px 0 0 rgba(180, 160, 80, 0.3),
+    inset 0 -2px 0 0 rgba(0, 0, 0, 0.2),
+    0 2px 4px rgba(0, 0, 0, 0.25);
+}
+
+[data-skin="library"] .rag-chat-send-button svg {
+  color: #2A1F15;
+  filter: drop-shadow(0 1px 0 rgba(200, 180, 120, 0.3));
+}
+
+[data-skin="library"] .rag-chat-send-button:hover:not(:disabled) {
+  transform: scale(1.05);
+  box-shadow:
+    inset 0 2px 0 0 rgba(180, 160, 80, 0.4),
+    inset 0 -2px 0 0 rgba(0, 0, 0, 0.25),
+    0 3px 6px rgba(0, 0, 0, 0.3),
+    var(--lib-shadow-gold-glow);
+}
+
+[data-skin="library"] .rag-chat-send-button:not(:disabled) svg {
+  color: #1A1512;
 }

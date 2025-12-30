@@ -1,0 +1,108 @@
+/**
+ * TypewriterInput Styles
+ * Library Skin V2: SVG-Based Typewriter
+ *
+ * CLEAN IMPLEMENTATION - No legacy CSS-only styles
+ */
+
+/* ============================================
+   SVG TYPEWRITER CONTAINER
+   ============================================ */
+.typewriter-svg-container {
+  position: relative;
+  width: 100%;
+  max-width: 600px;
+  margin: 0 auto;
+  background: none;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow:
+    0 8px 24px rgba(0, 0, 0, 0.3),
+    0 4px 8px rgba(0, 0, 0, 0.2);
+  /* Flex behavior - don't shrink in column layout */
+  flex-shrink: 0;
+}
+
+/* When inside RAGChat, add proper spacing */
+.rag-chat .typewriter-svg-container {
+  margin-top: auto; /* Push to bottom of flex container */
+  margin-bottom: 0;
+}
+
+/* ============================================
+   SVG VISUAL
+   ============================================ */
+.typewriter-svg-visual {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+/* ============================================
+   TEXTAREA OVERLAY
+   Positioned over SVG paper area
+   SVG viewBox: 600x380, Paper at x=50 y=35 w=500 h=100
+   ============================================ */
+.typewriter-svg-textarea {
+  position: absolute;
+  top: 9.2%;        /* 35/380 */
+  left: 8.3%;       /* 50/600 */
+  width: 83.3%;     /* 500/600 */
+  height: 26.3%;    /* 100/380 */
+  padding: 12px 16px;
+  margin: 0;
+  box-sizing: border-box;
+  background: transparent;
+  border: none;
+  outline: none;
+  resize: none;
+  font-family: 'Courier New', Courier, monospace;
+  font-size: 14px;
+  line-height: 1.5;
+  color: #1a1208;
+  caret-color: #1a1208;
+  z-index: 10;
+  text-shadow:
+    0 0 1px rgba(26, 18, 8, 0.8),
+    0.5px 0.5px 0 rgba(26, 18, 8, 0.8);
+}
+
+.typewriter-svg-textarea::placeholder {
+  color: #1a1208;
+  opacity: 0.4;
+  font-style: italic;
+}
+
+.typewriter-svg-textarea:focus {
+  outline: none;
+  box-shadow: none;
+}
+
+/* ============================================
+   DISABLED STATE
+   ============================================ */
+.typewriter-svg-container.disabled {
+  opacity: 0.6;
+  pointer-events: none;
+}
+
+/* ============================================
+   MOBILE - No keyboard mode
+   SVG viewBox becomes 600x280
+   ============================================ */
+@media (max-width: 768px) {
+  .typewriter-svg-textarea {
+    top: 12.5%;     /* 35/280 */
+    height: 35.7%;  /* 100/280 */
+  }
+}
+
+/* ============================================
+   REDUCED MOTION
+   ============================================ */
+@media (prefers-reduced-motion: reduce) {
+  .typewriter-svg-container * {
+    transition-duration: 0.01ms !important;
+    animation-duration: 0.01ms !important;
+  }
+}

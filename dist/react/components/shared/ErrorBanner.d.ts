@@ -7,7 +7,8 @@ export interface ErrorBannerProps {
 /**
  * ErrorBanner - Dismissible error alert banner
  *
- * Uses curator-error-banner styling.
+ * For library skin: Uses InkBlot with ink spreading animation
+ * For other skins: Uses curator-error-banner styling
  *
  * @example
  * ```tsx

@@ -1,0 +1,626 @@
+/**
+ * InkEffects Styles
+ * Library Skin V2: Typewriter Edition
+ *
+ * Shared styles and animations for ink visual language:
+ * - Loading (ink drop from nib)
+ * - Processing (ink swirl in inkwell)
+ * - Error (ink blot spreading)
+ * - Transitions (ink wash wipe)
+ */
+
+/* ============================================
+   CSS CUSTOM PROPERTIES - Ink Palette
+   ============================================ */
+:root {
+  /* Core ink colors */
+  --ink-primary: #1a1208;           /* Rich black-brown, main text */
+  --ink-secondary: #3d2914;         /* Warm sepia, secondary text */
+  --ink-faded: #8b7355;             /* Aged ink, disabled states */
+  --ink-blot: #0d0906;              /* Deep black, error blots */
+  --ink-fresh: #2c1810;             /* Just-written, wet sheen */
+  --ink-highlight: rgba(184, 142, 58, 0.3);  /* Amber wash, selections */
+
+  /* Derived colors */
+  --ink-drop-shadow: rgba(13, 9, 6, 0.4);
+  --ink-sheen-highlight: rgba(255, 255, 255, 0.08);
+  --ink-bleed: rgba(26, 18, 8, 0.6);
+
+  /* Animation timing */
+  --ink-timing-fast: 150ms;
+  --ink-timing-normal: 300ms;
+  --ink-timing-slow: 600ms;
+  --ink-timing-dramatic: 1200ms;
+
+  /* Easing curves */
+  --ink-ease-organic: cubic-bezier(0.23, 1, 0.32, 1);
+  --ink-ease-spread: cubic-bezier(0.4, 0, 0.2, 1);
+  --ink-ease-absorb: cubic-bezier(0.55, 0.085, 0.68, 0.53);
+}
+
+/* ============================================
+   INK DROP - Loading State
+   ============================================ */
+.ink-drop {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.ink-drop--sm { --drop-size: 24px; }
+.ink-drop--md { --drop-size: 40px; }
+.ink-drop--lg { --drop-size: 64px; }
+
+/* Pen nib at top */
+.ink-drop__nib {
+  width: calc(var(--drop-size) * 0.3);
+  height: calc(var(--drop-size) * 0.5);
+  background: linear-gradient(
+    180deg,
+    #8B7028 0%,
+    #5C4A20 50%,
+    #3D3015 100%
+  );
+  clip-path: polygon(50% 100%, 0 0, 100% 0);
+  margin-bottom: calc(var(--drop-size) * 0.1);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+/* Drop forming at nib tip */
+.ink-drop__drop {
+  position: absolute;
+  top: calc(var(--drop-size) * 0.5);
+  width: calc(var(--drop-size) * 0.25);
+  height: calc(var(--drop-size) * 0.25);
+  background: var(--ink-primary);
+  border-radius: 50%;
+  filter: url(#ink-drop-filter);
+  animation: ink-drop-fall var(--ink-timing-dramatic) var(--ink-ease-organic) infinite;
+  box-shadow:
+    0 2px 8px var(--ink-drop-shadow),
+    inset 0 -2px 4px rgba(255, 255, 255, 0.05);
+}
+
+/* Surface where drop lands and spreads */
+.ink-drop__surface {
+  position: relative;
+  width: var(--drop-size);
+  height: calc(var(--drop-size) * 0.5);
+  margin-top: calc(var(--drop-size) * 0.8);
+}
+
+/* Spreading ink puddle */
+.ink-drop__puddle {
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 0;
+  height: 0;
+  background: radial-gradient(
+    ellipse at center,
+    var(--ink-primary) 0%,
+    var(--ink-bleed) 60%,
+    transparent 100%
+  );
+  border-radius: 50%;
+  filter: url(#ink-spread-filter);
+  animation: ink-puddle-spread var(--ink-timing-dramatic) var(--ink-ease-spread) infinite;
+}
+
+@keyframes ink-drop-fall {
+  0% {
+    transform: translateY(0) scale(0.5);
+    opacity: 0;
+  }
+  15% {
+    transform: translateY(0) scale(1);
+    opacity: 1;
+  }
+  30% {
+    transform: translateY(0) scale(1.1);
+  }
+  40% {
+    transform: translateY(calc(var(--drop-size) * 1.2)) scale(0.8);
+    opacity: 1;
+  }
+  45% {
+    transform: translateY(calc(var(--drop-size) * 1.3)) scale(0);
+    opacity: 0;
+  }
+  100% {
+    transform: translateY(calc(var(--drop-size) * 1.3)) scale(0);
+    opacity: 0;
+  }
+}
+
+@keyframes ink-puddle-spread {
+  0%, 40% {
+    width: 0;
+    height: 0;
+    opacity: 0;
+  }
+  45% {
+    width: calc(var(--drop-size) * 0.3);
+    height: calc(var(--drop-size) * 0.15);
+    opacity: 1;
+  }
+  80% {
+    width: calc(var(--drop-size) * 0.8);
+    height: calc(var(--drop-size) * 0.3);
+    opacity: 0.8;
+  }
+  100% {
+    width: calc(var(--drop-size) * 1);
+    height: calc(var(--drop-size) * 0.35);
+    opacity: 0;
+  }
+}
+
+/* ============================================
+   INK SWIRL - Processing State
+   ============================================ */
+.ink-swirl {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 64px;
+  height: 64px;
+}
+
+/* Inkwell container */
+.ink-swirl__inkwell {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(
+    ellipse at center,
+    #1a1a1a 0%,
+    #0a0a0a 70%,
+    #000 100%
+  );
+  border-radius: 50%;
+  box-shadow:
+    inset 0 4px 12px rgba(0, 0, 0, 0.8),
+    0 2px 8px rgba(0, 0, 0, 0.4);
+  overflow: hidden;
+}
+
+/* Brass rim */
+.ink-swirl__rim {
+  position: absolute;
+  inset: -4px;
+  border-radius: 50%;
+  border: 4px solid transparent;
+  background: linear-gradient(
+    135deg,
+    #B8A050 0%,
+    #8B7028 50%,
+    #4A3A10 100%
+  );
+  background-clip: padding-box;
+  z-index: -1;
+  box-shadow:
+    0 4px 8px rgba(0, 0, 0, 0.3),
+    inset 0 1px 2px rgba(255, 255, 255, 0.2);
+}
+
+/* Ink surface with swirl */
+.ink-swirl__ink {
+  position: absolute;
+  inset: 8px;
+  background: var(--ink-primary);
+  border-radius: 50%;
+  overflow: hidden;
+}
+
+/* Swirl pattern */
+.ink-swirl__pattern {
+  position: absolute;
+  inset: 0;
+  background:
+    conic-gradient(
+      from 0deg,
+      transparent 0%,
+      var(--ink-secondary) 20%,
+      transparent 40%,
+      var(--ink-secondary) 60%,
+      transparent 80%,
+      var(--ink-secondary) 100%
+    );
+  opacity: 0.4;
+  animation: ink-swirl-rotate 2s linear infinite;
+  filter: url(#ink-swirl-filter);
+}
+
+/* Wet surface sheen */
+.ink-swirl__sheen {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(
+    ellipse 40% 30% at 30% 30%,
+    rgba(255, 255, 255, 0.15) 0%,
+    transparent 100%
+  );
+  pointer-events: none;
+}
+
+@keyframes ink-swirl-rotate {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+/* Inactive state */
+.ink-swirl:not(.ink-swirl--active) .ink-swirl__pattern {
+  animation-play-state: paused;
+}
+
+/* ============================================
+   INK BLOT - Error State
+   ============================================ */
+.ink-blot {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 24px;
+  min-width: 200px;
+}
+
+/* Main blot shape */
+.ink-blot__blob {
+  position: relative;
+  width: 80px;
+  height: 60px;
+  background: var(--ink-blot);
+  border-radius: 50% 45% 55% 48% / 48% 52% 45% 55%;
+  filter: url(#ink-spread-filter);
+  animation: ink-blot-morph 4s ease-in-out infinite alternate;
+  box-shadow:
+    0 4px 16px var(--ink-drop-shadow),
+    inset 0 -4px 8px rgba(0, 0, 0, 0.3);
+}
+
+/* Splatter drops */
+.ink-blot__splatter {
+  position: absolute;
+  background: var(--ink-blot);
+  border-radius: 50%;
+  filter: url(#ink-drop-filter);
+}
+
+.ink-blot__splatter:nth-child(1) {
+  width: 12px;
+  height: 10px;
+  top: -8px;
+  left: 10%;
+  animation: ink-splatter-pop 0.4s var(--ink-ease-organic) forwards;
+  animation-delay: 0.2s;
+}
+
+.ink-blot__splatter:nth-child(2) {
+  width: 8px;
+  height: 7px;
+  top: -5px;
+  right: 15%;
+  animation: ink-splatter-pop 0.4s var(--ink-ease-organic) forwards;
+  animation-delay: 0.3s;
+}
+
+.ink-blot__splatter:nth-child(3) {
+  width: 6px;
+  height: 5px;
+  bottom: -4px;
+  left: 5%;
+  animation: ink-splatter-pop 0.4s var(--ink-ease-organic) forwards;
+  animation-delay: 0.4s;
+}
+
+/* Error message */
+.ink-blot__message {
+  margin-top: 16px;
+  font-family: 'Courier New', Courier, monospace;
+  font-size: 14px;
+  color: var(--ink-secondary);
+  text-align: center;
+  filter: url(#paper-bleed-filter);
+  text-shadow: 0 0 2px var(--ink-bleed);
+}
+
+/* Blotting paper overlay (recovery) */
+.ink-blot__blotter {
+  position: absolute;
+  inset: 0;
+  background:
+    repeating-linear-gradient(
+      45deg,
+      rgba(244, 230, 200, 0.1) 0px,
+      rgba(244, 230, 200, 0.1) 2px,
+      transparent 2px,
+      transparent 4px
+    );
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity var(--ink-timing-slow) var(--ink-ease-absorb);
+}
+
+.ink-blot--recovering .ink-blot__blotter {
+  opacity: 1;
+}
+
+.ink-blot--recovering .ink-blot__blob {
+  animation: ink-blot-absorb 1s var(--ink-ease-absorb) forwards;
+}
+
+/* Dismiss button */
+.ink-blot__dismiss {
+  margin-top: 12px;
+  padding: 6px 16px;
+  background: transparent;
+  border: 1px solid var(--ink-faded);
+  border-radius: 3px;
+  font-family: 'Courier New', Courier, monospace;
+  font-size: 12px;
+  color: var(--ink-secondary);
+  cursor: pointer;
+  transition:
+    background var(--ink-timing-fast),
+    color var(--ink-timing-fast);
+}
+
+.ink-blot__dismiss:hover {
+  background: var(--ink-highlight);
+  color: var(--ink-primary);
+}
+
+@keyframes ink-blot-morph {
+  0% {
+    border-radius: 50% 45% 55% 48% / 48% 52% 45% 55%;
+    transform: scale(1);
+  }
+  50% {
+    border-radius: 45% 55% 48% 52% / 52% 48% 55% 45%;
+    transform: scale(1.05);
+  }
+  100% {
+    border-radius: 52% 48% 45% 55% / 55% 45% 48% 52%;
+    transform: scale(1);
+  }
+}
+
+@keyframes ink-splatter-pop {
+  0% {
+    transform: scale(0);
+    opacity: 0;
+  }
+  60% {
+    transform: scale(1.3);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+@keyframes ink-blot-absorb {
+  0% {
+    opacity: 1;
+    filter: url(#ink-spread-filter);
+  }
+  100% {
+    opacity: 0.2;
+    filter: url(#blotting-filter);
+    transform: scale(0.9);
+  }
+}
+
+/* ============================================
+   INK WASH - Page Transition
+   ============================================ */
+.ink-wash {
+  position: relative;
+  overflow: hidden;
+}
+
+/* Wash overlay */
+.ink-wash__overlay {
+  position: absolute;
+  inset: 0;
+  background: var(--ink-primary);
+  transform: translateX(-101%);
+  pointer-events: none;
+  z-index: 100;
+}
+
+/* Organic edge using clip-path */
+.ink-wash__edge {
+  position: absolute;
+  top: 0;
+  right: -30px;
+  width: 60px;
+  height: 100%;
+  background: var(--ink-primary);
+  filter: url(#ink-wash-filter);
+}
+
+/* Wash in animation */
+.ink-wash--in .ink-wash__overlay {
+  animation: ink-wash-in var(--ink-timing-dramatic) var(--ink-ease-organic) forwards;
+}
+
+/* Wash out animation */
+.ink-wash--out .ink-wash__overlay {
+  transform: translateX(0);
+  animation: ink-wash-out var(--ink-timing-dramatic) var(--ink-ease-organic) forwards;
+}
+
+@keyframes ink-wash-in {
+  0% {
+    transform: translateX(-101%);
+  }
+  50% {
+    transform: translateX(0);
+  }
+  100% {
+    transform: translateX(101%);
+  }
+}
+
+@keyframes ink-wash-out {
+  0% {
+    transform: translateX(0);
+  }
+  100% {
+    transform: translateX(101%);
+  }
+}
+
+/* ============================================
+   WET INK SHEEN - Fresh Text
+   ============================================ */
+.fresh-ink {
+  position: relative;
+  background: linear-gradient(
+    135deg,
+    var(--ink-fresh) 0%,
+    var(--ink-sheen-highlight) 50%,
+    var(--ink-fresh) 100%
+  );
+  background-size: 200% 200%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  animation: wet-sheen 2s ease-out forwards;
+}
+
+@keyframes wet-sheen {
+  0% {
+    background-position: 0% 0%;
+    opacity: 1;
+  }
+  30% {
+    background-position: 100% 100%;
+  }
+  100% {
+    background-position: 100% 100%;
+    opacity: 1;
+  }
+}
+
+/* ============================================
+   INK TEXT - Paper Bleed Effect
+   ============================================ */
+.ink-text {
+  filter: url(#paper-bleed-filter);
+  color: var(--ink-primary);
+}
+
+.ink-text--faded {
+  filter: url(#aged-ink-filter);
+  color: var(--ink-faded);
+}
+
+/* ============================================
+   INK HOVER - Pool Effect
+   ============================================ */
+.ink-hover {
+  position: relative;
+}
+
+.ink-hover::after {
+  content: '';
+  position: absolute;
+  inset: -4px;
+  background: radial-gradient(
+    ellipse at var(--mouse-x, 50%) var(--mouse-y, 50%),
+    var(--ink-highlight) 0%,
+    transparent 70%
+  );
+  opacity: 0;
+  transition: opacity var(--ink-timing-fast);
+  pointer-events: none;
+  border-radius: inherit;
+}
+
+.ink-hover:hover::after {
+  opacity: 1;
+}
+
+/* ============================================
+   INK SELECTION - Bleed Through
+   ============================================ */
+.ink-selection::selection {
+  background: var(--ink-highlight);
+  color: var(--ink-primary);
+}
+
+.ink-selection::-moz-selection {
+  background: var(--ink-highlight);
+  color: var(--ink-primary);
+}
+
+/* ============================================
+   EMPTY STATE - Dried Ink Stain
+   ============================================ */
+.ink-empty {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 40px;
+  color: var(--ink-faded);
+}
+
+.ink-empty__stain {
+  width: 120px;
+  height: 40px;
+  background: radial-gradient(
+    ellipse at center,
+    rgba(139, 115, 85, 0.15) 0%,
+    rgba(139, 115, 85, 0.05) 60%,
+    transparent 100%
+  );
+  border-radius: 50%;
+  margin-bottom: 16px;
+}
+
+.ink-empty__text {
+  font-family: 'Courier New', Courier, monospace;
+  font-size: 14px;
+  font-style: italic;
+  opacity: 0.6;
+}
+
+/* ============================================
+   DISABLED STATE - Faded Ink
+   ============================================ */
+.ink-disabled {
+  filter: url(#aged-ink-filter);
+  opacity: 0.5;
+  pointer-events: none;
+  cursor: not-allowed;
+}
+
+/* ============================================
+   REDUCED MOTION
+   ============================================ */
+@media (prefers-reduced-motion: reduce) {
+  .ink-drop__drop,
+  .ink-drop__puddle,
+  .ink-swirl__pattern,
+  .ink-blot__blob,
+  .ink-blot__splatter,
+  .ink-wash__overlay,
+  .fresh-ink {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+  }
+
+  .ink-swirl__pattern {
+    animation: none;
+    opacity: 0.6;
+  }
+}

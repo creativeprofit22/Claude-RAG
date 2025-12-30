@@ -78,3 +78,6 @@ export type {
   AdminStats,
   AdminHealth,
 } from './types.js';
+
+// Library Skin V2 Components
+export * from './components/library/index.js';

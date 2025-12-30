@@ -33,6 +33,12 @@ export interface RAGInterfaceProps {
     chatEmptyState?: React.ReactNode;
     /** Custom empty state for documents */
     documentsEmptyState?: React.ReactNode;
+    /** Show preloader animation for library skin (default: true) */
+    showPreloader?: boolean;
+    /** Custom welcome text for preloader (default: "Welcome to the Library...") */
+    preloaderWelcomeText?: string;
+    /** Enable preloader sound effects (default: true) */
+    preloaderSoundEnabled?: boolean;
 }
 /**
  * RAGInterface - Unified chat and document library interface
@@ -52,5 +58,5 @@ export interface RAGInterfaceProps {
  * />
  * ```
  */
-export declare function RAGInterface({ endpoint, headers, chatTitle, documentsTitle, accentColor, defaultView, showDocumentLibrary, placeholder, showSources, systemPrompt, topK, responder, className, onDocumentSelect, chatEmptyState, documentsEmptyState, }: RAGInterfaceProps): import("react/jsx-runtime").JSX.Element;
+export declare function RAGInterface({ endpoint, headers, chatTitle, documentsTitle, accentColor, defaultView, showDocumentLibrary, placeholder, showSources, systemPrompt, topK, responder, className, onDocumentSelect, chatEmptyState, documentsEmptyState, showPreloader, preloaderWelcomeText, preloaderSoundEnabled, }: RAGInterfaceProps): import("react/jsx-runtime").JSX.Element;
 //# sourceMappingURL=RAGInterface.d.ts.map
