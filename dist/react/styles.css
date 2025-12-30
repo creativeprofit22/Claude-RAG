@@ -3118,6 +3118,20 @@
   box-shadow: none;
 }
 
+/* Library skin responsive - reset min-widths for tablet/mobile stacking */
+@media (max-width: 900px) {
+  [data-skin="library"] .rag-desk-typewriter {
+    min-width: 100%;
+    max-width: none;
+    flex: 1 1 auto;
+  }
+
+  [data-skin="library"] .rag-desk-paper {
+    min-width: 100%;
+    flex: 1 1 auto;
+  }
+}
+
 /* ─── Loading Dots - Brass dots ─── */
 [data-skin="library"] .rag-loading-dots span,
 [data-skin="library"] .rag-typing-dot {

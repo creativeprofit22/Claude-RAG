@@ -12,17 +12,18 @@ Reusable RAG component for embedding into projects. Uses Claude Code CLI (user's
 Query → Gemini Embeddings → LanceDB → Chunks → Claude Code CLI → Response
 ```
 
-## Current Focus
-Library Skin Layout - "Writer's Desk" side-by-side layout needs polish
-Files: `src/react/RAGChat.tsx`, `src/react/styles.css`
-
 ## Last Session (2025-12-30)
-**Message Animations + Desk Layout:**
-- Removed Framer Motion from MessageBubble, TypingIndicator, RAGChat (GSAP conflict caused UI freeze)
-- Added CSS keyframe animations: message entry, timestamp fade, sources expand, typing indicator
-- Implemented side-by-side "Writer's Desk" layout for library skin (typewriter left, messages right)
-- Layout structure works but **typewriter appears too small** - needs more vertical space/better proportions
-- Stopped at: Desk layout proportions need adjustment
+**Library Skin Desk Layout - Validated:**
+- Fixed typewriter proportions: 60/40 split with paper, min-width 500px
+- Removed max-height constraint for library skin in demo
+- Added responsive override at 900px breakpoint (fixes tablet overflow)
+- Validation: Tests pass (21/21), wiring verified, UI renders correctly
+
+## Pipeline State
+Phase: refactor-hunt
+Feature: Library Desk Layout
+Files-Validated: src/react/RAGChat.tsx, src/react/styles.css, demo/styles.css
+Validation-Report: reports/validation-library-desk-layout.md
 
 ## Library Skin V2 Progress
 | Phase | Status | Notes |
@@ -33,12 +34,12 @@ Files: `src/react/RAGChat.tsx`, `src/react/styles.css`
 | 4. Card Catalog | ✅ Done | Drawer physics, index cards, fan/select animations |
 | 5. Ink System | ⏳ Partial | InkFilters exists, full effects pending |
 | 6. Pre-loader | ✅ Done | LibraryPreloader + skip logic |
-| 7. Polish | ⏳ Ongoing | Desk layout, mobile, a11y |
+| 7. Polish | ✅ Done | Desk layout complete, responsive fixed |
 
 ## Next Steps
-1. Fix desk layout proportions - typewriter needs more vertical space
-2. Consider alternative layouts (typewriter scale, paper panel sizing)
-3. Validate card catalog drawers work in new layout
+1. Remove unused InkFilters import from RAGChat.tsx
+2. Consider MessageBubble memoization (performance)
+3. Validate card catalog drawers in desk layout
 
 ## Key Files
 - `src/server.ts` - Bun HTTP server
