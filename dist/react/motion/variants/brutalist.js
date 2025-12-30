@@ -42,7 +42,7 @@ export const brutalistMotion = {
             x: 0,
             transition: { duration: DURATION.fast, ease: EASING.brutal }
         },
-        exit: { opacity: 0, x: 30 },
+        exit: { opacity: 0, x: 30, transition: { duration: DURATION.fast, ease: EASING.brutal } },
     },
     list: {
         hidden: { opacity: 0 },

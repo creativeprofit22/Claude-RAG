@@ -12,21 +12,17 @@ Reusable RAG component for embedding into projects. Uses Claude Code CLI (user's
 Query → Gemini Embeddings → LanceDB → Chunks → Claude Code CLI → Response
 ```
 
-## Pipeline State
-Phase: build
-Feature: Card Catalog
-Last-Completed: TypewriterInput SVG Integration (built, validated, refactored)
+## Current Focus
+Library Skin Layout - "Writer's Desk" side-by-side layout needs polish
+Files: `src/react/RAGChat.tsx`, `src/react/styles.css`
 
-## Last Session (2025-12-29)
-**TypewriterInput Refactoring Complete:**
-- H1: Fixed invalid SVG fill syntax (BUG)
-- H2: Removed dead rapidDeletionRef code
-- H3: Extracted bell harmonics helper (DRY, -14 lines)
-- H4: Applied CSS variables for ink colors
-- M3: Replaced setTimeout with GSAP timeline
-- M5: Referenced TIMING constants instead of magic numbers
-- Skipped: M1 (high complexity), M2 (valid design), M4 (medium complexity), L1-L4 (per recommendations)
-- Validation: tsc clean, 21/21 tests pass
+## Last Session (2025-12-30)
+**Message Animations + Desk Layout:**
+- Removed Framer Motion from MessageBubble, TypingIndicator, RAGChat (GSAP conflict caused UI freeze)
+- Added CSS keyframe animations: message entry, timestamp fade, sources expand, typing indicator
+- Implemented side-by-side "Writer's Desk" layout for library skin (typewriter left, messages right)
+- Layout structure works but **typewriter appears too small** - needs more vertical space/better proportions
+- Stopped at: Desk layout proportions need adjustment
 
 ## Library Skin V2 Progress
 | Phase | Status | Notes |
@@ -34,29 +30,23 @@ Last-Completed: TypewriterInput SVG Integration (built, validated, refactored)
 | 1. Foundation | ✅ Done | Color tokens, SVG assets, sound infra |
 | 2. Typewriter Core | ✅ Done | Key press, typebar swing, carriage, sounds |
 | 3. Correction Tape | ✅ Done | Backspace animation, rapid deletion |
-| 4. Card Catalog | ❌ Not Started | Drawer + index card components |
+| 4. Card Catalog | ✅ Done | Drawer physics, index cards, fan/select animations |
 | 5. Ink System | ⏳ Partial | InkFilters exists, full effects pending |
 | 6. Pre-loader | ✅ Done | LibraryPreloader + skip logic |
-| 7. Polish | ⏳ Ongoing | Mobile, a11y, cross-browser |
+| 7. Polish | ⏳ Ongoing | Desk layout, mobile, a11y |
 
-## Completed
-- TypewriterInput SVG Integration (2025-12-29) - Flex layout fix, full SVG rendering
-- Library Skin V2 Design (2025-12-29) - Spec + TypewriterInput prototype
-- Library Skin Aged Brass (2025-12-29) - Colors fixed, refactored
-- Library Skin Artifacts (2025-12-29) - Built, validated, refactored
-- All Cyberpunk Artifacts (2025-12-29) - StatChip, PowerConduit, FileManifest
-- Phase 3: Modals + Upload Motion System (2025-12-28)
-- Final E2E Validation (2025-12-29)
+## Next Steps
+1. Fix desk layout proportions - typewriter needs more vertical space
+2. Consider alternative layouts (typewriter scale, paper panel sizing)
+3. Validate card catalog drawers work in new layout
 
 ## Key Files
 - `src/server.ts` - Bun HTTP server
 - `src/database.ts` - LanceDB wrapper
 - `src/responder.ts` - Claude CLI integration
-- `src/react/` - React components and hooks
-- `src/react/tokens/` - Curator design tokens
-- `src/react/fonts/` - Self-hosted Fraunces + Satoshi
+- `src/react/RAGChat.tsx` - Main chat component (has desk layout logic)
+- `src/react/styles.css` - All styles including `.rag-desk-*` classes
 - `src/react/components/library/` - Library Skin V2 components
-- `reports/SPEC-library-skin-v2-typewriter.md` - Full design specification
 
 ## Environment
 ```

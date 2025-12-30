@@ -28,6 +28,6 @@ export interface TypewriterSVGProps {
     className?: string;
     showKeyboard?: boolean;
 }
-export declare const TypewriterSVG: React.ForwardRefExoticComponent<TypewriterSVGProps & React.RefAttributes<TypewriterSVGRefs>>;
+export declare const TypewriterSVG: React.MemoExoticComponent<React.ForwardRefExoticComponent<TypewriterSVGProps & React.RefAttributes<TypewriterSVGRefs>>>;
 export default TypewriterSVG;
 //# sourceMappingURL=TypewriterSVG.d.ts.map

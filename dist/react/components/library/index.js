@@ -13,4 +13,6 @@ export * from './Preloader/index.js';
 export * from './InkEffects/index.js';
 // Card Catalog - Library filing drawer with index cards
 export * from './CardCatalog/index.js';
+// Sources Card Catalog - Display message sources as index cards
+export { SourcesCardCatalog } from './SourcesCardCatalog.js';
 //# sourceMappingURL=index.js.map

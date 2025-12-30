@@ -1,64 +1,44 @@
 'use client';
 
-import { m } from 'framer-motion';
 import { DEFAULT_ACCENT_COLOR } from '../types.js';
 import { LoadingDots } from './LoadingDots.js';
-import { useSkinMotion } from '../motion/hooks/useSkinMotion.js';
 import { useSkinDetect } from '../motion/hooks/useSkinDetect.js';
-import { InkDrop } from './library/InkEffects/InkDrop.js';
 
 interface TypingIndicatorProps {
   accentColor?: string;
-  /** Optional: force processing state (uses InkSwirl instead of InkDrop) */
-  isProcessing?: boolean;
 }
 
 /**
  * TypingIndicator - Shows loading state in the chat
  *
- * For library skin: Uses InkDrop (ink dropping from pen nib)
+ * For library skin: Uses library accent color
  * For other skins: Uses original LoadingDots animation
  */
 export function TypingIndicator({
   accentColor = DEFAULT_ACCENT_COLOR,
-  isProcessing = false,
 }: TypingIndicatorProps) {
-  const { motion } = useSkinMotion();
   const skin = useSkinDetect();
 
-  // Library skin: Use InkDrop effect
+  // Simplified - no Framer Motion animations to avoid conflicts
   if (skin === 'library') {
     return (
-      <m.div
-        className="rag-typing-indicator rag-typing-indicator--library"
-        initial="hidden"
-        animate="visible"
-        exit="exit"
-        variants={motion.message}
-      >
-        <InkDrop
-          active={true}
-          size="md"
-          ariaLabel={isProcessing ? 'Processing...' : 'Assistant is typing...'}
+      <div className="rag-typing-indicator rag-typing-indicator--library">
+        <LoadingDots
+          accentColor="var(--lib-accent, #8B4513)"
+          className="rag-typing-dots"
+          dotClassName="rag-typing-dot"
         />
-      </m.div>
+      </div>
     );
   }
 
-  // Default skin: Use LoadingDots
   return (
-    <m.div
-      className="rag-typing-indicator"
-      initial="hidden"
-      animate="visible"
-      exit="exit"
-      variants={motion.message}
-    >
+    <div className="rag-typing-indicator">
       <LoadingDots
         accentColor={accentColor}
         className="rag-typing-dots"
         dotClassName="rag-typing-dot"
       />
-    </m.div>
+    </div>
   );
 }

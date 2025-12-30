@@ -60,23 +60,24 @@ export const glassMotion: SkinMotionConfig = {
   },
 
   message: {
-    hidden: { 
-      opacity: 0, 
-      y: 20, 
+    hidden: {
+      opacity: 0,
+      y: 20,
       scale: 0.9,
       filter: 'blur(8px)',
     },
-    visible: { 
-      opacity: 1, 
-      y: 0, 
+    visible: {
+      opacity: 1,
+      y: 0,
       scale: 1,
       filter: 'blur(0px)',
       transition: { duration: DURATION.normal, ease: EASING.glass }
     },
-    exit: { 
-      opacity: 0, 
+    exit: {
+      opacity: 0,
       y: -10,
       filter: 'blur(8px)',
+      transition: { duration: DURATION.fast, ease: EASING.glass }
     },
   },
 

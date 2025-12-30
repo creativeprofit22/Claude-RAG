@@ -65,7 +65,7 @@ export const cyberpunkMotion = {
             scaleX: 1,
             transition: { duration: DURATION.fast, ease: EASING.cyber }
         },
-        exit: { opacity: 0, x: 40 },
+        exit: { opacity: 0, x: 40, transition: { duration: DURATION.fast, ease: EASING.cyber } },
     },
     list: {
         hidden: { opacity: 0 },

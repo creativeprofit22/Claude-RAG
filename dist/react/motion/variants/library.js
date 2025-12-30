@@ -39,7 +39,7 @@ export const libraryMotion = {
             scale: 1,
             transition: { duration: DURATION.normal, ease: EASING.easeOut }
         },
-        exit: { opacity: 0, x: 20 },
+        exit: { opacity: 0, x: 20, transition: { duration: DURATION.fast, ease: EASING.easeOut } },
     },
     list: {
         hidden: { opacity: 0 },

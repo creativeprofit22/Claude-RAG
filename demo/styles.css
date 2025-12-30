@@ -772,6 +772,19 @@ body {
   color: var(--skin-primary);
 }
 
+/* ============================================
+   LIBRARY SKIN - Desk Layout Overrides
+   Allow side-by-side layout to breathe
+   ============================================ */
+[data-skin="library"] .chat-wrapper {
+  max-height: none; /* Remove height constraint for desk layout */
+  min-height: 600px;
+}
+
+[data-skin="library"] .chat-root-container {
+  min-height: 500px;
+}
+
 /* Responsive */
 @media (max-width: 768px) {
   .demo-container {

@@ -302,7 +302,7 @@ const ROUTE_HANDLERS = {
 async function handleHealthCheck() {
     const status = await isReady();
     const claudeAvailable = await checkClaudeCodeAvailableCached();
-    const geminiAvailable = !!process.env.GOOGLE_AI_API_KEY;
+    const geminiAvailable = !!(process.env.OPENROUTER_API_KEY || process.env.GOOGLE_AI_API_KEY);
     return jsonResponse({
         status: status.ready ? 'healthy' : 'unhealthy',
         ...status,
@@ -319,7 +319,7 @@ async function handleHealthCheck() {
  */
 async function handleRespondersCheck() {
     const claudeAvailable = await checkClaudeCodeAvailableCached();
-    const geminiAvailable = !!process.env.GOOGLE_AI_API_KEY;
+    const geminiAvailable = !!(process.env.OPENROUTER_API_KEY || process.env.GOOGLE_AI_API_KEY);
     let geminiReady = false;
     if (geminiAvailable) {
         try {
@@ -948,7 +948,7 @@ async function handleAdminStats() {
  */
 async function handleAdminHealth() {
     const claudeAvailable = await checkClaudeCodeAvailableCached();
-    const geminiConfigured = !!process.env.GOOGLE_AI_API_KEY;
+    const geminiConfigured = !!(process.env.OPENROUTER_API_KEY || process.env.GOOGLE_AI_API_KEY);
     // Check database status
     let dbStatus = 'down';
     let documentCount = 0;
@@ -1015,7 +1015,7 @@ async function handleAdminDashboard() {
             isReady(),
             checkClaudeCodeAvailableCached(),
         ]);
-        const geminiConfigured = !!process.env.GOOGLE_AI_API_KEY;
+        const geminiConfigured = !!(process.env.OPENROUTER_API_KEY || process.env.GOOGLE_AI_API_KEY);
         // Build stats from shared data
         const categoryCountMap = new Map();
         for (const doc of documents) {

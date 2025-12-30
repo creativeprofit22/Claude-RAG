@@ -55,7 +55,6 @@ export function TypewriterInput({ value, onChange, onSubmit, placeholder = 'Type
     const animationRef = useRef(null);
     // Last backspace time for rapid deletion detection
     const lastBackspaceRef = useRef(0);
-    const rapidDeletionRef = useRef(false);
     /**
      * Calculate carriage position based on current line length
      */
@@ -187,11 +186,11 @@ export function TypewriterInput({ value, onChange, onSubmit, placeholder = 'Type
             x: 0,
             duration: TIMING.carriageReturn / 2000,
             ease: 'power2.out',
-        });
-        // Reset bell state after animation
-        setTimeout(() => {
+        })
+            // Reset bell state after bell ring duration
+            .call(() => {
             setState((prev) => ({ ...prev, bellRinging: false }));
-        }, TIMING.bellRing);
+        }, [], `+=${TIMING.bellRing / 1000}`);
         return tl;
     }, [playSound]);
     /**
@@ -207,16 +206,16 @@ export function TypewriterInput({ value, onChange, onSubmit, placeholder = 'Type
         // 1. Key press down
         animateKeyPress(key, true);
         playSound('keystroke');
-        // 2. Typebar swing
-        tl.add(animateTypebar() || [], '+=0.015');
-        // 3. Carriage shift
-        tl.call(() => animateCarriageShift('left'), [], '+=0.005');
-        // 4. Key release
-        tl.call(() => animateKeyPress(key, false), [], '+=0.02');
-        // 5. Reset state
+        // 2. Typebar swing (after key down completes)
+        tl.add(animateTypebar() || [], `+=${TIMING.keyDown / 1000}`);
+        // 3. Carriage shift (after strike)
+        tl.call(() => animateCarriageShift('left'), [], `+=${TIMING.strike / 1000}`);
+        // 4. Key release (after typebar return starts)
+        tl.call(() => animateKeyPress(key, false), [], `+=${TIMING.typebarReturn / 1000}`);
+        // 5. Reset state (after key up completes)
         tl.call(() => {
             setState((prev) => ({ ...prev, activeKey: null, isTyping: false }));
-        }, [], '+=0.015');
+        }, [], `+=${TIMING.keyUp / 1000}`);
     }, [animateKeyPress, animateTypebar, animateCarriageShift, playSound]);
     /**
      * Backspace animation sequence
@@ -227,7 +226,6 @@ export function TypewriterInput({ value, onChange, onSubmit, placeholder = 'Type
         lastBackspaceRef.current = now;
         // Detect rapid deletion (holding backspace)
         const isRapid = timeSinceLastBackspace < 100;
-        rapidDeletionRef.current = isRapid;
         // Carriage shift right
         animateCarriageShift('right');
         // Correction tape animation
@@ -298,7 +296,16 @@ export function TypewriterInput({ value, onChange, onSubmit, placeholder = 'Type
         }
         setState((prev) => ({ ...prev, carriagePosition: pos }));
     }, [value, calculateCarriagePosition]);
-    return (_jsxs("div", { ref: containerRef, className: `typewriter-svg-container ${disabled ? 'disabled' : ''} ${className}`, children: [_jsx(TypewriterSVG, { ref: svgRef, showKeyboard: showKeyboard, className: "typewriter-svg-visual" }), _jsx("textarea", { ref: textareaRef, className: "typewriter-svg-textarea", value: value, onChange: handleChange, onKeyDown: handleKeyDown, placeholder: placeholder, disabled: disabled, rows: 4 })] }));
+    /**
+     * Cleanup GSAP animations and timeouts on unmount
+     */
+    useEffect(() => {
+        return () => {
+            // Kill any running GSAP timeline
+            animationRef.current?.kill();
+        };
+    }, []);
+    return (_jsxs("div", { ref: containerRef, className: `typewriter-svg-container ${disabled ? 'disabled' : ''} ${className}`, children: [_jsx(TypewriterSVG, { ref: svgRef, showKeyboard: showKeyboard, className: "typewriter-svg-visual" }), _jsx("textarea", { ref: textareaRef, className: "typewriter-svg-textarea", value: value, onChange: handleChange, onKeyDown: handleKeyDown, placeholder: placeholder, disabled: disabled, rows: 4, "aria-label": "Chat message input" })] }));
 }
 export default TypewriterInput;
 //# sourceMappingURL=TypewriterInput.js.map

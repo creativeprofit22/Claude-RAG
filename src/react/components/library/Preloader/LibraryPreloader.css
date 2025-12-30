@@ -592,6 +592,7 @@
 
 .library-preloader.completing {
   animation: preloaderFadeOut 500ms ease-out forwards;
+  pointer-events: none; /* Prevent blocking interactions during fade */
 }
 
 @keyframes preloaderFadeOut {

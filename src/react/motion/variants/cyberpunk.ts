@@ -59,18 +59,18 @@ export const cyberpunkMotion: SkinMotionConfig = {
   },
 
   message: {
-    hidden: { 
-      opacity: 0, 
-      x: -40, 
+    hidden: {
+      opacity: 0,
+      x: -40,
       scaleX: 0.8,
     },
-    visible: { 
-      opacity: 1, 
-      x: 0, 
+    visible: {
+      opacity: 1,
+      x: 0,
       scaleX: 1,
       transition: { duration: DURATION.fast, ease: EASING.cyber }
     },
-    exit: { opacity: 0, x: 40 },
+    exit: { opacity: 0, x: 40, transition: { duration: DURATION.fast, ease: EASING.cyber } },
   },
 
   list: {

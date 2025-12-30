@@ -217,6 +217,65 @@
   font-family: var(--curator-font-sans);
 }
 
+/* ===========================================
+   DESK LAYOUT - Side-by-side for Library Skin
+   Typewriter on left, Messages/Paper on right
+   =========================================== */
+.rag-chat--desk-layout {
+  /* Override default column layout */
+}
+
+.rag-desk {
+  display: flex;
+  flex: 1;
+  min-height: 500px; /* Ensure enough vertical space */
+  gap: 1rem;
+  padding: 1rem;
+}
+
+.rag-desk-typewriter {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center; /* Center typewriter vertically */
+  justify-content: center;
+}
+
+.rag-desk-paper {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  background: var(--lib-vellum, #f4e6c8);
+  border: 2px solid var(--lib-gold-shadow, #4A3A10);
+  border-radius: 4px;
+  box-shadow:
+    inset 0 2px 8px rgba(0, 0, 0, 0.1),
+    0 4px 12px rgba(0, 0, 0, 0.2);
+  overflow: hidden;
+}
+
+.rag-desk-paper .rag-chat-messages {
+  flex: 1;
+  padding: 1.5rem;
+  overflow-y: auto;
+}
+
+/* Responsive: Stack vertically on narrow screens */
+@media (max-width: 900px) {
+  .rag-desk {
+    flex-direction: column;
+  }
+
+  .rag-desk-typewriter {
+    order: 2; /* Put typewriter below messages on mobile */
+  }
+
+  .rag-desk-paper {
+    order: 1;
+    min-height: 300px;
+  }
+}
+
 /* Header */
 .rag-chat-header {
   flex-shrink: 0;
@@ -282,10 +341,38 @@
   gap: var(--curator-space-1);
 }
 
+/* Empty state wrapper animation */
+.rag-empty-state-wrapper {
+  animation: rag-empty-state-enter var(--curator-duration-slow, 400ms) var(--curator-ease-out, ease-out);
+}
+
+@keyframes rag-empty-state-enter {
+  from {
+    opacity: 0;
+    transform: translateY(16px) scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
 /* Message bubbles */
 .rag-message {
   display: flex;
   margin-bottom: 1rem;
+  animation: rag-message-enter var(--curator-duration-normal, 250ms) var(--curator-ease-out, ease-out);
+}
+
+@keyframes rag-message-enter {
+  from {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 .rag-message-user {
@@ -343,6 +430,12 @@
   color: var(--curator-text-muted);
   margin-top: var(--curator-space-1);
   padding: 0 0.5rem;
+  animation: rag-timestamp-fade 400ms ease-out 300ms both;
+}
+
+@keyframes rag-timestamp-fade {
+  from { opacity: 0; }
+  to { opacity: 1; }
 }
 
 /* Loading dots in message */
@@ -403,6 +496,17 @@
 
 .rag-sources-list {
   margin-top: 0.5rem;
+  display: grid;
+  grid-template-rows: 0fr;
+  transition: grid-template-rows var(--curator-duration-normal, 250ms) var(--curator-ease-out, ease-out);
+}
+
+.rag-sources-list[data-expanded="true"] {
+  grid-template-rows: 1fr;
+}
+
+.rag-sources-list-inner {
+  overflow: hidden;
   display: flex;
   flex-direction: column;
   gap: var(--curator-gap-sm);
@@ -413,6 +517,24 @@
   background-color: var(--curator-bg-subtle);
   border: 1px solid var(--curator-border-subtle);
   border-radius: var(--curator-radius-lg);
+  animation: rag-source-enter var(--curator-duration-normal, 250ms) var(--curator-ease-out, ease-out) backwards;
+}
+
+.rag-source-item:nth-child(1) { animation-delay: 50ms; }
+.rag-source-item:nth-child(2) { animation-delay: 100ms; }
+.rag-source-item:nth-child(3) { animation-delay: 150ms; }
+.rag-source-item:nth-child(4) { animation-delay: 200ms; }
+.rag-source-item:nth-child(5) { animation-delay: 250ms; }
+
+@keyframes rag-source-enter {
+  from {
+    opacity: 0;
+    transform: translateX(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
 }
 
 .rag-source-header {
@@ -448,6 +570,24 @@
   margin: 0;
 }
 
+/* Sources Card Catalog (Library Skin) */
+.rag-message-sources-catalog {
+  margin-top: 0.75rem;
+  width: 100%;
+  /* Allow drawer to expand without being clipped */
+  overflow: visible;
+}
+
+.rag-message-sources-catalog .card-catalog {
+  transform-origin: top left;
+}
+
+.rag-message-sources-catalog .card-catalog-count {
+  bottom: -6px;
+  right: 4px;
+  font-size: 9px;
+}
+
 /* Typing indicator */
 .rag-typing-indicator {
   display: flex;
@@ -459,6 +599,18 @@
   border-radius: var(--curator-radius-2xl) var(--curator-radius-2xl) var(--curator-radius-2xl) var(--curator-radius-sm);
   max-width: 5rem;
   backdrop-filter: blur(8px);
+  animation: rag-typing-enter var(--curator-duration-normal, 250ms) var(--curator-ease-out, ease-out);
+}
+
+@keyframes rag-typing-enter {
+  from {
+    opacity: 0;
+    transform: translateY(8px) scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
 }
 
 .rag-typing-dots {
@@ -2898,6 +3050,72 @@
   font-style: italic;
   color: var(--lib-ink-faded);
   font-size: var(--curator-text-sm);
+}
+
+/* ─── Message Content - Allow CardCatalog overflow ─── */
+[data-skin="library"] .rag-message-content {
+  overflow: visible;
+}
+
+[data-skin="library"] .rag-message {
+  overflow: visible;
+}
+
+/* ─── Desk Layout - Writer's desk side-by-side ─── */
+[data-skin="library"] .rag-desk {
+  background:
+    var(--lib-texture-wood),
+    linear-gradient(
+      180deg,
+      var(--lib-wood-walnut-light) 0%,
+      var(--lib-wood-walnut) 50%,
+      var(--lib-wood-walnut-dark) 100%
+    );
+  background-blend-mode: overlay, normal;
+  padding: 1.5rem;
+  gap: 1.5rem;
+  min-height: 600px; /* More vertical space */
+}
+
+[data-skin="library"] .rag-desk-paper {
+  flex: 1 1 40%; /* Paper takes less space */
+  min-width: 280px;
+  background:
+    var(--lib-texture-velvet),
+    linear-gradient(
+      180deg,
+      var(--lib-vellum-shadow) 0%,
+      var(--lib-vellum) 50%,
+      var(--lib-cream) 100%
+    );
+  background-blend-mode: soft-light, normal;
+  border: 3px solid var(--lib-wood-walnut-dark);
+  border-radius: 2px;
+  box-shadow:
+    inset 0 4px 12px rgba(0, 0, 0, 0.15),
+    0 8px 24px rgba(0, 0, 0, 0.3);
+}
+
+[data-skin="library"] .rag-desk-typewriter {
+  flex: 1 1 60%; /* Typewriter gets more space to scale up */
+  min-width: 500px;
+  max-width: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.5rem; /* Tighter padding */
+}
+
+[data-skin="library"] .rag-desk-typewriter .typewriter-svg-container {
+  width: 100%;
+  max-width: none; /* Override component's 600px limit */
+}
+
+[data-skin="library"] .rag-desk-paper .rag-chat-messages {
+  /* Override the default library messages background since paper container handles it */
+  background: transparent;
+  border: none;
+  box-shadow: none;
 }
 
 /* ─── Loading Dots - Brass dots ─── */

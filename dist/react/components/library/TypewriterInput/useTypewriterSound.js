@@ -24,6 +24,24 @@ const DEFAULT_CONFIG = {
 const STORAGE_KEY = 'typewriter-sound-muted';
 const DEBOUNCE_MS = 30;
 /**
+ * Create bell harmonics sound with configurable parameters
+ */
+function playBellHarmonics(ctx, master, baseVolume, fundamentalFreq, startTime, harmonics, gainMultiplier = 1.0) {
+    harmonics.forEach(({ freq, gain: relGain, decay }) => {
+        const osc = ctx.createOscillator();
+        const gainNode = ctx.createGain();
+        osc.type = 'sine';
+        osc.frequency.value = freq;
+        gainNode.gain.setValueAtTime(0, startTime);
+        gainNode.gain.linearRampToValueAtTime(baseVolume * relGain * gainMultiplier, startTime + 0.002);
+        gainNode.gain.exponentialRampToValueAtTime(0.001, startTime + decay);
+        osc.connect(gainNode);
+        gainNode.connect(master);
+        osc.start(startTime);
+        osc.stop(startTime + decay + 0.01);
+    });
+}
+/**
  * Creates Web Audio context for sound synthesis
  */
 function createAudioContext() {
@@ -267,20 +285,7 @@ export function useTypewriterSound(config = {}) {
             { freq: fundamentalFreq * 4.2, gain: 0.15, decay: 0.3 }, // Inharmonic
             { freq: fundamentalFreq * 5.4, gain: 0.1, decay: 0.25 }, // Inharmonic
         ];
-        harmonics.forEach(({ freq, gain: relGain, decay }) => {
-            const osc = ctx.createOscillator();
-            const gainNode = ctx.createGain();
-            osc.type = 'sine';
-            osc.frequency.value = freq;
-            // Bell-like envelope: quick attack, slow exponential decay
-            gainNode.gain.setValueAtTime(0, now);
-            gainNode.gain.linearRampToValueAtTime(baseVolume * relGain, now + 0.002);
-            gainNode.gain.exponentialRampToValueAtTime(0.001, now + decay);
-            osc.connect(gainNode);
-            gainNode.connect(master);
-            osc.start(now);
-            osc.stop(now + decay + 0.01);
-        });
+        playBellHarmonics(ctx, master, baseVolume, fundamentalFreq, now, harmonics);
         // === Add subtle strike transient ===
         const strikeOsc = ctx.createOscillator();
         const strikeGain = ctx.createGain();
@@ -362,19 +367,7 @@ export function useTypewriterSound(config = {}) {
             { freq: bellFundamental * 2.0, gain: 0.4, decay: 0.4 },
             { freq: bellFundamental * 3.2, gain: 0.2, decay: 0.3 },
         ];
-        bellHarmonics.forEach(({ freq, gain: relGain, decay }) => {
-            const osc = ctx.createOscillator();
-            const gainNode = ctx.createGain();
-            osc.type = 'sine';
-            osc.frequency.value = freq;
-            gainNode.gain.setValueAtTime(0, now + bellDelay);
-            gainNode.gain.linearRampToValueAtTime(baseVolume * relGain * 0.5, now + bellDelay + 0.002);
-            gainNode.gain.exponentialRampToValueAtTime(0.001, now + bellDelay + decay);
-            osc.connect(gainNode);
-            gainNode.connect(master);
-            osc.start(now + bellDelay);
-            osc.stop(now + bellDelay + decay + 0.01);
-        });
+        playBellHarmonics(ctx, master, baseVolume, bellFundamental, now + bellDelay, bellHarmonics, 0.5);
     }, [createNoiseBuffer, volume]);
     /**
      * Generate drawer open sound (for drawer UI)

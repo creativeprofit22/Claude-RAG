@@ -38,13 +38,13 @@
     monospace;
   font-size: 14px;
   line-height: 1.5;
-  color: #1a1208;
-  caret-color: #1a1208;
+  color: var(--library-ink-primary, #1a1208);
+  caret-color: var(--library-ink-primary, #1a1208);
   z-index: 10;
-  text-shadow: 0 0 1px rgba(26, 18, 8, 0.8), 0.5px 0.5px 0 rgba(26, 18, 8, 0.8);
+  text-shadow: 0 0 1px var(--library-ink-bleed, rgba(26, 18, 8, 0.8)), 0.5px 0.5px 0 var(--library-ink-bleed, rgba(26, 18, 8, 0.8));
 }
 .typewriter-svg-textarea::placeholder {
-  color: #1a1208;
+  color: var(--library-ink-primary, #1a1208);
   opacity: 0.4;
   font-style: italic;
 }
@@ -555,6 +555,7 @@
 }
 .library-preloader.completing {
   animation: preloaderFadeOut 500ms ease-out forwards;
+  pointer-events: none;
 }
 @keyframes preloaderFadeOut {
   0% {

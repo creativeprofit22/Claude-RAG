@@ -1,9 +1,7 @@
 'use client';
 
 import { useRef, useEffect, useState, useCallback } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
 import { Database, type LucideIcon } from 'lucide-react';
-import { useSkinMotion } from './motion/hooks/useSkinMotion.js';
 import { useSkinDetect } from './motion/hooks/useSkinDetect.js';
 import { ChatHeader } from './components/ChatHeader.js';
 import { ChatInput } from './components/ChatInput.js';
@@ -58,8 +56,6 @@ export function RAGChat({
   emptyState,
 }: RAGChatProps) {
   const messagesContainerRef = useRef<HTMLDivElement>(null);
-
-  const { motion: skinMotion } = useSkinMotion();
   const skin = useSkinDetect();
 
   // TypewriterInput state (controlled component)
@@ -100,22 +96,26 @@ export function RAGChat({
   const wasTypingRef = useRef(isTyping);
 
   useEffect(() => {
-    // Only scroll if message count increased OR isTyping transitioned to true
+    // Scroll if message count increased, typing started, OR typing just finished (response received)
     const messageCountIncreased = messages.length > lastMessageCountRef.current;
     const typingStarted = isTyping && !wasTypingRef.current;
-    const shouldScroll = messageCountIncreased || typingStarted;
+    const typingEnded = !isTyping && wasTypingRef.current;
+    const shouldScroll = messageCountIncreased || typingStarted || typingEnded;
 
     lastMessageCountRef.current = messages.length;
     wasTypingRef.current = isTyping;
 
     if (shouldScroll && messagesContainerRef.current) {
-      // Scroll container directly to avoid scrollIntoView affecting the whole page
-      requestAnimationFrame(() => {
-        const container = messagesContainerRef.current;
-        if (container) {
-          container.scrollTop = container.scrollHeight;
-        }
-      });
+      // Delay scroll slightly when typing ends to let animations settle
+      const delay = typingEnded ? 100 : 0;
+      setTimeout(() => {
+        requestAnimationFrame(() => {
+          const container = messagesContainerRef.current;
+          if (container) {
+            container.scrollTop = container.scrollHeight;
+          }
+        });
+      }, delay);
     }
   }, [messages.length, isTyping]);
 
@@ -141,11 +141,74 @@ export function RAGChat({
     />
   );
 
+  // Messages content - shared between layouts
+  const messagesContent = (
+    <>
+      {messages.length === 0 ? (
+        <div className="rag-empty-state-wrapper">
+          {emptyState || defaultEmptyState}
+        </div>
+      ) : (
+        <>
+          {messages.map((message) => (
+            <MessageBubble
+              key={message.id}
+              message={message}
+              accentColor={accentColor}
+              showSources={showSources}
+            />
+          ))}
+          {isTyping && <TypingIndicator accentColor={accentColor} />}
+        </>
+      )}
+    </>
+  );
+
+  // Library skin: Side-by-side "Writer's Desk" layout
+  if (skin === 'library') {
+    return (
+      <div className={`rag-chat rag-chat--desk-layout ${className}`}>
+        {/* Header */}
+        <ChatHeader
+          title={title}
+          accentColor={accentColor}
+          isTyping={isTyping}
+          messageCount={messages.length}
+          onClearChat={clearChat}
+        />
+
+        {/* Error Banner */}
+        {error && <ErrorBanner error={error} onDismiss={() => setError(null)} />}
+
+        {/* Desk Layout: Typewriter left, Paper/Messages right */}
+        <div className="rag-desk">
+          {/* Left: Typewriter */}
+          <div className="rag-desk-typewriter">
+            <TypewriterInput
+              value={typewriterValue}
+              onChange={setTypewriterValue}
+              onSubmit={handleTypewriterSubmit}
+              placeholder={placeholder}
+              disabled={isTyping}
+              soundEnabled={true}
+              showKeyboard={!isMobile}
+            />
+          </div>
+
+          {/* Right: Paper/Messages */}
+          <div className="rag-desk-paper">
+            <div ref={messagesContainerRef} className="rag-chat-messages">
+              {messagesContent}
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Default layout: Vertical stack (messages on top, input at bottom)
   return (
     <div className={`rag-chat ${className}`}>
-      {/* SVG Filters for Library Skin InkEffects - must be in DOM for filters to work */}
-      {skin === 'library' && <InkFilters />}
-
       {/* Header */}
       <ChatHeader
         title={title}
@@ -160,48 +223,16 @@ export function RAGChat({
 
       {/* Messages Area */}
       <div ref={messagesContainerRef} className="rag-chat-messages">
-        {messages.length === 0 ? (
-          <motion.div
-            initial={skinMotion.modal.hidden}
-            animate={skinMotion.modal.visible}
-            transition={skinMotion.transition.default}
-          >
-            {emptyState || defaultEmptyState}
-          </motion.div>
-        ) : (
-          <AnimatePresence mode="popLayout">
-            {messages.map((message) => (
-              <MessageBubble
-                key={message.id}
-                message={message}
-                accentColor={accentColor}
-                showSources={showSources}
-              />
-            ))}
-            {isTyping && <TypingIndicator key="typing-indicator" accentColor={accentColor} />}
-          </AnimatePresence>
-        )}
+        {messagesContent}
       </div>
 
       {/* Input Area */}
-      {skin === 'library' ? (
-        <TypewriterInput
-          value={typewriterValue}
-          onChange={setTypewriterValue}
-          onSubmit={handleTypewriterSubmit}
-          placeholder={placeholder}
-          disabled={isTyping}
-          soundEnabled={true}
-          showKeyboard={!isMobile}
-        />
-      ) : (
-        <ChatInput
-          placeholder={placeholder}
-          accentColor={accentColor}
-          onSendMessage={sendMessage}
-          disabled={isTyping}
-        />
-      )}
+      <ChatInput
+        placeholder={placeholder}
+        accentColor={accentColor}
+        onSendMessage={sendMessage}
+        disabled={isTyping}
+      />
     </div>
   );
 }

@@ -72,6 +72,7 @@ export const glassMotion = {
             opacity: 0,
             y: -10,
             filter: 'blur(8px)',
+            transition: { duration: DURATION.fast, ease: EASING.glass }
         },
     },
     list: {

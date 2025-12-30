@@ -63,6 +63,7 @@ var RAGBundle = (() => {
     RAGInterface: () => RAGInterface,
     STORAGE_KEY: () => STORAGE_KEY2,
     SettingsModal: () => SettingsModal,
+    SourcesCardCatalog: () => SourcesCardCatalog,
     TypewriterInput: () => TypewriterInput,
     TypewriterSVG: () => TypewriterSVG,
     TypingIndicator: () => TypingIndicator,
@@ -111,8 +112,527 @@ var RAGBundle = (() => {
     PureComponent
   } = React;
 
-  // demo/jsx-runtime-shim.js
+  // demo/lucide-shim.js
+  var lucide = window.lucide;
   var React2 = window.React;
+  function createIconComponent(iconDef) {
+    const IconComponent = function(props) {
+      const {
+        size = 24,
+        strokeWidth = 2,
+        color: color4 = "currentColor",
+        className = "",
+        ...rest
+      } = props;
+      const childrenDef = iconDef[2] || [];
+      const children = childrenDef.map(
+        (el, i) => React2.createElement(el[0], { key: i, ...el[1] })
+      );
+      return React2.createElement("svg", {
+        xmlns: "http://www.w3.org/2000/svg",
+        width: size,
+        height: size,
+        viewBox: "0 0 24 24",
+        fill: "none",
+        stroke: color4,
+        strokeWidth,
+        strokeLinecap: "round",
+        strokeLinejoin: "round",
+        className,
+        ...rest
+      }, ...children);
+    };
+    return IconComponent;
+  }
+  var Activity = createIconComponent(lucide.Activity);
+  var AlertCircle = createIconComponent(lucide.AlertCircle);
+  var AlertTriangle = createIconComponent(lucide.AlertTriangle);
+  var ArrowDown = createIconComponent(lucide.ArrowDown);
+  var ArrowUp = createIconComponent(lucide.ArrowUp);
+  var ArrowUpDown = createIconComponent(lucide.ArrowUpDown);
+  var BarChart3 = createIconComponent(lucide.BarChart3);
+  var Calendar = createIconComponent(lucide.Calendar);
+  var Check = createIconComponent(lucide.Check);
+  var CheckCircle = createIconComponent(lucide.CheckCircle);
+  var ChevronDown = createIconComponent(lucide.ChevronDown);
+  var ChevronUp = createIconComponent(lucide.ChevronUp);
+  var Clock = createIconComponent(lucide.Clock);
+  var Cpu = createIconComponent(lucide.Cpu);
+  var Database = createIconComponent(lucide.Database);
+  var Edit2 = createIconComponent(lucide.Edit2);
+  var ExternalLink = createIconComponent(lucide.ExternalLink);
+  var Eye = createIconComponent(lucide.Eye);
+  var EyeOff = createIconComponent(lucide.EyeOff);
+  var File = createIconComponent(lucide.File);
+  var FileCode = createIconComponent(lucide.FileCode);
+  var FileJson = createIconComponent(lucide.FileJson);
+  var FileText = createIconComponent(lucide.FileText);
+  var HardDrive = createIconComponent(lucide.HardDrive);
+  var Hash = createIconComponent(lucide.Hash);
+  var Layers = createIconComponent(lucide.Layers);
+  var Library = createIconComponent(lucide.Library);
+  var Loader2 = createIconComponent(lucide.Loader2);
+  var MessageSquare = createIconComponent(lucide.MessageSquare);
+  var RefreshCw = createIconComponent(lucide.RefreshCw);
+  var Search = createIconComponent(lucide.Search);
+  var Send = createIconComponent(lucide.Send);
+  var Settings = createIconComponent(lucide.Settings);
+  var Sparkles = createIconComponent(lucide.Sparkles);
+  var Trash2 = createIconComponent(lucide.Trash2);
+  var Upload = createIconComponent(lucide.Upload);
+  var X = createIconComponent(lucide.X);
+  var XCircle = createIconComponent(lucide.XCircle);
+
+  // src/react/motion/constants.ts
+  var DURATION = {
+    instant: 0,
+    fast: 0.15,
+    normal: 0.3,
+    slow: 0.5,
+    glacial: 0.8
+  };
+  var EASING = {
+    // Standard easings
+    linear: [0, 0, 1, 1],
+    easeIn: [0.4, 0, 1, 1],
+    easeOut: [0, 0, 0.2, 1],
+    easeInOut: [0.4, 0, 0.2, 1],
+    // Expressive easings
+    anticipate: [0.36, 0, 0.66, -0.56],
+    overshoot: [0.34, 1.56, 0.64, 1],
+    bounce: [0.68, -0.55, 0.265, 1.55],
+    // Skin-specific
+    cyber: [0.25, 0.46, 0.45, 0.94],
+    brutal: [0, 0, 1, 1],
+    // Linear for brutalist
+    glass: [0.23, 1, 0.32, 1]
+  };
+  var SPRING = {
+    gentle: { type: "spring", stiffness: 120, damping: 14 },
+    snappy: { type: "spring", stiffness: 300, damping: 20 },
+    bouncy: { type: "spring", stiffness: 400, damping: 10 },
+    stiff: { type: "spring", stiffness: 500, damping: 30 }
+  };
+  var STAGGER = {
+    none: 0,
+    fast: 0.03,
+    normal: 0.05,
+    slow: 0.1
+  };
+
+  // src/react/motion/variants/library.ts
+  var libraryMotion = {
+    enter: { opacity: 1, y: 0 },
+    exit: { opacity: 0, y: -10 },
+    hover: { scale: 1.02, y: -2 },
+    tap: { scale: 0.98 },
+    focus: { boxShadow: "0 0 0 2px var(--color-accent)" },
+    card: {
+      hidden: { opacity: 0, y: 20, rotateX: -5 },
+      visible: {
+        opacity: 1,
+        y: 0,
+        rotateX: 0,
+        transition: { duration: DURATION.normal, ease: EASING.easeOut }
+      },
+      exit: { opacity: 0, y: -10, rotateX: 5 },
+      hover: { y: -4, boxShadow: "0 10px 30px rgba(0,0,0,0.12)" },
+      tap: { scale: 0.98, y: 0 }
+    },
+    modal: {
+      hidden: { opacity: 0, scale: 0.95, y: 20 },
+      visible: {
+        opacity: 1,
+        scale: 1,
+        y: 0,
+        transition: { ...SPRING.gentle }
+      },
+      exit: { opacity: 0, scale: 0.95, y: 10 }
+    },
+    message: {
+      hidden: { opacity: 0, x: -20, scale: 0.95 },
+      visible: {
+        opacity: 1,
+        x: 0,
+        scale: 1,
+        transition: { duration: DURATION.normal, ease: EASING.easeOut }
+      },
+      exit: { opacity: 0, x: 20, transition: { duration: DURATION.fast, ease: EASING.easeOut } }
+    },
+    list: {
+      hidden: { opacity: 0 },
+      visible: {
+        opacity: 1,
+        transition: {
+          staggerChildren: STAGGER.normal,
+          delayChildren: 0.1
+        }
+      },
+      exit: { opacity: 0, transition: { duration: DURATION.fast } }
+    },
+    button: {
+      hidden: { opacity: 0, scale: 0.9 },
+      visible: { opacity: 1, scale: 1 },
+      exit: { opacity: 0, scale: 0.9, transition: { duration: DURATION.fast } },
+      hover: { scale: 1.05, y: -1 },
+      tap: { scale: 0.95 },
+      disabled: { opacity: 0.5 }
+    },
+    transition: {
+      default: { duration: DURATION.normal, ease: EASING.easeOut },
+      fast: { duration: DURATION.fast, ease: EASING.easeOut },
+      slow: { duration: DURATION.slow, ease: EASING.easeInOut },
+      spring: SPRING.gentle
+    },
+    stagger: {
+      children: STAGGER.normal,
+      delayChildren: 0.1
+    },
+    effects: {
+      particles: "none"
+    }
+  };
+
+  // src/react/motion/variants/cyberpunk.ts
+  var cyberpunkMotion = {
+    enter: { opacity: 1, x: 0, filter: "blur(0px)" },
+    exit: { opacity: 0, x: 10, filter: "blur(2px)" },
+    hover: { scale: 1.02, filter: "brightness(1.1)" },
+    tap: { scale: 0.98, filter: "brightness(0.9)" },
+    focus: { boxShadow: "0 0 20px var(--color-neon)" },
+    card: {
+      hidden: {
+        opacity: 0,
+        x: -30,
+        skewX: -5,
+        filter: "blur(4px)"
+      },
+      visible: {
+        opacity: 1,
+        x: 0,
+        skewX: 0,
+        filter: "blur(0px)",
+        transition: { duration: DURATION.fast, ease: EASING.cyber }
+      },
+      exit: {
+        opacity: 0,
+        x: 30,
+        skewX: 5,
+        filter: "blur(4px)"
+      },
+      hover: {
+        scale: 1.02,
+        boxShadow: "0 0 30px rgba(0, 255, 255, 0.3)"
+      },
+      tap: { scale: 0.98 }
+    },
+    modal: {
+      hidden: {
+        opacity: 0,
+        scale: 1.1,
+        filter: "blur(10px) brightness(2)"
+      },
+      visible: {
+        opacity: 1,
+        scale: 1,
+        filter: "blur(0px) brightness(1)",
+        transition: { duration: DURATION.fast, ease: EASING.cyber }
+      },
+      exit: {
+        opacity: 0,
+        scale: 0.9,
+        filter: "blur(10px) brightness(0)"
+      }
+    },
+    message: {
+      hidden: {
+        opacity: 0,
+        x: -40,
+        scaleX: 0.8
+      },
+      visible: {
+        opacity: 1,
+        x: 0,
+        scaleX: 1,
+        transition: { duration: DURATION.fast, ease: EASING.cyber }
+      },
+      exit: { opacity: 0, x: 40, transition: { duration: DURATION.fast, ease: EASING.cyber } }
+    },
+    list: {
+      hidden: { opacity: 0 },
+      visible: {
+        opacity: 1,
+        transition: {
+          staggerChildren: STAGGER.fast,
+          delayChildren: 0.05
+        }
+      },
+      exit: { opacity: 0, x: 20, transition: { duration: DURATION.fast } }
+    },
+    button: {
+      hidden: { opacity: 0, scaleX: 0.5 },
+      visible: { opacity: 1, scaleX: 1 },
+      exit: { opacity: 0, scaleX: 0.5, filter: "blur(2px)", transition: { duration: DURATION.fast } },
+      hover: {
+        scale: 1.05,
+        filter: "brightness(1.2)",
+        boxShadow: "0 0 20px var(--color-neon)"
+      },
+      tap: { scale: 0.95, filter: "brightness(0.8)" },
+      disabled: { opacity: 0.3, filter: "grayscale(100%)" }
+    },
+    transition: {
+      default: { duration: DURATION.fast, ease: EASING.cyber },
+      fast: { duration: 0.1, ease: EASING.cyber },
+      slow: { duration: DURATION.normal, ease: EASING.cyber },
+      spring: SPRING.snappy
+    },
+    stagger: {
+      children: STAGGER.fast,
+      delayChildren: 0.05
+    },
+    effects: {
+      particles: "moderate",
+      glow: true,
+      scanlines: true
+    }
+  };
+
+  // src/react/motion/variants/brutalist.ts
+  var brutalistMotion = {
+    enter: { opacity: 1 },
+    exit: { opacity: 0 },
+    hover: { backgroundColor: "var(--color-hover)" },
+    tap: { scale: 0.98 },
+    focus: { outline: "3px solid var(--color-text)" },
+    card: {
+      hidden: { opacity: 0, y: 20 },
+      visible: {
+        opacity: 1,
+        y: 0,
+        transition: { duration: DURATION.fast, ease: EASING.brutal }
+      },
+      exit: { opacity: 0, y: -20 },
+      hover: {
+        y: -2,
+        boxShadow: "4px 4px 0 var(--color-text)"
+      },
+      tap: {
+        y: 0,
+        boxShadow: "2px 2px 0 var(--color-text)"
+      }
+    },
+    modal: {
+      hidden: { opacity: 0, y: -50 },
+      visible: {
+        opacity: 1,
+        y: 0,
+        transition: { duration: DURATION.fast, ease: EASING.brutal }
+      },
+      exit: { opacity: 0, y: 50 }
+    },
+    message: {
+      hidden: { opacity: 0, x: -30 },
+      visible: {
+        opacity: 1,
+        x: 0,
+        transition: { duration: DURATION.fast, ease: EASING.brutal }
+      },
+      exit: { opacity: 0, x: 30, transition: { duration: DURATION.fast, ease: EASING.brutal } }
+    },
+    list: {
+      hidden: { opacity: 0 },
+      visible: {
+        opacity: 1,
+        transition: {
+          staggerChildren: STAGGER.fast,
+          delayChildren: 0
+        }
+      },
+      exit: { opacity: 0, transition: { duration: 0.1 } }
+    },
+    button: {
+      hidden: { opacity: 0 },
+      visible: { opacity: 1 },
+      exit: { opacity: 0, transition: { duration: 0.1 } },
+      hover: {
+        x: 2,
+        y: 2,
+        boxShadow: "2px 2px 0 var(--color-text)"
+      },
+      tap: {
+        x: 4,
+        y: 4,
+        boxShadow: "none"
+      },
+      disabled: { opacity: 0.4, textDecoration: "line-through" }
+    },
+    transition: {
+      default: { duration: DURATION.fast, ease: EASING.brutal },
+      fast: { duration: 0.1, ease: EASING.brutal },
+      slow: { duration: DURATION.normal, ease: EASING.brutal },
+      spring: { type: "spring", stiffness: 500, damping: 50 }
+      // Stiff, no bounce
+    },
+    stagger: {
+      children: STAGGER.fast,
+      delayChildren: 0
+    },
+    effects: {
+      particles: "none"
+    }
+  };
+
+  // src/react/motion/variants/glass.ts
+  var glassMotion = {
+    enter: { opacity: 1, scale: 1, filter: "blur(0px)" },
+    exit: { opacity: 0, scale: 0.98, filter: "blur(4px)" },
+    hover: { scale: 1.01, filter: "brightness(1.05)" },
+    tap: { scale: 0.99 },
+    focus: { boxShadow: "0 0 0 2px rgba(255,255,255,0.5)" },
+    card: {
+      hidden: {
+        opacity: 0,
+        y: 30,
+        scale: 0.95,
+        filter: "blur(10px)"
+      },
+      visible: {
+        opacity: 1,
+        y: 0,
+        scale: 1,
+        filter: "blur(0px)",
+        transition: { duration: DURATION.slow, ease: EASING.glass }
+      },
+      exit: {
+        opacity: 0,
+        y: -20,
+        scale: 0.95,
+        filter: "blur(10px)"
+      },
+      hover: {
+        y: -6,
+        scale: 1.02,
+        boxShadow: "0 20px 60px rgba(0,0,0,0.2)"
+      },
+      tap: { scale: 0.98, y: -2 }
+    },
+    modal: {
+      hidden: {
+        opacity: 0,
+        scale: 0.9,
+        filter: "blur(20px)"
+      },
+      visible: {
+        opacity: 1,
+        scale: 1,
+        filter: "blur(0px)",
+        transition: { ...SPRING.gentle, duration: DURATION.slow }
+      },
+      exit: {
+        opacity: 0,
+        scale: 0.95,
+        filter: "blur(20px)"
+      }
+    },
+    message: {
+      hidden: {
+        opacity: 0,
+        y: 20,
+        scale: 0.9,
+        filter: "blur(8px)"
+      },
+      visible: {
+        opacity: 1,
+        y: 0,
+        scale: 1,
+        filter: "blur(0px)",
+        transition: { duration: DURATION.normal, ease: EASING.glass }
+      },
+      exit: {
+        opacity: 0,
+        y: -10,
+        filter: "blur(8px)",
+        transition: { duration: DURATION.fast, ease: EASING.glass }
+      }
+    },
+    list: {
+      hidden: { opacity: 0 },
+      visible: {
+        opacity: 1,
+        transition: {
+          staggerChildren: STAGGER.slow,
+          delayChildren: 0.15
+        }
+      },
+      exit: { opacity: 0, filter: "blur(4px)", transition: { duration: DURATION.fast } }
+    },
+    button: {
+      hidden: { opacity: 0, scale: 0.9, filter: "blur(4px)" },
+      visible: { opacity: 1, scale: 1, filter: "blur(0px)" },
+      exit: { opacity: 0, scale: 0.95, filter: "blur(4px)", transition: { duration: DURATION.fast } },
+      hover: {
+        scale: 1.05,
+        filter: "brightness(1.1)",
+        boxShadow: "0 10px 30px rgba(0,0,0,0.15)"
+      },
+      tap: { scale: 0.95 },
+      disabled: { opacity: 0.4, filter: "blur(1px) grayscale(50%)" }
+    },
+    transition: {
+      default: { duration: DURATION.normal, ease: EASING.glass },
+      fast: { duration: DURATION.fast, ease: EASING.glass },
+      slow: { duration: DURATION.slow, ease: EASING.glass },
+      spring: SPRING.gentle
+    },
+    stagger: {
+      children: STAGGER.slow,
+      delayChildren: 0.15
+    },
+    effects: {
+      particles: "subtle",
+      blur: true
+    }
+  };
+
+  // src/react/motion/variants/index.ts
+  var skinMotionMap = {
+    library: libraryMotion,
+    cyberpunk: cyberpunkMotion,
+    brutalist: brutalistMotion,
+    glass: glassMotion
+  };
+
+  // src/react/motion/hooks/useSkinDetect.ts
+  var VALID_SKINS = Object.keys(skinMotionMap);
+  function useSkinDetect() {
+    const [skin, setSkin] = useState("library");
+    useEffect(() => {
+      const detectSkin = () => {
+        const attr = document.body.getAttribute("data-skin");
+        if (attr && VALID_SKINS.includes(attr)) {
+          setSkin(attr);
+        }
+      };
+      detectSkin();
+      const observer = new MutationObserver((mutations) => {
+        for (const mutation of mutations) {
+          if (mutation.attributeName === "data-skin") {
+            detectSkin();
+          }
+        }
+      });
+      observer.observe(document.body, { attributes: true });
+      return () => observer.disconnect();
+    }, []);
+    return skin;
+  }
+
+  // src/react/types.ts
+  var DEFAULT_ACCENT_COLOR = "#6366f1";
+
+  // demo/jsx-runtime-shim.js
+  var React3 = window.React;
   function jsx(type, props, key) {
     const { children, ...rest } = props || {};
     if (key !== void 0) {
@@ -120,16 +640,59 @@ var RAGBundle = (() => {
     }
     if (children !== void 0) {
       if (Array.isArray(children)) {
-        return React2.createElement(type, rest, ...children);
+        return React3.createElement(type, rest, ...children);
       }
-      return React2.createElement(type, rest, children);
+      return React3.createElement(type, rest, children);
     }
-    return React2.createElement(type, rest);
+    return React3.createElement(type, rest);
   }
   function jsxs(type, props, key) {
     return jsx(type, props, key);
   }
-  var Fragment2 = React2.Fragment;
+  var Fragment2 = React3.Fragment;
+
+  // src/react/components/ChatHeader.tsx
+  function ChatHeader({
+    title = "RAG Assistant",
+    accentColor = DEFAULT_ACCENT_COLOR,
+    isTyping = false,
+    messageCount = 0,
+    onClearChat
+  }) {
+    return /* @__PURE__ */ jsx("div", { className: "rag-chat-header", children: /* @__PURE__ */ jsxs("div", { className: "rag-chat-header-content", children: [
+      /* @__PURE__ */ jsxs("div", { className: "rag-chat-header-info", children: [
+        /* @__PURE__ */ jsx(
+          "div",
+          {
+            className: "rag-chat-header-icon",
+            style: { boxShadow: `0 0 20px ${accentColor}20` },
+            children: /* @__PURE__ */ jsx(
+              Database,
+              {
+                size: 20,
+                style: { color: accentColor },
+                "aria-hidden": "true"
+              }
+            )
+          }
+        ),
+        /* @__PURE__ */ jsxs("div", { children: [
+          /* @__PURE__ */ jsx("h3", { className: "rag-chat-header-title", children: title }),
+          /* @__PURE__ */ jsx("p", { className: "rag-chat-header-status", children: isTyping ? "Thinking..." : "Ready" })
+        ] })
+      ] }),
+      messageCount > 0 && onClearChat && /* @__PURE__ */ jsx(
+        "button",
+        {
+          type: "button",
+          onClick: onClearChat,
+          className: "curator-btn curator-btn-icon rag-chat-header-clear",
+          title: "Clear chat",
+          children: /* @__PURE__ */ jsx(Trash2, { size: 16, "aria-hidden": "true" })
+        }
+      )
+    ] }) });
+  }
 
   // node_modules/framer-motion/dist/es/context/LayoutGroupContext.mjs
   var LayoutGroupContext = createContext({});
@@ -8114,521 +8677,6 @@ var RAGBundle = (() => {
   // node_modules/framer-motion/dist/es/render/components/motion/proxy.mjs
   var motion = /* @__PURE__ */ createMotionProxy(featureBundle, createDomVisualElement);
 
-  // demo/lucide-shim.js
-  var lucide = window.lucide;
-  var React3 = window.React;
-  function createIconComponent(iconDef) {
-    const IconComponent = function(props) {
-      const {
-        size = 24,
-        strokeWidth = 2,
-        color: color4 = "currentColor",
-        className = "",
-        ...rest
-      } = props;
-      const childrenDef = iconDef[2] || [];
-      const children = childrenDef.map(
-        (el, i) => React3.createElement(el[0], { key: i, ...el[1] })
-      );
-      return React3.createElement("svg", {
-        xmlns: "http://www.w3.org/2000/svg",
-        width: size,
-        height: size,
-        viewBox: "0 0 24 24",
-        fill: "none",
-        stroke: color4,
-        strokeWidth,
-        strokeLinecap: "round",
-        strokeLinejoin: "round",
-        className,
-        ...rest
-      }, ...children);
-    };
-    return IconComponent;
-  }
-  var Activity = createIconComponent(lucide.Activity);
-  var AlertCircle = createIconComponent(lucide.AlertCircle);
-  var AlertTriangle = createIconComponent(lucide.AlertTriangle);
-  var ArrowDown = createIconComponent(lucide.ArrowDown);
-  var ArrowUp = createIconComponent(lucide.ArrowUp);
-  var ArrowUpDown = createIconComponent(lucide.ArrowUpDown);
-  var BarChart3 = createIconComponent(lucide.BarChart3);
-  var Calendar = createIconComponent(lucide.Calendar);
-  var Check = createIconComponent(lucide.Check);
-  var CheckCircle = createIconComponent(lucide.CheckCircle);
-  var ChevronDown = createIconComponent(lucide.ChevronDown);
-  var ChevronUp = createIconComponent(lucide.ChevronUp);
-  var Clock = createIconComponent(lucide.Clock);
-  var Cpu = createIconComponent(lucide.Cpu);
-  var Database = createIconComponent(lucide.Database);
-  var Edit2 = createIconComponent(lucide.Edit2);
-  var ExternalLink = createIconComponent(lucide.ExternalLink);
-  var Eye = createIconComponent(lucide.Eye);
-  var EyeOff = createIconComponent(lucide.EyeOff);
-  var File = createIconComponent(lucide.File);
-  var FileCode = createIconComponent(lucide.FileCode);
-  var FileJson = createIconComponent(lucide.FileJson);
-  var FileText = createIconComponent(lucide.FileText);
-  var HardDrive = createIconComponent(lucide.HardDrive);
-  var Hash = createIconComponent(lucide.Hash);
-  var Layers = createIconComponent(lucide.Layers);
-  var Library = createIconComponent(lucide.Library);
-  var Loader2 = createIconComponent(lucide.Loader2);
-  var MessageSquare = createIconComponent(lucide.MessageSquare);
-  var RefreshCw = createIconComponent(lucide.RefreshCw);
-  var Search = createIconComponent(lucide.Search);
-  var Send = createIconComponent(lucide.Send);
-  var Settings = createIconComponent(lucide.Settings);
-  var Sparkles = createIconComponent(lucide.Sparkles);
-  var Trash2 = createIconComponent(lucide.Trash2);
-  var Upload = createIconComponent(lucide.Upload);
-  var X = createIconComponent(lucide.X);
-  var XCircle = createIconComponent(lucide.XCircle);
-
-  // src/react/motion/constants.ts
-  var DURATION = {
-    instant: 0,
-    fast: 0.15,
-    normal: 0.3,
-    slow: 0.5,
-    glacial: 0.8
-  };
-  var EASING = {
-    // Standard easings
-    linear: [0, 0, 1, 1],
-    easeIn: [0.4, 0, 1, 1],
-    easeOut: [0, 0, 0.2, 1],
-    easeInOut: [0.4, 0, 0.2, 1],
-    // Expressive easings
-    anticipate: [0.36, 0, 0.66, -0.56],
-    overshoot: [0.34, 1.56, 0.64, 1],
-    bounce: [0.68, -0.55, 0.265, 1.55],
-    // Skin-specific
-    cyber: [0.25, 0.46, 0.45, 0.94],
-    brutal: [0, 0, 1, 1],
-    // Linear for brutalist
-    glass: [0.23, 1, 0.32, 1]
-  };
-  var SPRING = {
-    gentle: { type: "spring", stiffness: 120, damping: 14 },
-    snappy: { type: "spring", stiffness: 300, damping: 20 },
-    bouncy: { type: "spring", stiffness: 400, damping: 10 },
-    stiff: { type: "spring", stiffness: 500, damping: 30 }
-  };
-  var STAGGER = {
-    none: 0,
-    fast: 0.03,
-    normal: 0.05,
-    slow: 0.1
-  };
-
-  // src/react/motion/variants/library.ts
-  var libraryMotion = {
-    enter: { opacity: 1, y: 0 },
-    exit: { opacity: 0, y: -10 },
-    hover: { scale: 1.02, y: -2 },
-    tap: { scale: 0.98 },
-    focus: { boxShadow: "0 0 0 2px var(--color-accent)" },
-    card: {
-      hidden: { opacity: 0, y: 20, rotateX: -5 },
-      visible: {
-        opacity: 1,
-        y: 0,
-        rotateX: 0,
-        transition: { duration: DURATION.normal, ease: EASING.easeOut }
-      },
-      exit: { opacity: 0, y: -10, rotateX: 5 },
-      hover: { y: -4, boxShadow: "0 10px 30px rgba(0,0,0,0.12)" },
-      tap: { scale: 0.98, y: 0 }
-    },
-    modal: {
-      hidden: { opacity: 0, scale: 0.95, y: 20 },
-      visible: {
-        opacity: 1,
-        scale: 1,
-        y: 0,
-        transition: { ...SPRING.gentle }
-      },
-      exit: { opacity: 0, scale: 0.95, y: 10 }
-    },
-    message: {
-      hidden: { opacity: 0, x: -20, scale: 0.95 },
-      visible: {
-        opacity: 1,
-        x: 0,
-        scale: 1,
-        transition: { duration: DURATION.normal, ease: EASING.easeOut }
-      },
-      exit: { opacity: 0, x: 20 }
-    },
-    list: {
-      hidden: { opacity: 0 },
-      visible: {
-        opacity: 1,
-        transition: {
-          staggerChildren: STAGGER.normal,
-          delayChildren: 0.1
-        }
-      },
-      exit: { opacity: 0, transition: { duration: DURATION.fast } }
-    },
-    button: {
-      hidden: { opacity: 0, scale: 0.9 },
-      visible: { opacity: 1, scale: 1 },
-      exit: { opacity: 0, scale: 0.9, transition: { duration: DURATION.fast } },
-      hover: { scale: 1.05, y: -1 },
-      tap: { scale: 0.95 },
-      disabled: { opacity: 0.5 }
-    },
-    transition: {
-      default: { duration: DURATION.normal, ease: EASING.easeOut },
-      fast: { duration: DURATION.fast, ease: EASING.easeOut },
-      slow: { duration: DURATION.slow, ease: EASING.easeInOut },
-      spring: SPRING.gentle
-    },
-    stagger: {
-      children: STAGGER.normal,
-      delayChildren: 0.1
-    },
-    effects: {
-      particles: "none"
-    }
-  };
-
-  // src/react/motion/variants/cyberpunk.ts
-  var cyberpunkMotion = {
-    enter: { opacity: 1, x: 0, filter: "blur(0px)" },
-    exit: { opacity: 0, x: 10, filter: "blur(2px)" },
-    hover: { scale: 1.02, filter: "brightness(1.1)" },
-    tap: { scale: 0.98, filter: "brightness(0.9)" },
-    focus: { boxShadow: "0 0 20px var(--color-neon)" },
-    card: {
-      hidden: {
-        opacity: 0,
-        x: -30,
-        skewX: -5,
-        filter: "blur(4px)"
-      },
-      visible: {
-        opacity: 1,
-        x: 0,
-        skewX: 0,
-        filter: "blur(0px)",
-        transition: { duration: DURATION.fast, ease: EASING.cyber }
-      },
-      exit: {
-        opacity: 0,
-        x: 30,
-        skewX: 5,
-        filter: "blur(4px)"
-      },
-      hover: {
-        scale: 1.02,
-        boxShadow: "0 0 30px rgba(0, 255, 255, 0.3)"
-      },
-      tap: { scale: 0.98 }
-    },
-    modal: {
-      hidden: {
-        opacity: 0,
-        scale: 1.1,
-        filter: "blur(10px) brightness(2)"
-      },
-      visible: {
-        opacity: 1,
-        scale: 1,
-        filter: "blur(0px) brightness(1)",
-        transition: { duration: DURATION.fast, ease: EASING.cyber }
-      },
-      exit: {
-        opacity: 0,
-        scale: 0.9,
-        filter: "blur(10px) brightness(0)"
-      }
-    },
-    message: {
-      hidden: {
-        opacity: 0,
-        x: -40,
-        scaleX: 0.8
-      },
-      visible: {
-        opacity: 1,
-        x: 0,
-        scaleX: 1,
-        transition: { duration: DURATION.fast, ease: EASING.cyber }
-      },
-      exit: { opacity: 0, x: 40 }
-    },
-    list: {
-      hidden: { opacity: 0 },
-      visible: {
-        opacity: 1,
-        transition: {
-          staggerChildren: STAGGER.fast,
-          delayChildren: 0.05
-        }
-      },
-      exit: { opacity: 0, x: 20, transition: { duration: DURATION.fast } }
-    },
-    button: {
-      hidden: { opacity: 0, scaleX: 0.5 },
-      visible: { opacity: 1, scaleX: 1 },
-      exit: { opacity: 0, scaleX: 0.5, filter: "blur(2px)", transition: { duration: DURATION.fast } },
-      hover: {
-        scale: 1.05,
-        filter: "brightness(1.2)",
-        boxShadow: "0 0 20px var(--color-neon)"
-      },
-      tap: { scale: 0.95, filter: "brightness(0.8)" },
-      disabled: { opacity: 0.3, filter: "grayscale(100%)" }
-    },
-    transition: {
-      default: { duration: DURATION.fast, ease: EASING.cyber },
-      fast: { duration: 0.1, ease: EASING.cyber },
-      slow: { duration: DURATION.normal, ease: EASING.cyber },
-      spring: SPRING.snappy
-    },
-    stagger: {
-      children: STAGGER.fast,
-      delayChildren: 0.05
-    },
-    effects: {
-      particles: "moderate",
-      glow: true,
-      scanlines: true
-    }
-  };
-
-  // src/react/motion/variants/brutalist.ts
-  var brutalistMotion = {
-    enter: { opacity: 1 },
-    exit: { opacity: 0 },
-    hover: { backgroundColor: "var(--color-hover)" },
-    tap: { scale: 0.98 },
-    focus: { outline: "3px solid var(--color-text)" },
-    card: {
-      hidden: { opacity: 0, y: 20 },
-      visible: {
-        opacity: 1,
-        y: 0,
-        transition: { duration: DURATION.fast, ease: EASING.brutal }
-      },
-      exit: { opacity: 0, y: -20 },
-      hover: {
-        y: -2,
-        boxShadow: "4px 4px 0 var(--color-text)"
-      },
-      tap: {
-        y: 0,
-        boxShadow: "2px 2px 0 var(--color-text)"
-      }
-    },
-    modal: {
-      hidden: { opacity: 0, y: -50 },
-      visible: {
-        opacity: 1,
-        y: 0,
-        transition: { duration: DURATION.fast, ease: EASING.brutal }
-      },
-      exit: { opacity: 0, y: 50 }
-    },
-    message: {
-      hidden: { opacity: 0, x: -30 },
-      visible: {
-        opacity: 1,
-        x: 0,
-        transition: { duration: DURATION.fast, ease: EASING.brutal }
-      },
-      exit: { opacity: 0, x: 30 }
-    },
-    list: {
-      hidden: { opacity: 0 },
-      visible: {
-        opacity: 1,
-        transition: {
-          staggerChildren: STAGGER.fast,
-          delayChildren: 0
-        }
-      },
-      exit: { opacity: 0, transition: { duration: 0.1 } }
-    },
-    button: {
-      hidden: { opacity: 0 },
-      visible: { opacity: 1 },
-      exit: { opacity: 0, transition: { duration: 0.1 } },
-      hover: {
-        x: 2,
-        y: 2,
-        boxShadow: "2px 2px 0 var(--color-text)"
-      },
-      tap: {
-        x: 4,
-        y: 4,
-        boxShadow: "none"
-      },
-      disabled: { opacity: 0.4, textDecoration: "line-through" }
-    },
-    transition: {
-      default: { duration: DURATION.fast, ease: EASING.brutal },
-      fast: { duration: 0.1, ease: EASING.brutal },
-      slow: { duration: DURATION.normal, ease: EASING.brutal },
-      spring: { type: "spring", stiffness: 500, damping: 50 }
-      // Stiff, no bounce
-    },
-    stagger: {
-      children: STAGGER.fast,
-      delayChildren: 0
-    },
-    effects: {
-      particles: "none"
-    }
-  };
-
-  // src/react/motion/variants/glass.ts
-  var glassMotion = {
-    enter: { opacity: 1, scale: 1, filter: "blur(0px)" },
-    exit: { opacity: 0, scale: 0.98, filter: "blur(4px)" },
-    hover: { scale: 1.01, filter: "brightness(1.05)" },
-    tap: { scale: 0.99 },
-    focus: { boxShadow: "0 0 0 2px rgba(255,255,255,0.5)" },
-    card: {
-      hidden: {
-        opacity: 0,
-        y: 30,
-        scale: 0.95,
-        filter: "blur(10px)"
-      },
-      visible: {
-        opacity: 1,
-        y: 0,
-        scale: 1,
-        filter: "blur(0px)",
-        transition: { duration: DURATION.slow, ease: EASING.glass }
-      },
-      exit: {
-        opacity: 0,
-        y: -20,
-        scale: 0.95,
-        filter: "blur(10px)"
-      },
-      hover: {
-        y: -6,
-        scale: 1.02,
-        boxShadow: "0 20px 60px rgba(0,0,0,0.2)"
-      },
-      tap: { scale: 0.98, y: -2 }
-    },
-    modal: {
-      hidden: {
-        opacity: 0,
-        scale: 0.9,
-        filter: "blur(20px)"
-      },
-      visible: {
-        opacity: 1,
-        scale: 1,
-        filter: "blur(0px)",
-        transition: { ...SPRING.gentle, duration: DURATION.slow }
-      },
-      exit: {
-        opacity: 0,
-        scale: 0.95,
-        filter: "blur(20px)"
-      }
-    },
-    message: {
-      hidden: {
-        opacity: 0,
-        y: 20,
-        scale: 0.9,
-        filter: "blur(8px)"
-      },
-      visible: {
-        opacity: 1,
-        y: 0,
-        scale: 1,
-        filter: "blur(0px)",
-        transition: { duration: DURATION.normal, ease: EASING.glass }
-      },
-      exit: {
-        opacity: 0,
-        y: -10,
-        filter: "blur(8px)"
-      }
-    },
-    list: {
-      hidden: { opacity: 0 },
-      visible: {
-        opacity: 1,
-        transition: {
-          staggerChildren: STAGGER.slow,
-          delayChildren: 0.15
-        }
-      },
-      exit: { opacity: 0, filter: "blur(4px)", transition: { duration: DURATION.fast } }
-    },
-    button: {
-      hidden: { opacity: 0, scale: 0.9, filter: "blur(4px)" },
-      visible: { opacity: 1, scale: 1, filter: "blur(0px)" },
-      exit: { opacity: 0, scale: 0.95, filter: "blur(4px)", transition: { duration: DURATION.fast } },
-      hover: {
-        scale: 1.05,
-        filter: "brightness(1.1)",
-        boxShadow: "0 10px 30px rgba(0,0,0,0.15)"
-      },
-      tap: { scale: 0.95 },
-      disabled: { opacity: 0.4, filter: "blur(1px) grayscale(50%)" }
-    },
-    transition: {
-      default: { duration: DURATION.normal, ease: EASING.glass },
-      fast: { duration: DURATION.fast, ease: EASING.glass },
-      slow: { duration: DURATION.slow, ease: EASING.glass },
-      spring: SPRING.gentle
-    },
-    stagger: {
-      children: STAGGER.slow,
-      delayChildren: 0.15
-    },
-    effects: {
-      particles: "subtle",
-      blur: true
-    }
-  };
-
-  // src/react/motion/variants/index.ts
-  var skinMotionMap = {
-    library: libraryMotion,
-    cyberpunk: cyberpunkMotion,
-    brutalist: brutalistMotion,
-    glass: glassMotion
-  };
-
-  // src/react/motion/hooks/useSkinDetect.ts
-  var VALID_SKINS = Object.keys(skinMotionMap);
-  function useSkinDetect() {
-    const [skin, setSkin] = useState("library");
-    useEffect(() => {
-      const detectSkin = () => {
-        const attr = document.body.getAttribute("data-skin");
-        if (attr && VALID_SKINS.includes(attr)) {
-          setSkin(attr);
-        }
-      };
-      detectSkin();
-      const observer = new MutationObserver((mutations) => {
-        for (const mutation of mutations) {
-          if (mutation.attributeName === "data-skin") {
-            detectSkin();
-          }
-        }
-      });
-      observer.observe(document.body, { attributes: true });
-      return () => observer.disconnect();
-    }, []);
-    return skin;
-  }
-
   // src/react/motion/hooks/useReducedMotion.ts
   function useReducedMotion() {
     const [reducedMotion, setReducedMotion] = useState(false);
@@ -8696,52 +8744,6 @@ var RAGBundle = (() => {
       return skinMotionMap[skin];
     }, [skin, isReducedMotion]);
     return { skin, motion: motion2, reducedMotion: isReducedMotion };
-  }
-
-  // src/react/types.ts
-  var DEFAULT_ACCENT_COLOR = "#6366f1";
-
-  // src/react/components/ChatHeader.tsx
-  function ChatHeader({
-    title = "RAG Assistant",
-    accentColor = DEFAULT_ACCENT_COLOR,
-    isTyping = false,
-    messageCount = 0,
-    onClearChat
-  }) {
-    return /* @__PURE__ */ jsx("div", { className: "rag-chat-header", children: /* @__PURE__ */ jsxs("div", { className: "rag-chat-header-content", children: [
-      /* @__PURE__ */ jsxs("div", { className: "rag-chat-header-info", children: [
-        /* @__PURE__ */ jsx(
-          "div",
-          {
-            className: "rag-chat-header-icon",
-            style: { boxShadow: `0 0 20px ${accentColor}20` },
-            children: /* @__PURE__ */ jsx(
-              Database,
-              {
-                size: 20,
-                style: { color: accentColor },
-                "aria-hidden": "true"
-              }
-            )
-          }
-        ),
-        /* @__PURE__ */ jsxs("div", { children: [
-          /* @__PURE__ */ jsx("h3", { className: "rag-chat-header-title", children: title }),
-          /* @__PURE__ */ jsx("p", { className: "rag-chat-header-status", children: isTyping ? "Thinking..." : "Ready" })
-        ] })
-      ] }),
-      messageCount > 0 && onClearChat && /* @__PURE__ */ jsx(
-        "button",
-        {
-          type: "button",
-          onClick: onClearChat,
-          className: "curator-btn curator-btn-icon rag-chat-header-clear",
-          title: "Clear chat",
-          children: /* @__PURE__ */ jsx(Trash2, { size: 16, "aria-hidden": "true" })
-        }
-      )
-    ] }) });
   }
 
   // src/react/components/ChatInput.tsx
@@ -13105,6 +13107,21 @@ var RAGBundle = (() => {
   };
   var STORAGE_KEY = "typewriter-sound-muted";
   var DEBOUNCE_MS = 30;
+  function playBellHarmonics(ctx, master, baseVolume, fundamentalFreq, startTime, harmonics, gainMultiplier = 1) {
+    harmonics.forEach(({ freq, gain: relGain, decay }) => {
+      const osc = ctx.createOscillator();
+      const gainNode = ctx.createGain();
+      osc.type = "sine";
+      osc.frequency.value = freq;
+      gainNode.gain.setValueAtTime(0, startTime);
+      gainNode.gain.linearRampToValueAtTime(baseVolume * relGain * gainMultiplier, startTime + 2e-3);
+      gainNode.gain.exponentialRampToValueAtTime(1e-3, startTime + decay);
+      osc.connect(gainNode);
+      gainNode.connect(master);
+      osc.start(startTime);
+      osc.stop(startTime + decay + 0.01);
+    });
+  }
   function createAudioContext() {
     if (typeof window === "undefined") return null;
     try {
@@ -13296,19 +13313,7 @@ var RAGBundle = (() => {
         { freq: fundamentalFreq * 5.4, gain: 0.1, decay: 0.25 }
         // Inharmonic
       ];
-      harmonics.forEach(({ freq, gain: relGain, decay }) => {
-        const osc = ctx.createOscillator();
-        const gainNode = ctx.createGain();
-        osc.type = "sine";
-        osc.frequency.value = freq;
-        gainNode.gain.setValueAtTime(0, now2);
-        gainNode.gain.linearRampToValueAtTime(baseVolume * relGain, now2 + 2e-3);
-        gainNode.gain.exponentialRampToValueAtTime(1e-3, now2 + decay);
-        osc.connect(gainNode);
-        gainNode.connect(master);
-        osc.start(now2);
-        osc.stop(now2 + decay + 0.01);
-      });
+      playBellHarmonics(ctx, master, baseVolume, fundamentalFreq, now2, harmonics);
       const strikeOsc = ctx.createOscillator();
       const strikeGain = ctx.createGain();
       strikeOsc.type = "triangle";
@@ -13379,19 +13384,7 @@ var RAGBundle = (() => {
         { freq: bellFundamental * 2, gain: 0.4, decay: 0.4 },
         { freq: bellFundamental * 3.2, gain: 0.2, decay: 0.3 }
       ];
-      bellHarmonics.forEach(({ freq, gain: relGain, decay }) => {
-        const osc = ctx.createOscillator();
-        const gainNode = ctx.createGain();
-        osc.type = "sine";
-        osc.frequency.value = freq;
-        gainNode.gain.setValueAtTime(0, now2 + bellDelay);
-        gainNode.gain.linearRampToValueAtTime(baseVolume * relGain * 0.5, now2 + bellDelay + 2e-3);
-        gainNode.gain.exponentialRampToValueAtTime(1e-3, now2 + bellDelay + decay);
-        osc.connect(gainNode);
-        gainNode.connect(master);
-        osc.start(now2 + bellDelay);
-        osc.stop(now2 + bellDelay + decay + 0.01);
-      });
+      playBellHarmonics(ctx, master, baseVolume, bellFundamental, now2 + bellDelay, bellHarmonics, 0.5);
     }, [createNoiseBuffer, volume]);
     const playDrawerOpen = useCallback(() => {
       const ctx = audioContext.current;
@@ -13801,7 +13794,11 @@ var RAGBundle = (() => {
                 /* @__PURE__ */ jsx("stop", { offset: "80%", stopColor: COLORS.brass.base }),
                 /* @__PURE__ */ jsx("stop", { offset: "100%", stopColor: COLORS.brass.shadow })
               ] }),
-              /* @__PURE__ */ jsx("clipPath", { id: "tw-paper-clip", children: /* @__PURE__ */ jsx("rect", { x: "50", y: "35", width: "500", height: "100", rx: "2" }) })
+              /* @__PURE__ */ jsx("clipPath", { id: "tw-paper-clip", children: /* @__PURE__ */ jsx("rect", { x: "50", y: "35", width: "500", height: "100", rx: "2" }) }),
+              /* @__PURE__ */ jsxs("linearGradient", { id: "tw-paper-shadow", x1: "0%", y1: "0%", x2: "0%", y2: "100%", children: [
+                /* @__PURE__ */ jsx("stop", { offset: "0%", stopColor: "rgba(0,0,0,0.15)" }),
+                /* @__PURE__ */ jsx("stop", { offset: "100%", stopColor: "rgba(0,0,0,0)" })
+              ] })
             ] }),
             /* @__PURE__ */ jsxs("g", { id: "tw-frame", ref: frameRef, children: [
               /* @__PURE__ */ jsx(
@@ -13915,7 +13912,7 @@ var RAGBundle = (() => {
                   y: "35",
                   width: "500",
                   height: "8",
-                  fill: "linear-gradient(180deg, rgba(0,0,0,0.15) 0%, transparent 100%)"
+                  fill: "url(#tw-paper-shadow)"
                 }
               ),
               [...Array(4)].map((_, i) => /* @__PURE__ */ jsx(
@@ -14375,7 +14372,6 @@ var RAGBundle = (() => {
     });
     const animationRef = useRef(null);
     const lastBackspaceRef = useRef(0);
-    const rapidDeletionRef = useRef(false);
     const calculateCarriagePosition = useCallback((text) => {
       const lines = text.split("\n");
       const currentLine = lines[lines.length - 1] || "";
@@ -14483,10 +14479,9 @@ var RAGBundle = (() => {
         x: 0,
         duration: TIMING.carriageReturn / 2e3,
         ease: "power2.out"
-      });
-      setTimeout(() => {
+      }).call(() => {
         setState((prev) => ({ ...prev, bellRinging: false }));
-      }, TIMING.bellRing);
+      }, [], `+=${TIMING.bellRing / 1e3}`);
       return tl;
     }, [playSound]);
     const triggerTypingAnimation = useCallback(
@@ -14497,12 +14492,12 @@ var RAGBundle = (() => {
         setState((prev) => ({ ...prev, activeKey: key, isTyping: true }));
         animateKeyPress(key, true);
         playSound("keystroke");
-        tl.add(animateTypebar() || [], "+=0.015");
-        tl.call(() => animateCarriageShift("left"), [], "+=0.005");
-        tl.call(() => animateKeyPress(key, false), [], "+=0.02");
+        tl.add(animateTypebar() || [], `+=${TIMING.keyDown / 1e3}`);
+        tl.call(() => animateCarriageShift("left"), [], `+=${TIMING.strike / 1e3}`);
+        tl.call(() => animateKeyPress(key, false), [], `+=${TIMING.typebarReturn / 1e3}`);
         tl.call(() => {
           setState((prev) => ({ ...prev, activeKey: null, isTyping: false }));
-        }, [], "+=0.015");
+        }, [], `+=${TIMING.keyUp / 1e3}`);
       },
       [animateKeyPress, animateTypebar, animateCarriageShift, playSound]
     );
@@ -14511,7 +14506,6 @@ var RAGBundle = (() => {
       const timeSinceLastBackspace = now2 - lastBackspaceRef.current;
       lastBackspaceRef.current = now2;
       const isRapid = timeSinceLastBackspace < 100;
-      rapidDeletionRef.current = isRapid;
       animateCarriageShift("right");
       animateCorrectionTape(isRapid);
       playSound("backspace");
@@ -16026,6 +16020,46 @@ var RAGBundle = (() => {
     ] }) });
   }
 
+  // src/react/components/library/SourcesCardCatalog.tsx
+  function sourceToCard(source, index) {
+    return {
+      id: `${source.documentId}-${source.chunkIndex}-${index}`,
+      title: source.documentName,
+      content: source.snippet,
+      date: `Chunk ${source.chunkIndex}`
+    };
+  }
+  function SourcesCardCatalog({
+    sources,
+    onSourceSelect,
+    defaultOpen = false,
+    className = ""
+  }) {
+    const cards = useMemo(() => {
+      return sources.map((source, i) => sourceToCard(source, i));
+    }, [sources]);
+    const handleCardSelect = (card) => {
+      if (!onSourceSelect) return;
+      const index = cards.findIndex((c) => c.id === card.id);
+      if (index >= 0 && sources[index]) {
+        onSourceSelect(sources[index]);
+      }
+    };
+    if (sources.length === 0) {
+      return null;
+    }
+    return /* @__PURE__ */ jsx("div", { className: `sources-card-catalog ${className}`, children: /* @__PURE__ */ jsx(
+      CardCatalog,
+      {
+        title: `${sources.length} Source${sources.length > 1 ? "s" : ""}`,
+        cards,
+        onCardSelect: handleCardSelect,
+        defaultOpen,
+        maxVisibleCards: 10
+      }
+    ) });
+  }
+
   // src/react/components/LoadingDots.tsx
   var DOT_DELAYS = [0, 150, 300];
   function LoadingDots({
@@ -16054,7 +16088,8 @@ var RAGBundle = (() => {
   }) {
     const isUser = message.role === "user";
     const [sourcesExpanded, setSourcesExpanded] = useState(false);
-    const { motion: motion2 } = useSkinMotion();
+    const skin = useSkinDetect();
+    const isLibrarySkin = skin === "library";
     const time2 = message.timestamp.toLocaleTimeString("en-US", {
       hour: "2-digit",
       minute: "2-digit"
@@ -16062,13 +16097,9 @@ var RAGBundle = (() => {
     const sources = message.sources ?? [];
     const hasSources = showSources && sources.length > 0;
     return /* @__PURE__ */ jsx(
-      m.div,
+      "div",
       {
         className: `rag-message ${isUser ? "rag-message-user" : "rag-message-assistant"}`,
-        initial: "hidden",
-        animate: "visible",
-        exit: "exit",
-        variants: motion2.message,
         children: /* @__PURE__ */ jsxs("div", { className: `rag-message-content ${isUser ? "rag-message-content-user" : "rag-message-content-assistant"}`, children: [
           /* @__PURE__ */ jsx(
             "div",
@@ -16081,7 +16112,14 @@ var RAGBundle = (() => {
               children: message.isLoading ? /* @__PURE__ */ jsx("div", { className: "rag-message-loading", children: /* @__PURE__ */ jsx(LoadingDots, { accentColor }) }) : /* @__PURE__ */ jsx("p", { className: "rag-message-text", children: message.content })
             }
           ),
-          hasSources && !message.isLoading && /* @__PURE__ */ jsxs("div", { className: "rag-message-sources", children: [
+          hasSources && !message.isLoading && (isLibrarySkin ? /* @__PURE__ */ jsx(
+            SourcesCardCatalog,
+            {
+              sources,
+              defaultOpen: false,
+              className: "rag-message-sources-catalog"
+            }
+          ) : /* @__PURE__ */ jsxs("div", { className: "rag-message-sources", children: [
             /* @__PURE__ */ jsxs(
               "button",
               {
@@ -16098,21 +16136,15 @@ var RAGBundle = (() => {
                 ]
               }
             ),
-            /* @__PURE__ */ jsx(AnimatePresence, { children: sourcesExpanded && /* @__PURE__ */ jsx(
-              m.div,
+            /* @__PURE__ */ jsx(
+              "div",
               {
                 className: "rag-sources-list",
-                initial: { height: 0, opacity: 0 },
-                animate: { height: "auto", opacity: 1 },
-                exit: { height: 0, opacity: 0 },
-                transition: motion2.transition.default,
-                children: sources.map((source, i) => /* @__PURE__ */ jsxs(
-                  m.div,
+                "data-expanded": sourcesExpanded,
+                children: /* @__PURE__ */ jsx("div", { className: "rag-sources-list-inner", children: sourcesExpanded && sources.map((source, i) => /* @__PURE__ */ jsxs(
+                  "div",
                   {
                     className: "rag-source-item",
-                    initial: { opacity: 0, x: -10 },
-                    animate: { opacity: 1, x: 0 },
-                    transition: { ...motion2.transition.fast, delay: i * motion2.stagger.children },
                     children: [
                       /* @__PURE__ */ jsxs("div", { className: "rag-source-header", children: [
                         /* @__PURE__ */ jsxs("span", { className: "rag-source-badge", style: { backgroundColor: `${accentColor}20`, color: accentColor }, children: [
@@ -16130,20 +16162,11 @@ var RAGBundle = (() => {
                     ]
                   },
                   `${source.documentId}-${source.chunkIndex}-${i}`
-                ))
+                )) })
               }
-            ) })
-          ] }),
-          /* @__PURE__ */ jsx(
-            m.span,
-            {
-              className: "rag-message-time",
-              initial: { opacity: 0 },
-              animate: { opacity: 1 },
-              transition: { ...motion2.transition.slow, delay: 0.3 },
-              children: time2
-            }
-          )
+            )
+          ] })),
+          /* @__PURE__ */ jsx("span", { className: "rag-message-time", children: time2 })
         ] })
       }
     );
@@ -16151,49 +16174,27 @@ var RAGBundle = (() => {
 
   // src/react/components/TypingIndicator.tsx
   function TypingIndicator({
-    accentColor = DEFAULT_ACCENT_COLOR,
-    isProcessing = false
+    accentColor = DEFAULT_ACCENT_COLOR
   }) {
-    const { motion: motion2 } = useSkinMotion();
     const skin = useSkinDetect();
     if (skin === "library") {
-      return /* @__PURE__ */ jsx(
-        m.div,
+      return /* @__PURE__ */ jsx("div", { className: "rag-typing-indicator rag-typing-indicator--library", children: /* @__PURE__ */ jsx(
+        LoadingDots,
         {
-          className: "rag-typing-indicator rag-typing-indicator--library",
-          initial: "hidden",
-          animate: "visible",
-          exit: "exit",
-          variants: motion2.message,
-          children: /* @__PURE__ */ jsx(
-            InkDrop,
-            {
-              active: true,
-              size: "md",
-              ariaLabel: isProcessing ? "Processing..." : "Assistant is typing..."
-            }
-          )
+          accentColor: "var(--lib-accent, #8B4513)",
+          className: "rag-typing-dots",
+          dotClassName: "rag-typing-dot"
         }
-      );
+      ) });
     }
-    return /* @__PURE__ */ jsx(
-      m.div,
+    return /* @__PURE__ */ jsx("div", { className: "rag-typing-indicator", children: /* @__PURE__ */ jsx(
+      LoadingDots,
       {
-        className: "rag-typing-indicator",
-        initial: "hidden",
-        animate: "visible",
-        exit: "exit",
-        variants: motion2.message,
-        children: /* @__PURE__ */ jsx(
-          LoadingDots,
-          {
-            accentColor,
-            className: "rag-typing-dots",
-            dotClassName: "rag-typing-dot"
-          }
-        )
+        accentColor,
+        className: "rag-typing-dots",
+        dotClassName: "rag-typing-dot"
       }
-    );
+    ) });
   }
 
   // src/react/components/shared/EmptyState.tsx
@@ -16376,7 +16377,6 @@ var RAGBundle = (() => {
     emptyState
   }) {
     const messagesContainerRef = useRef(null);
-    const { motion: skinMotion } = useSkinMotion();
     const skin = useSkinDetect();
     const [typewriterValue, setTypewriterValue] = useState("");
     const [isMobile, setIsMobile] = useState(false);
@@ -16407,16 +16407,20 @@ var RAGBundle = (() => {
     useEffect(() => {
       const messageCountIncreased = messages.length > lastMessageCountRef.current;
       const typingStarted = isTyping && !wasTypingRef.current;
-      const shouldScroll = messageCountIncreased || typingStarted;
+      const typingEnded = !isTyping && wasTypingRef.current;
+      const shouldScroll = messageCountIncreased || typingStarted || typingEnded;
       lastMessageCountRef.current = messages.length;
       wasTypingRef.current = isTyping;
       if (shouldScroll && messagesContainerRef.current) {
-        requestAnimationFrame(() => {
-          const container = messagesContainerRef.current;
-          if (container) {
-            container.scrollTop = container.scrollHeight;
-          }
-        });
+        const delay2 = typingEnded ? 100 : 0;
+        setTimeout(() => {
+          requestAnimationFrame(() => {
+            const container = messagesContainerRef.current;
+            if (container) {
+              container.scrollTop = container.scrollHeight;
+            }
+          });
+        }, delay2);
       }
     }, [messages.length, isTyping]);
     const handleTypewriterSubmit = useCallback(
@@ -16439,8 +16443,49 @@ var RAGBundle = (() => {
         description: "Ask questions about your documents. Get instant, accurate answers with source citations."
       }
     );
+    const messagesContent = /* @__PURE__ */ jsx(Fragment2, { children: messages.length === 0 ? /* @__PURE__ */ jsx("div", { className: "rag-empty-state-wrapper", children: emptyState || defaultEmptyState }) : /* @__PURE__ */ jsxs(Fragment2, { children: [
+      messages.map((message) => /* @__PURE__ */ jsx(
+        MessageBubble,
+        {
+          message,
+          accentColor,
+          showSources
+        },
+        message.id
+      )),
+      isTyping && /* @__PURE__ */ jsx(TypingIndicator, { accentColor })
+    ] }) });
+    if (skin === "library") {
+      return /* @__PURE__ */ jsxs("div", { className: `rag-chat rag-chat--desk-layout ${className}`, children: [
+        /* @__PURE__ */ jsx(
+          ChatHeader,
+          {
+            title,
+            accentColor,
+            isTyping,
+            messageCount: messages.length,
+            onClearChat: clearChat
+          }
+        ),
+        error2 && /* @__PURE__ */ jsx(ErrorBanner, { error: error2, onDismiss: () => setError(null) }),
+        /* @__PURE__ */ jsxs("div", { className: "rag-desk", children: [
+          /* @__PURE__ */ jsx("div", { className: "rag-desk-typewriter", children: /* @__PURE__ */ jsx(
+            TypewriterInput,
+            {
+              value: typewriterValue,
+              onChange: setTypewriterValue,
+              onSubmit: handleTypewriterSubmit,
+              placeholder,
+              disabled: isTyping,
+              soundEnabled: true,
+              showKeyboard: !isMobile
+            }
+          ) }),
+          /* @__PURE__ */ jsx("div", { className: "rag-desk-paper", children: /* @__PURE__ */ jsx("div", { ref: messagesContainerRef, className: "rag-chat-messages", children: messagesContent }) })
+        ] })
+      ] });
+    }
     return /* @__PURE__ */ jsxs("div", { className: `rag-chat ${className}`, children: [
-      skin === "library" && /* @__PURE__ */ jsx(InkFilters, {}),
       /* @__PURE__ */ jsx(
         ChatHeader,
         {
@@ -16452,38 +16497,8 @@ var RAGBundle = (() => {
         }
       ),
       error2 && /* @__PURE__ */ jsx(ErrorBanner, { error: error2, onDismiss: () => setError(null) }),
-      /* @__PURE__ */ jsx("div", { ref: messagesContainerRef, className: "rag-chat-messages", children: messages.length === 0 ? /* @__PURE__ */ jsx(
-        motion.div,
-        {
-          initial: skinMotion.modal.hidden,
-          animate: skinMotion.modal.visible,
-          transition: skinMotion.transition.default,
-          children: emptyState || defaultEmptyState
-        }
-      ) : /* @__PURE__ */ jsxs(AnimatePresence, { mode: "popLayout", children: [
-        messages.map((message) => /* @__PURE__ */ jsx(
-          MessageBubble,
-          {
-            message,
-            accentColor,
-            showSources
-          },
-          message.id
-        )),
-        isTyping && /* @__PURE__ */ jsx(TypingIndicator, { accentColor }, "typing-indicator")
-      ] }) }),
-      skin === "library" ? /* @__PURE__ */ jsx(
-        TypewriterInput,
-        {
-          value: typewriterValue,
-          onChange: setTypewriterValue,
-          onSubmit: handleTypewriterSubmit,
-          placeholder,
-          disabled: isTyping,
-          soundEnabled: true,
-          showKeyboard: !isMobile
-        }
-      ) : /* @__PURE__ */ jsx(
+      /* @__PURE__ */ jsx("div", { ref: messagesContainerRef, className: "rag-chat-messages", children: messagesContent }),
+      /* @__PURE__ */ jsx(
         ChatInput,
         {
           placeholder,

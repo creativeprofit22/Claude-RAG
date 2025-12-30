@@ -7,8 +7,8 @@ import { getGeminiClient } from './utils/gemini-client.js';
 import { DEFAULT_SYSTEM_PROMPT } from './constants.js';
 import { validateQuery, validateContext, validateSources } from './utils/validation.js';
 import { ResponderError, classifyGeminiError, createTimeoutError } from './utils/responder-errors.js';
-// Gemini 2.0 Flash - fast and free-tier friendly
-const GEMINI_MODEL = process.env.GEMINI_RESPONSE_MODEL || 'gemini-2.0-flash';
+// Gemini 2.0 Flash via OpenRouter - fast and cost effective
+const GEMINI_MODEL = process.env.GEMINI_RESPONSE_MODEL || 'google/gemini-2.0-flash-001';
 // API timeout in milliseconds (default: 60 seconds)
 const API_TIMEOUT_MS = parseInt(process.env.GEMINI_TIMEOUT_MS || '60000', 10);
 /**

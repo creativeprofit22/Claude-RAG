@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Card Catalog Test - Library Skin V2</title>
+  <link rel="stylesheet" href="/demo/skins.css?v=cardcat3">
+  <link rel="stylesheet" href="/demo/ragchat-bundle.css?v=cardcat3">
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      min-height: 100vh;
+      background: linear-gradient(135deg, #1a1512 0%, #0d0a08 100%);
+      color: #f4e6c8;
+      font-family: 'Courier New', monospace;
+      padding: 2rem;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    h1 {
+      color: #C9A227;
+      margin-bottom: 0.5rem;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      font-size: 1.5rem;
+    }
+
+    .subtitle {
+      color: rgba(244, 230, 200, 0.6);
+      margin-bottom: 2rem;
+      font-size: 0.85rem;
+    }
+
+    .test-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+      gap: 2rem;
+      max-width: 1200px;
+      width: 100%;
+    }
+
+    .test-section {
+      background: rgba(36, 24, 16, 0.5);
+      border: 1px solid rgba(139, 112, 40, 0.2);
+      border-radius: 8px;
+      padding: 1.5rem;
+    }
+
+    .test-section h2 {
+      color: #A89040;
+      font-size: 0.9rem;
+      margin-bottom: 1rem;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+    }
+
+    .instructions {
+      max-width: 600px;
+      margin: 2rem auto;
+      padding: 1rem;
+      background: rgba(139, 112, 40, 0.1);
+      border: 1px solid rgba(139, 112, 40, 0.3);
+      border-radius: 4px;
+      font-size: 0.85rem;
+      line-height: 1.6;
+    }
+
+    .instructions strong {
+      color: #C9A227;
+    }
+
+    .instructions ul {
+      margin-top: 0.5rem;
+      padding-left: 1.5rem;
+    }
+
+    .instructions li {
+      margin: 0.3rem 0;
+    }
+
+    /* Mount point for React component */
+    #card-catalog-mount {
+      min-height: 250px;
+      display: flex;
+      justify-content: center;
+    }
+  </style>
+</head>
+<body data-skin="library">
+  <h1>Card Catalog Test</h1>
+  <p class="subtitle">Library Skin V2 - Phase 4 Component</p>
+
+  <div class="instructions">
+    <strong>Test Instructions:</strong>
+    <ul>
+      <li>Click the brass pull handle to open/close the drawer</li>
+      <li>Hover over cards to see lift animation</li>
+      <li>Click a card to select it (opens preview modal)</li>
+      <li>Move mouse across card stack to see fan effect</li>
+      <li>Listen for subtle sound effects (if enabled)</li>
+    </ul>
+  </div>
+
+  <div class="test-grid">
+    <div class="test-section">
+      <h2>Card Catalog with Sample Data</h2>
+      <div id="card-catalog-mount"></div>
+    </div>
+
+    <div class="test-section">
+      <h2>Empty Catalog</h2>
+      <div id="card-catalog-empty"></div>
+    </div>
+  </div>
+
+  <!-- React + Lucide + Bundle -->
+  <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
+  <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+  <script src="https://unpkg.com/lucide@0.468.0/dist/umd/lucide.min.js"></script>
+  <script src="/demo/ragchat-bundle.js?v=cardcat3"></script>
+
+  <script>
+    // Wait for bundle to load
+    document.addEventListener('DOMContentLoaded', function() {
+      // Debug: Check all possible export locations
+      console.log('RAGBundle:', window.RAGBundle);
+      console.log('RAGBundle keys:', Object.keys(window.RAGBundle || {}));
+      console.log('RAGBundle.CardCatalog:', window.RAGBundle?.CardCatalog);
+      console.log('RAGBundle.default:', window.RAGBundle?.default);
+
+      // Try multiple access patterns (CommonJS vs ESM)
+      const CardCatalog = window.RAGBundle?.CardCatalog
+        || window.RAGBundle?.default?.CardCatalog
+        || (window.RAGBundle && window.RAGBundle['CardCatalog']);
+
+      if (!CardCatalog) {
+        document.getElementById('card-catalog-mount').innerHTML =
+          '<p style="color: #ff6b6b;">CardCatalog not found in bundle.<br>Check console for debug info.</p>';
+        return;
+      }
+
+      // Sample card data
+      const sampleCards = [
+        {
+          id: '1',
+          title: 'Introduction to RAG',
+          content: 'Retrieval Augmented Generation combines large language models with external knowledge retrieval for more accurate responses.',
+          date: '2024-12-29'
+        },
+        {
+          id: '2',
+          title: 'Vector Embeddings',
+          content: 'Text is converted to high-dimensional vectors that capture semantic meaning, enabling similarity search.',
+          date: '2024-12-28'
+        },
+        {
+          id: '3',
+          title: 'LanceDB Integration',
+          content: 'LanceDB provides efficient vector storage and retrieval with native embedding support.',
+          date: '2024-12-27'
+        },
+        {
+          id: '4',
+          title: 'Claude CLI Usage',
+          content: 'The Claude CLI allows programmatic access to Claude models via your Max subscription.',
+          date: '2024-12-26'
+        },
+        {
+          id: '5',
+          title: 'Library Skin Design',
+          content: 'Skeuomorphic design inspired by vintage typewriters, card catalogs, and inkwells.',
+          date: '2024-12-25'
+        }
+      ];
+
+      // Mount with sample data
+      const mount1 = document.getElementById('card-catalog-mount');
+      ReactDOM.createRoot(mount1).render(
+        React.createElement(CardCatalog, {
+          title: 'Documents',
+          cards: sampleCards,
+          defaultOpen: true,
+          onCardSelect: (card) => console.log('Selected:', card)
+        })
+      );
+
+      // Mount empty catalog
+      const mount2 = document.getElementById('card-catalog-empty');
+      ReactDOM.createRoot(mount2).render(
+        React.createElement(CardCatalog, {
+          title: 'Archive',
+          cards: [],
+          defaultOpen: false
+        })
+      );
+    });
+  </script>
+</body>
+</html>
