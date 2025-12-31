@@ -5,7 +5,7 @@ import { Database } from 'lucide-react';
 import { useSkinDetect } from './motion/hooks/useSkinDetect.js';
 import { ChatHeader } from './components/ChatHeader.js';
 import { ChatInput } from './components/ChatInput.js';
-import { TypewriterInput } from './components/library/index.js';
+import { TypewriterInput, InkBlot, InkFilters } from './components/library/index.js';
 import { MessageBubble } from './components/MessageBubble.js';
 import { TypingIndicator } from './components/TypingIndicator.js';
 import { EmptyState } from './components/shared/EmptyState.js';
@@ -95,7 +95,7 @@ export function RAGChat({ endpoint = '/api/rag/query', headers, placeholder = 'A
     const messagesContent = (_jsx(_Fragment, { children: messages.length === 0 ? (_jsx("div", { className: "rag-empty-state-wrapper", children: emptyState || defaultEmptyState })) : (_jsxs(_Fragment, { children: [messages.map((message) => (_jsx(MessageBubble, { message: message, accentColor: accentColor, showSources: showSources }, message.id))), isTyping && _jsx(TypingIndicator, { accentColor: accentColor })] })) }));
     // Library skin: Side-by-side "Writer's Desk" layout
     if (skin === 'library') {
-        return (_jsxs("div", { className: `rag-chat rag-chat--desk-layout ${className}`, children: [_jsx(ChatHeader, { title: title, accentColor: accentColor, isTyping: isTyping, messageCount: messages.length, onClearChat: clearChat }), error && _jsx(ErrorBanner, { error: error, onDismiss: () => setError(null) }), _jsxs("div", { className: "rag-desk", children: [_jsx("div", { className: "rag-desk-typewriter", children: _jsx(TypewriterInput, { value: typewriterValue, onChange: setTypewriterValue, onSubmit: handleTypewriterSubmit, placeholder: placeholder, disabled: isTyping, soundEnabled: true, showKeyboard: !isMobile }) }), _jsx("div", { className: "rag-desk-paper", children: _jsx("div", { ref: messagesContainerRef, className: "rag-chat-messages", children: messagesContent }) })] })] }));
+        return (_jsxs("div", { className: `rag-chat rag-chat--desk-layout ${className}`, children: [_jsx(InkFilters, {}), _jsx(ChatHeader, { title: title, accentColor: accentColor, isTyping: isTyping, messageCount: messages.length, onClearChat: clearChat }), error && (_jsx(InkBlot, { message: error, onDismiss: () => setError(null), showDismiss: true, className: "rag-ink-blot-error" })), _jsxs("div", { className: "rag-desk", children: [_jsx("div", { className: "rag-desk-typewriter", children: _jsx(TypewriterInput, { value: typewriterValue, onChange: setTypewriterValue, onSubmit: handleTypewriterSubmit, placeholder: placeholder, disabled: isTyping, soundEnabled: true, showKeyboard: !isMobile }) }), _jsx("div", { className: "rag-desk-paper", children: _jsx("div", { ref: messagesContainerRef, className: "rag-chat-messages", children: messagesContent }) })] })] }));
     }
     // Default layout: Vertical stack (messages on top, input at bottom)
     return (_jsxs("div", { className: `rag-chat ${className}`, children: [_jsx(ChatHeader, { title: title, accentColor: accentColor, isTyping: isTyping, messageCount: messages.length, onClearChat: clearChat }), error && _jsx(ErrorBanner, { error: error, onDismiss: () => setError(null) }), _jsx("div", { ref: messagesContainerRef, className: "rag-chat-messages", children: messagesContent }), _jsx(ChatInput, { placeholder: placeholder, accentColor: accentColor, onSendMessage: sendMessage, disabled: isTyping })] }));

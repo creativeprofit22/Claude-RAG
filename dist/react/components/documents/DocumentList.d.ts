@@ -13,5 +13,5 @@ export interface DocumentListProps {
 /**
  * DocumentList - Grid layout of document cards
  */
-export declare function DocumentList({ documents, isLoading, onDocumentSelect, onDocumentDelete, onDocumentPreview, selectedDocumentId, emptyState, skeletonCount, }: DocumentListProps): import("react/jsx-runtime").JSX.Element;
+export declare const DocumentList: import("react").NamedExoticComponent<DocumentListProps>;
 //# sourceMappingURL=DocumentList.d.ts.map

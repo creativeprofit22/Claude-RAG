@@ -1,5 +1,6 @@
 'use client';
 import { jsx as _jsx, jsxs as _jsxs, Fragment as _Fragment } from "react/jsx-runtime";
+import { memo, useMemo } from 'react';
 import { DocumentCard } from './DocumentCard.js';
 import { EmptyState } from '../shared/EmptyState.js';
 /** Number of skeleton cards to show while loading */
@@ -19,16 +20,18 @@ function DefaultEmptyState() {
 /**
  * DocumentList - Grid layout of document cards
  */
-export function DocumentList({ documents, isLoading = false, onDocumentSelect, onDocumentDelete, onDocumentPreview, selectedDocumentId, emptyState, skeletonCount = DEFAULT_SKELETON_COUNT, }) {
+export const DocumentList = memo(function DocumentList({ documents, isLoading = false, onDocumentSelect, onDocumentDelete, onDocumentPreview, selectedDocumentId, emptyState, skeletonCount = DEFAULT_SKELETON_COUNT, }) {
+    // Memoize skeleton array to avoid recreation on each render
+    const skeletons = useMemo(() => Array.from({ length: skeletonCount }, (_, i) => i), [skeletonCount]);
     // Show loading skeletons
     // Using stable keys with prefix to avoid React reconciliation issues
     if (isLoading) {
-        return (_jsx("div", { className: "rag-doc-list", "aria-busy": "true", "aria-label": "Loading documents", children: Array.from({ length: skeletonCount }).map((_, index) => (_jsx(DocumentCardSkeleton, {}, `doc-skeleton-${index}`))) }));
+        return (_jsx("div", { className: "rag-doc-list", "aria-busy": "true", "aria-label": "Loading documents", children: skeletons.map((index) => (_jsx(DocumentCardSkeleton, {}, `doc-skeleton-${index}`))) }));
     }
     // Show empty state
     if (documents.length === 0) {
         return _jsx(_Fragment, { children: emptyState || _jsx(DefaultEmptyState, {}) });
     }
-    return (_jsx("div", { className: "rag-doc-list", role: "list", "aria-label": "Document list", children: documents.map((doc) => (_jsx("div", { children: _jsx(DocumentCard, { document: doc, isSelected: selectedDocumentId === doc.documentId, onSelect: onDocumentSelect, onDelete: onDocumentDelete, onPreview: onDocumentPreview }) }, doc.documentId))) }));
-}
+    return (_jsx("div", { className: "rag-doc-list", role: "list", "aria-label": "Document list", children: documents.map((doc) => (_jsx(DocumentCard, { document: doc, isSelected: selectedDocumentId === doc.documentId, onSelect: onDocumentSelect, onDelete: onDocumentDelete, onPreview: onDocumentPreview }, doc.documentId))) }));
+});
 //# sourceMappingURL=DocumentList.js.map

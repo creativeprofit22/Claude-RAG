@@ -1,16 +1,26 @@
 'use client';
 import { jsx as _jsx, jsxs as _jsxs } from "react/jsx-runtime";
 import { FileText, ChevronDown, ChevronUp } from 'lucide-react';
-import { useState } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { DEFAULT_ACCENT_COLOR } from '../types.js';
 import { LoadingDots } from './LoadingDots.js';
 import { useSkinDetect } from '../motion/hooks/useSkinDetect.js';
-import { SourcesCardCatalog } from './library/index.js';
+import { SourcesCardCatalog, InkDrop } from './library/index.js';
 export function MessageBubble({ message, accentColor = DEFAULT_ACCENT_COLOR, showSources = true, }) {
     const isUser = message.role === 'user';
     const [sourcesExpanded, setSourcesExpanded] = useState(false);
     const skin = useSkinDetect();
     const isLibrarySkin = skin === 'library';
+    // Track if message is "fresh" (just appeared) for wet ink sheen effect
+    const isFreshRef = useRef(!isUser && !message.isLoading);
+    const [isFresh, setIsFresh] = useState(isFreshRef.current);
+    // Clear fresh state after animation completes (2s as per CSS)
+    useEffect(() => {
+        if (isFresh && isLibrarySkin) {
+            const timer = setTimeout(() => setIsFresh(false), 2000);
+            return () => clearTimeout(timer);
+        }
+    }, [isFresh, isLibrarySkin]);
     const time = message.timestamp.toLocaleTimeString('en-US', {
         hour: '2-digit',
         minute: '2-digit',
@@ -22,6 +32,6 @@ export function MessageBubble({ message, accentColor = DEFAULT_ACCENT_COLOR, sho
                             boxShadow: `0 0 20px ${accentColor}15`,
                             borderColor: `${accentColor}20`,
                         }
-                        : undefined, children: message.isLoading ? (_jsx("div", { className: "rag-message-loading", children: _jsx(LoadingDots, { accentColor: accentColor }) })) : (_jsx("p", { className: "rag-message-text", children: message.content })) }), hasSources && !message.isLoading && (isLibrarySkin ? (_jsx(SourcesCardCatalog, { sources: sources, defaultOpen: false, className: "rag-message-sources-catalog" })) : (_jsxs("div", { className: "rag-message-sources", children: [_jsxs("button", { onClick: () => setSourcesExpanded(!sourcesExpanded), className: "rag-sources-toggle", children: [_jsx(FileText, { size: 14 }), _jsxs("span", { children: [sources.length, " source", sources.length > 1 ? 's' : ''] }), sourcesExpanded ? _jsx(ChevronUp, { size: 14 }) : _jsx(ChevronDown, { size: 14 })] }), _jsx("div", { className: "rag-sources-list", "data-expanded": sourcesExpanded, children: _jsx("div", { className: "rag-sources-list-inner", children: sourcesExpanded && sources.map((source, i) => (_jsxs("div", { className: "rag-source-item", children: [_jsxs("div", { className: "rag-source-header", children: [_jsxs("span", { className: "rag-source-badge", style: { backgroundColor: `${accentColor}20`, color: accentColor }, children: ["[", i + 1, "]"] }), _jsx("span", { className: "rag-source-name", children: source.documentName }), _jsxs("span", { className: "rag-source-chunk", children: ["Chunk ", source.chunkIndex] })] }), _jsx("p", { className: "rag-source-snippet", children: source.snippet })] }, `${source.documentId}-${source.chunkIndex}-${i}`))) }) })] }))), _jsx("span", { className: "rag-message-time", children: time })] }) }));
+                        : undefined, children: message.isLoading ? (_jsx("div", { className: "rag-message-loading", children: isLibrarySkin ? (_jsx(InkDrop, { active: true, size: "md", ariaLabel: "Loading response..." })) : (_jsx(LoadingDots, { accentColor: accentColor })) })) : (_jsx("p", { className: `rag-message-text${isFresh && isLibrarySkin ? ' fresh-ink' : ''}`, children: message.content })) }), hasSources && !message.isLoading && (isLibrarySkin ? (_jsx(SourcesCardCatalog, { sources: sources, defaultOpen: false, className: "rag-message-sources-catalog" })) : (_jsxs("div", { className: "rag-message-sources", children: [_jsxs("button", { onClick: () => setSourcesExpanded(!sourcesExpanded), className: "rag-sources-toggle", children: [_jsx(FileText, { size: 14 }), _jsxs("span", { children: [sources.length, " source", sources.length > 1 ? 's' : ''] }), sourcesExpanded ? _jsx(ChevronUp, { size: 14 }) : _jsx(ChevronDown, { size: 14 })] }), _jsx("div", { className: "rag-sources-list", "data-expanded": sourcesExpanded, children: _jsx("div", { className: "rag-sources-list-inner", children: sourcesExpanded && sources.map((source, i) => (_jsxs("div", { className: "rag-source-item", children: [_jsxs("div", { className: "rag-source-header", children: [_jsxs("span", { className: "rag-source-badge", style: { backgroundColor: `${accentColor}20`, color: accentColor }, children: ["[", i + 1, "]"] }), _jsx("span", { className: "rag-source-name", children: source.documentName }), _jsxs("span", { className: "rag-source-chunk", children: ["Chunk ", source.chunkIndex] })] }), _jsx("p", { className: "rag-source-snippet", children: source.snippet })] }, `${source.documentId}-${source.chunkIndex}-${i}`))) }) })] }))), _jsx("span", { className: "rag-message-time", children: time })] }) }));
 }
 //# sourceMappingURL=MessageBubble.js.map

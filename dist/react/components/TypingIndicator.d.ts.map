@@ -1,1 +1,1 @@
-{"version":3,"file":"TypingIndicator.d.ts","sourceRoot":"","sources":["../../../src/react/components/TypingIndicator.tsx"],"names":[],"mappings":"AAMA,UAAU,oBAAoB;IAC5B,WAAW,CAAC,EAAE,MAAM,CAAC;CACtB;AAED;;;;;GAKG;AACH,wBAAgB,eAAe,CAAC,EAC9B,WAAkC,GACnC,EAAE,oBAAoB,2CAyBtB"}
+{"version":3,"file":"TypingIndicator.d.ts","sourceRoot":"","sources":["../../../src/react/components/TypingIndicator.tsx"],"names":[],"mappings":"AAMA,UAAU,oBAAoB;IAC5B,WAAW,CAAC,EAAE,MAAM,CAAC;CACtB;AAED;;;;;GAKG;AACH,wBAAgB,eAAe,CAAC,EAC9B,WAAkC,GACnC,EAAE,oBAAoB,kDAiBtB"}

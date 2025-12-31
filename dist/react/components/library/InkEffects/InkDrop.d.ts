@@ -2,7 +2,7 @@
  * InkDrop Component
  * Library Skin V2: Typewriter Edition
  *
- * Loading state indicator that simulates ink dropping from a pen nib
+ * Loading state indicator that simulates ink dropping from an inkwell
  * and spreading organically on paper.
  *
  * Tech stack: React + GSAP + SVG Filters
@@ -19,10 +19,10 @@ export interface InkDropProps {
     ariaLabel?: string;
 }
 /**
- * InkDrop - A loading indicator styled as ink dropping from a pen nib.
+ * InkDrop - A loading indicator styled as ink dropping from an inkwell.
  *
  * The animation shows:
- * 1. Ink forming at the pen nib tip
+ * 1. Ink forming at the inkwell opening
  * 2. Drop falling organically
  * 3. Spreading into a puddle on impact
  * 4. Puddle fading as ink absorbs into paper

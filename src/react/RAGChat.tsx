@@ -5,7 +5,7 @@ import { Database } from 'lucide-react';
 import { useSkinDetect } from './motion/hooks/useSkinDetect.js';
 import { ChatHeader } from './components/ChatHeader.js';
 import { ChatInput } from './components/ChatInput.js';
-import { TypewriterInput } from './components/library/index.js';
+import { TypewriterInput, InkBlot, InkFilters } from './components/library/index.js';
 import { MessageBubble } from './components/MessageBubble.js';
 import { TypingIndicator } from './components/TypingIndicator.js';
 import { EmptyState } from './components/shared/EmptyState.js';
@@ -167,6 +167,9 @@ export function RAGChat({
   if (skin === 'library') {
     return (
       <div className={`rag-chat rag-chat--desk-layout ${className}`}>
+        {/* SVG filter definitions for ink effects */}
+        <InkFilters />
+
         {/* Header */}
         <ChatHeader
           title={title}
@@ -176,8 +179,15 @@ export function RAGChat({
           onClearChat={clearChat}
         />
 
-        {/* Error Banner */}
-        {error && <ErrorBanner error={error} onDismiss={() => setError(null)} />}
+        {/* Error - Library skin uses InkBlot, others use ErrorBanner */}
+        {error && (
+          <InkBlot
+            message={error}
+            onDismiss={() => setError(null)}
+            showDismiss={true}
+            className="rag-ink-blot-error"
+          />
+        )}
 
         {/* Desk Layout: Typewriter left, Paper/Messages right */}
         <div className="rag-desk">

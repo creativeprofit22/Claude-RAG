@@ -9,5 +9,5 @@ export interface DocumentCardProps {
 /**
  * DocumentCard - Displays a single document in the list
  */
-export declare function DocumentCard({ document, isSelected, onSelect, onDelete, onPreview, }: DocumentCardProps): import("react/jsx-runtime").JSX.Element;
+export declare const DocumentCard: import("react").NamedExoticComponent<DocumentCardProps>;
 //# sourceMappingURL=DocumentCard.d.ts.map

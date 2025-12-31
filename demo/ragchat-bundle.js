@@ -16090,6 +16090,14 @@ var RAGBundle = (() => {
     const [sourcesExpanded, setSourcesExpanded] = useState(false);
     const skin = useSkinDetect();
     const isLibrarySkin = skin === "library";
+    const isFreshRef = useRef(!isUser && !message.isLoading);
+    const [isFresh, setIsFresh] = useState(isFreshRef.current);
+    useEffect(() => {
+      if (isFresh && isLibrarySkin) {
+        const timer = setTimeout(() => setIsFresh(false), 2e3);
+        return () => clearTimeout(timer);
+      }
+    }, [isFresh, isLibrarySkin]);
     const time2 = message.timestamp.toLocaleTimeString("en-US", {
       hour: "2-digit",
       minute: "2-digit"
@@ -16109,7 +16117,7 @@ var RAGBundle = (() => {
                 boxShadow: `0 0 20px ${accentColor}15`,
                 borderColor: `${accentColor}20`
               } : void 0,
-              children: message.isLoading ? /* @__PURE__ */ jsx("div", { className: "rag-message-loading", children: /* @__PURE__ */ jsx(LoadingDots, { accentColor }) }) : /* @__PURE__ */ jsx("p", { className: "rag-message-text", children: message.content })
+              children: message.isLoading ? /* @__PURE__ */ jsx("div", { className: "rag-message-loading", children: isLibrarySkin ? /* @__PURE__ */ jsx(InkDrop, { active: true, size: "md", ariaLabel: "Loading response..." }) : /* @__PURE__ */ jsx(LoadingDots, { accentColor }) }) : /* @__PURE__ */ jsx("p", { className: `rag-message-text${isFresh && isLibrarySkin ? " fresh-ink" : ""}`, children: message.content })
             }
           ),
           hasSources && !message.isLoading && (isLibrarySkin ? /* @__PURE__ */ jsx(
@@ -16178,14 +16186,7 @@ var RAGBundle = (() => {
   }) {
     const skin = useSkinDetect();
     if (skin === "library") {
-      return /* @__PURE__ */ jsx("div", { className: "rag-typing-indicator rag-typing-indicator--library", children: /* @__PURE__ */ jsx(
-        LoadingDots,
-        {
-          accentColor: "var(--lib-accent, #8B4513)",
-          className: "rag-typing-dots",
-          dotClassName: "rag-typing-dot"
-        }
-      ) });
+      return null;
     }
     return /* @__PURE__ */ jsx("div", { className: "rag-typing-indicator", children: /* @__PURE__ */ jsx(
       LoadingDots,
@@ -16453,6 +16454,7 @@ var RAGBundle = (() => {
     ] }) });
     if (skin === "library") {
       return /* @__PURE__ */ jsxs("div", { className: `rag-chat rag-chat--desk-layout ${className}`, children: [
+        /* @__PURE__ */ jsx(InkFilters, {}),
         /* @__PURE__ */ jsx(
           ChatHeader,
           {
@@ -16463,7 +16465,15 @@ var RAGBundle = (() => {
             onClearChat: clearChat
           }
         ),
-        error2 && /* @__PURE__ */ jsx(ErrorBanner, { error: error2, onDismiss: () => setError(null) }),
+        error2 && /* @__PURE__ */ jsx(
+          InkBlot,
+          {
+            message: error2,
+            onDismiss: () => setError(null),
+            showDismiss: true,
+            className: "rag-ink-blot-error"
+          }
+        ),
         /* @__PURE__ */ jsxs("div", { className: "rag-desk", children: [
           /* @__PURE__ */ jsx("div", { className: "rag-desk-typewriter", children: /* @__PURE__ */ jsx(
             TypewriterInput,
@@ -16727,7 +16737,7 @@ var RAGBundle = (() => {
   }
 
   // src/react/components/documents/DocumentCard.tsx
-  function DocumentCard({
+  var DocumentCard = memo(function DocumentCard2({
     document: document2,
     isSelected = false,
     onSelect,
@@ -16735,17 +16745,25 @@ var RAGBundle = (() => {
     onPreview
   }) {
     const Icon = getDocumentIcon(document2.type);
-    const handleCardClick = () => {
+    const handleCardClick = useCallback(() => {
       onSelect?.(document2);
-    };
-    const handlePreviewClick = (e2) => {
+    }, [onSelect, document2]);
+    const handlePreviewClick = useCallback((e2) => {
       e2.stopPropagation();
       onPreview?.(document2);
-    };
-    const handleDeleteClick = (e2) => {
+    }, [onPreview, document2]);
+    const handleDeleteClick = useCallback((e2) => {
       e2.stopPropagation();
       onDelete?.(document2);
-    };
+    }, [onDelete, document2]);
+    const handleKeyDown = useCallback((e2) => {
+      if (e2.key === "Enter" || e2.key === " ") {
+        e2.preventDefault();
+        onSelect?.(document2);
+      } else if (e2.key === "Escape") {
+        e2.target.blur();
+      }
+    }, [onSelect, document2]);
     return /* @__PURE__ */ jsxs(
       "div",
       {
@@ -16754,14 +16772,7 @@ var RAGBundle = (() => {
         role: "button",
         tabIndex: 0,
         "aria-pressed": isSelected,
-        onKeyDown: (e2) => {
-          if (e2.key === "Enter" || e2.key === " ") {
-            e2.preventDefault();
-            handleCardClick();
-          } else if (e2.key === "Escape") {
-            e2.target.blur();
-          }
-        },
+        onKeyDown: handleKeyDown,
         children: [
           /* @__PURE__ */ jsx("div", { className: "rag-doc-card-icon", children: /* @__PURE__ */ jsx(Icon, { size: 24, "aria-hidden": "true" }) }),
           /* @__PURE__ */ jsxs("div", { className: "rag-doc-card-info", children: [
@@ -16806,7 +16817,7 @@ var RAGBundle = (() => {
         ]
       }
     );
-  }
+  });
 
   // src/react/components/documents/DocumentList.tsx
   var DEFAULT_SKELETON_COUNT = 6;
@@ -16830,7 +16841,7 @@ var RAGBundle = (() => {
       }
     );
   }
-  function DocumentList({
+  var DocumentList = memo(function DocumentList2({
     documents,
     isLoading = false,
     onDocumentSelect,
@@ -16840,8 +16851,12 @@ var RAGBundle = (() => {
     emptyState,
     skeletonCount = DEFAULT_SKELETON_COUNT
   }) {
+    const skeletons = useMemo(
+      () => Array.from({ length: skeletonCount }, (_, i) => i),
+      [skeletonCount]
+    );
     if (isLoading) {
-      return /* @__PURE__ */ jsx("div", { className: "rag-doc-list", "aria-busy": "true", "aria-label": "Loading documents", children: Array.from({ length: skeletonCount }).map((_, index) => /* @__PURE__ */ jsx(DocumentCardSkeleton, {}, `doc-skeleton-${index}`)) });
+      return /* @__PURE__ */ jsx("div", { className: "rag-doc-list", "aria-busy": "true", "aria-label": "Loading documents", children: skeletons.map((index) => /* @__PURE__ */ jsx(DocumentCardSkeleton, {}, `doc-skeleton-${index}`)) });
     }
     if (documents.length === 0) {
       return /* @__PURE__ */ jsx(Fragment2, { children: emptyState || /* @__PURE__ */ jsx(DefaultEmptyState, {}) });
@@ -16852,7 +16867,7 @@ var RAGBundle = (() => {
         className: "rag-doc-list",
         role: "list",
         "aria-label": "Document list",
-        children: documents.map((doc) => /* @__PURE__ */ jsx("div", { children: /* @__PURE__ */ jsx(
+        children: documents.map((doc) => /* @__PURE__ */ jsx(
           DocumentCard,
           {
             document: doc,
@@ -16860,11 +16875,12 @@ var RAGBundle = (() => {
             onSelect: onDocumentSelect,
             onDelete: onDocumentDelete,
             onPreview: onDocumentPreview
-          }
-        ) }, doc.documentId))
+          },
+          doc.documentId
+        ))
       }
     );
-  }
+  });
 
   // src/react/hooks/useModal.ts
   function useModal({ onClose, isOpen = true }) {
@@ -18808,11 +18824,17 @@ var RAGBundle = (() => {
       onDocumentSelect
     });
     const [isUploadOpen, setIsUploadOpen] = useState(false);
-    const handleUploadComplete = () => {
+    const handleUploadComplete = useCallback(() => {
       refetch();
-    };
+    }, [refetch]);
+    const openUploadModal = useCallback(() => {
+      setIsUploadOpen(true);
+    }, []);
+    const closeUploadModal = useCallback(() => {
+      setIsUploadOpen(false);
+    }, []);
     const displayError = localError || error2;
-    const defaultEmptyState = /* @__PURE__ */ jsx(
+    const defaultEmptyState = useMemo(() => /* @__PURE__ */ jsx(
       EmptyState,
       {
         title: "No documents yet",
@@ -18821,7 +18843,7 @@ var RAGBundle = (() => {
         iconShadow: `0 0 30px ${accentColor}15`,
         className: "rag-library-empty"
       }
-    );
+    ), [accentColor]);
     return /* @__PURE__ */ jsxs("div", { className: `rag-document-library ${className}`, children: [
       /* @__PURE__ */ jsxs("header", { className: "rag-library-header", children: [
         /* @__PURE__ */ jsxs("div", { className: "rag-library-header-info", children: [
@@ -18846,7 +18868,7 @@ var RAGBundle = (() => {
           "button",
           {
             type: "button",
-            onClick: () => setIsUploadOpen(true),
+            onClick: openUploadModal,
             className: "rag-library-upload-btn",
             style: { backgroundColor: accentColor },
             children: [
@@ -18906,7 +18928,7 @@ var RAGBundle = (() => {
         UploadModal,
         {
           isOpen: isUploadOpen,
-          onClose: () => setIsUploadOpen(false),
+          onClose: closeUploadModal,
           onUploadComplete: handleUploadComplete,
           endpoint,
           headers

@@ -1,11 +1,11 @@
 'use client';
 
 import { FileText, ChevronDown, ChevronUp } from 'lucide-react';
-import { useState } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { DEFAULT_ACCENT_COLOR, type ChatMessage } from '../types.js';
 import { LoadingDots } from './LoadingDots.js';
 import { useSkinDetect } from '../motion/hooks/useSkinDetect.js';
-import { SourcesCardCatalog } from './library/index.js';
+import { SourcesCardCatalog, InkDrop } from './library/index.js';
 
 interface MessageBubbleProps {
   message: ChatMessage;
@@ -22,6 +22,18 @@ export function MessageBubble({
   const [sourcesExpanded, setSourcesExpanded] = useState(false);
   const skin = useSkinDetect();
   const isLibrarySkin = skin === 'library';
+
+  // Track if message is "fresh" (just appeared) for wet ink sheen effect
+  const isFreshRef = useRef(!isUser && !message.isLoading);
+  const [isFresh, setIsFresh] = useState(isFreshRef.current);
+
+  // Clear fresh state after animation completes (2s as per CSS)
+  useEffect(() => {
+    if (isFresh && isLibrarySkin) {
+      const timer = setTimeout(() => setIsFresh(false), 2000);
+      return () => clearTimeout(timer);
+    }
+  }, [isFresh, isLibrarySkin]);
 
   const time = message.timestamp.toLocaleTimeString('en-US', {
     hour: '2-digit',
@@ -50,10 +62,16 @@ export function MessageBubble({
         >
           {message.isLoading ? (
             <div className="rag-message-loading">
-              <LoadingDots accentColor={accentColor} />
+              {isLibrarySkin ? (
+                <InkDrop active={true} size="md" ariaLabel="Loading response..." />
+              ) : (
+                <LoadingDots accentColor={accentColor} />
+              )}
             </div>
           ) : (
-            <p className="rag-message-text">{message.content}</p>
+            <p className={`rag-message-text${isFresh && isLibrarySkin ? ' fresh-ink' : ''}`}>
+              {message.content}
+            </p>
           )}
         </div>
 

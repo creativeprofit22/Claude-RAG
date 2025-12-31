@@ -3056,6 +3056,27 @@
   font-size: var(--curator-text-sm);
 }
 
+/* ─── Loading Area - Light blotter paper for ink visibility ─── */
+[data-skin="library"] .rag-message-loading {
+  background:
+    /* Subtle paper fiber texture */
+    url("data:image/svg+xml,%3Csvg viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='paper'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23paper)' opacity='0.05'/%3E%3C/svg%3E"),
+    /* Cream blotter paper gradient */
+    linear-gradient(
+      180deg,
+      #F5ECD7 0%,
+      #EDE4CF 50%,
+      #E5DCC7 100%
+    );
+  background-blend-mode: multiply, normal;
+  border-radius: 4px;
+  padding: 1rem 1.5rem;
+  margin: 0.25rem 0;
+  box-shadow:
+    inset 0 1px 3px rgba(0, 0, 0, 0.1),
+    0 1px 0 rgba(255, 255, 255, 0.05);
+}
+
 /* ─── Message Content - Allow CardCatalog overflow ─── */
 [data-skin="library"] .rag-message-content {
   overflow: visible;
@@ -3136,11 +3157,10 @@
   }
 }
 
-/* ─── Loading Dots - Brass dots ─── */
-[data-skin="library"] .rag-loading-dots span,
-[data-skin="library"] .rag-typing-dot {
-  background-color: var(--lib-gold);
-  box-shadow: 0 0 4px rgba(139, 112, 40, 0.4);
+/* ─── Loading Dots - Hidden for library (uses InkDrop instead) ─── */
+[data-skin="library"] .rag-loading-dots,
+[data-skin="library"] .rag-typing-dots {
+  display: none;
 }
 
 /* ─── Sources Toggle - Brass button ─── */

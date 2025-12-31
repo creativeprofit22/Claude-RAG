@@ -53,27 +53,77 @@
 .ink-drop--md { --drop-size: 40px; }
 .ink-drop--lg { --drop-size: 64px; }
 
-/* Pen nib at top */
+/* Ink bottle (upside down) */
 .ink-drop__nib {
-  width: calc(var(--drop-size) * 0.3);
-  height: calc(var(--drop-size) * 0.5);
-  background: linear-gradient(
-    180deg,
-    #8B7028 0%,
-    #5C4A20 50%,
-    #3D3015 100%
-  );
-  clip-path: polygon(50% 100%, 0 0, 100% 0);
-  margin-bottom: calc(var(--drop-size) * 0.1);
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
 }
 
-/* Drop forming at nib tip */
+/* Bottle body (square, at top) */
+.ink-drop__nib::before {
+  content: '';
+  width: calc(var(--drop-size) * 0.5);
+  height: calc(var(--drop-size) * 0.4);
+  background:
+    /* Glass reflection left edge */
+    linear-gradient(
+      90deg,
+      rgba(255, 255, 255, 0.15) 0%,
+      transparent 20%,
+      transparent 80%,
+      rgba(255, 255, 255, 0.08) 100%
+    ),
+    /* Dark ink inside */
+    linear-gradient(
+      180deg,
+      #1a1612 0%,
+      #0d0906 50%,
+      #1a1612 100%
+    );
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 3px;
+  box-shadow:
+    inset 0 0 10px rgba(0, 0, 0, 0.5),
+    0 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+/* Bottle neck (narrow, at bottom - where drop falls) */
+.ink-drop__nib::after {
+  content: '';
+  width: calc(var(--drop-size) * 0.2);
+  height: calc(var(--drop-size) * 0.15);
+  background:
+    /* Glass reflection */
+    linear-gradient(
+      90deg,
+      rgba(255, 255, 255, 0.12) 0%,
+      transparent 30%,
+      transparent 70%,
+      rgba(255, 255, 255, 0.06) 100%
+    ),
+    /* Dark ink */
+    linear-gradient(
+      180deg,
+      #0d0906 0%,
+      #1a1208 100%
+    );
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-top: none;
+  border-radius: 0 0 2px 2px;
+  margin-top: -1px;
+  box-shadow:
+    inset 0 -2px 4px rgba(0, 0, 0, 0.4),
+    0 2px 3px rgba(0, 0, 0, 0.2);
+}
+
+/* Drop forming at bottle neck */
 .ink-drop__drop {
   position: absolute;
-  top: calc(var(--drop-size) * 0.5);
-  width: calc(var(--drop-size) * 0.25);
-  height: calc(var(--drop-size) * 0.25);
+  top: calc(var(--drop-size) * 0.55);
+  width: calc(var(--drop-size) * 0.2);
+  height: calc(var(--drop-size) * 0.2);
   background: var(--ink-primary);
   border-radius: 50%;
   filter: url(#ink-drop-filter);

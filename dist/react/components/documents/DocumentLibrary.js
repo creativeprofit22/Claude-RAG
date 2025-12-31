@@ -1,6 +1,6 @@
 'use client';
 import { jsx as _jsx, Fragment as _Fragment, jsxs as _jsxs } from "react/jsx-runtime";
-import { useState } from 'react';
+import { useState, useMemo, useCallback } from 'react';
 import { Library, Upload } from 'lucide-react';
 import { DocumentSearch } from './DocumentSearch.js';
 import { DocumentList } from './DocumentList.js';
@@ -45,13 +45,19 @@ export function DocumentLibrary({ endpoint = '/api/rag', title = 'Document Libra
     });
     // Upload modal state
     const [isUploadOpen, setIsUploadOpen] = useState(false);
-    const handleUploadComplete = () => {
+    const handleUploadComplete = useCallback(() => {
         refetch();
-    };
+    }, [refetch]);
+    const openUploadModal = useCallback(() => {
+        setIsUploadOpen(true);
+    }, []);
+    const closeUploadModal = useCallback(() => {
+        setIsUploadOpen(false);
+    }, []);
     // Combined error state
     const displayError = localError || error;
-    // Default empty state
-    const defaultEmptyState = (_jsx(EmptyState, { title: "No documents yet", description: "Upload documents to start building your knowledge base.", iconColor: accentColor, iconShadow: `0 0 30px ${accentColor}15`, className: "rag-library-empty" }));
-    return (_jsxs("div", { className: `rag-document-library ${className}`, children: [_jsxs("header", { className: "rag-library-header", children: [_jsxs("div", { className: "rag-library-header-info", children: [_jsx("div", { className: "rag-library-header-icon", style: { backgroundColor: `${accentColor}15`, borderColor: `${accentColor}30` }, children: _jsx(Library, { size: 20, style: { color: accentColor }, "aria-hidden": "true" }) }), _jsxs("div", { className: "rag-library-header-text", children: [_jsx("h2", { className: "rag-library-title", children: title }), _jsx("span", { className: "rag-library-count", children: isLoading ? ('Loading...') : (_jsxs(_Fragment, { children: [_jsx("span", { className: "rag-library-count-number", children: documents.length }), ' ', documents.length === 1 ? 'document' : 'documents'] })) })] })] }), _jsxs("button", { type: "button", onClick: () => setIsUploadOpen(true), className: "rag-library-upload-btn", style: { backgroundColor: accentColor }, children: [_jsx(Upload, { size: 16 }), "Upload"] })] }), displayError && _jsx(ErrorBanner, { error: displayError, onDismiss: dismissError }), _jsx("div", { children: _jsx(DocumentSearch, { value: searchQuery, onChange: setSearchQuery, sortBy: sortBy, onSortByChange: setSortBy, sortOrder: sortOrder, onSortOrderChange: setSortOrder, placeholder: "Search documents..." }) }), _jsx("div", { className: "rag-library-content", children: _jsx(DocumentList, { documents: filteredDocuments, isLoading: isLoading, onDocumentSelect: onDocumentSelect ? handleDocumentSelect : undefined, onDocumentDelete: handleDeleteRequest, onDocumentPreview: handlePreview, emptyState: emptyState || defaultEmptyState }) }), previewDoc && (_jsx(DocumentPreview, { document: previewDoc, isLoading: previewLoading, onClose: handleClosePreview, onQueryDocument: onDocumentSelect ? handleQueryDocument : undefined, accentColor: accentColor })), deleteDoc && (_jsx(ConfirmDialog, { title: "Delete Document", message: `Are you sure you want to delete "${deleteDoc.documentName}"? This action cannot be undone.`, confirmLabel: isDeleting ? 'Deleting...' : 'Delete', cancelLabel: "Cancel", onConfirm: handleConfirmDelete, onCancel: handleCancelDelete, isDestructive: true })), _jsx(UploadModal, { isOpen: isUploadOpen, onClose: () => setIsUploadOpen(false), onUploadComplete: handleUploadComplete, endpoint: endpoint, headers: headers })] }));
+    // Default empty state - memoized to prevent recreation on each render
+    const defaultEmptyState = useMemo(() => (_jsx(EmptyState, { title: "No documents yet", description: "Upload documents to start building your knowledge base.", iconColor: accentColor, iconShadow: `0 0 30px ${accentColor}15`, className: "rag-library-empty" })), [accentColor]);
+    return (_jsxs("div", { className: `rag-document-library ${className}`, children: [_jsxs("header", { className: "rag-library-header", children: [_jsxs("div", { className: "rag-library-header-info", children: [_jsx("div", { className: "rag-library-header-icon", style: { backgroundColor: `${accentColor}15`, borderColor: `${accentColor}30` }, children: _jsx(Library, { size: 20, style: { color: accentColor }, "aria-hidden": "true" }) }), _jsxs("div", { className: "rag-library-header-text", children: [_jsx("h2", { className: "rag-library-title", children: title }), _jsx("span", { className: "rag-library-count", children: isLoading ? ('Loading...') : (_jsxs(_Fragment, { children: [_jsx("span", { className: "rag-library-count-number", children: documents.length }), ' ', documents.length === 1 ? 'document' : 'documents'] })) })] })] }), _jsxs("button", { type: "button", onClick: openUploadModal, className: "rag-library-upload-btn", style: { backgroundColor: accentColor }, children: [_jsx(Upload, { size: 16 }), "Upload"] })] }), displayError && _jsx(ErrorBanner, { error: displayError, onDismiss: dismissError }), _jsx("div", { children: _jsx(DocumentSearch, { value: searchQuery, onChange: setSearchQuery, sortBy: sortBy, onSortByChange: setSortBy, sortOrder: sortOrder, onSortOrderChange: setSortOrder, placeholder: "Search documents..." }) }), _jsx("div", { className: "rag-library-content", children: _jsx(DocumentList, { documents: filteredDocuments, isLoading: isLoading, onDocumentSelect: onDocumentSelect ? handleDocumentSelect : undefined, onDocumentDelete: handleDeleteRequest, onDocumentPreview: handlePreview, emptyState: emptyState || defaultEmptyState }) }), previewDoc && (_jsx(DocumentPreview, { document: previewDoc, isLoading: previewLoading, onClose: handleClosePreview, onQueryDocument: onDocumentSelect ? handleQueryDocument : undefined, accentColor: accentColor })), deleteDoc && (_jsx(ConfirmDialog, { title: "Delete Document", message: `Are you sure you want to delete "${deleteDoc.documentName}"? This action cannot be undone.`, confirmLabel: isDeleting ? 'Deleting...' : 'Delete', cancelLabel: "Cancel", onConfirm: handleConfirmDelete, onCancel: handleCancelDelete, isDestructive: true })), _jsx(UploadModal, { isOpen: isUploadOpen, onClose: closeUploadModal, onUploadComplete: handleUploadComplete, endpoint: endpoint, headers: headers })] }));
 }
 //# sourceMappingURL=DocumentLibrary.js.map
