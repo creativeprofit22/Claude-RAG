@@ -13,17 +13,17 @@ Query → Gemini Embeddings → LanceDB → Chunks → Claude Code CLI → Respo
 ```
 
 ## Last Session (2025-12-30)
-**Library Skin Desk Layout - Validated:**
-- Fixed typewriter proportions: 60/40 split with paper, min-width 500px
-- Removed max-height constraint for library skin in demo
-- Added responsive override at 900px breakpoint (fixes tablet overflow)
-- Validation: Tests pass (21/21), wiring verified, UI renders correctly
+**Library Skin Desk Layout - Refactoring Complete:**
+- M1: Removed unused `type LucideIcon` import (RAGChat.tsx)
+- M2: Removed empty `.rag-chat--desk-layout` CSS rule (styles.css)
+- M3: Removed dead legacy variables (demo/styles.css)
+- L2: Removed unused `iconStyle` variable (EmptyState.tsx)
+- Validation: 21/21 tests, tsc clean, build passes
 
 ## Pipeline State
-Phase: refactor-hunt
+Phase: COMPLETE
 Feature: Library Desk Layout
-Files-Validated: src/react/RAGChat.tsx, src/react/styles.css, demo/styles.css
-Validation-Report: reports/validation-library-desk-layout.md
+All-Tiers-Complete: MEDIUM (3/3), LOW (1/1), L1 skipped (low value)
 
 ## Library Skin V2 Progress
 | Phase | Status | Notes |

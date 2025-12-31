@@ -16207,10 +16207,6 @@ var RAGBundle = (() => {
     description,
     className = ""
   }) {
-    const iconStyle = {
-      ...iconColor && { color: iconColor },
-      ...iconShadow && { boxShadow: iconShadow }
-    };
     return /* @__PURE__ */ jsxs("div", { className: `curator-empty-state ${className}`, children: [
       /* @__PURE__ */ jsx("div", { className: "curator-empty-state-icon", style: iconShadow ? { boxShadow: iconShadow } : void 0, children: /* @__PURE__ */ jsx(Icon, { size: iconSize, style: iconColor ? { color: iconColor } : void 0, "aria-hidden": "true" }) }),
       /* @__PURE__ */ jsx("h3", { className: "curator-empty-state-title", children: title }),
@@ -16739,7 +16735,6 @@ var RAGBundle = (() => {
     onPreview
   }) {
     const Icon = getDocumentIcon(document2.type);
-    const { motion: motion2 } = useSkinMotion();
     const handleCardClick = () => {
       onSelect?.(document2);
     };
@@ -16752,7 +16747,7 @@ var RAGBundle = (() => {
       onDelete?.(document2);
     };
     return /* @__PURE__ */ jsxs(
-      m.div,
+      "div",
       {
         className: `rag-doc-card ${isSelected ? "rag-doc-card--selected" : ""}`,
         onClick: handleCardClick,
@@ -16767,12 +16762,6 @@ var RAGBundle = (() => {
             e2.target.blur();
           }
         },
-        initial: "hidden",
-        animate: "visible",
-        exit: "exit",
-        variants: motion2.card,
-        whileHover: motion2.card.hover,
-        whileTap: motion2.card.tap,
         children: [
           /* @__PURE__ */ jsx("div", { className: "rag-doc-card-icon", children: /* @__PURE__ */ jsx(Icon, { size: 24, "aria-hidden": "true" }) }),
           /* @__PURE__ */ jsxs("div", { className: "rag-doc-card-info", children: [
@@ -16851,7 +16840,6 @@ var RAGBundle = (() => {
     emptyState,
     skeletonCount = DEFAULT_SKELETON_COUNT
   }) {
-    const { motion: skinMotion } = useSkinMotion();
     if (isLoading) {
       return /* @__PURE__ */ jsx("div", { className: "rag-doc-list", "aria-busy": "true", "aria-label": "Loading documents", children: Array.from({ length: skeletonCount }).map((_, index) => /* @__PURE__ */ jsx(DocumentCardSkeleton, {}, `doc-skeleton-${index}`)) });
     }
@@ -16859,15 +16847,12 @@ var RAGBundle = (() => {
       return /* @__PURE__ */ jsx(Fragment2, { children: emptyState || /* @__PURE__ */ jsx(DefaultEmptyState, {}) });
     }
     return /* @__PURE__ */ jsx(
-      motion.div,
+      "div",
       {
         className: "rag-doc-list",
         role: "list",
         "aria-label": "Document list",
-        variants: skinMotion.list,
-        initial: "hidden",
-        animate: "visible",
-        children: /* @__PURE__ */ jsx(AnimatePresence, { mode: "popLayout", children: documents.map((doc) => /* @__PURE__ */ jsx(motion.div, { variants: skinMotion.card, children: /* @__PURE__ */ jsx(
+        children: documents.map((doc) => /* @__PURE__ */ jsx("div", { children: /* @__PURE__ */ jsx(
           DocumentCard,
           {
             document: doc,
@@ -16876,7 +16861,7 @@ var RAGBundle = (() => {
             onDelete: onDocumentDelete,
             onPreview: onDocumentPreview
           }
-        ) }, doc.documentId)) })
+        ) }, doc.documentId))
       }
     );
   }
@@ -16925,32 +16910,27 @@ var RAGBundle = (() => {
     accentColor = DEFAULT_ACCENT_COLOR
   }) {
     const { handleBackdropClick } = useModal({ onClose, isOpen });
-    const { motion: skinMotion } = useSkinMotion();
     const accentStyles = useMemo(() => ({
       iconContainer: { backgroundColor: `${accentColor}20`, borderColor: `${accentColor}40` },
       icon: { color: accentColor },
       badge: { backgroundColor: `${accentColor}20`, color: accentColor },
       primaryBtn: { backgroundColor: accentColor }
     }), [accentColor]);
-    return /* @__PURE__ */ jsx(AnimatePresence, { mode: "wait", children: isOpen && /* @__PURE__ */ jsx(
-      motion.div,
+    if (!isOpen) {
+      return null;
+    }
+    return /* @__PURE__ */ jsx(
+      "div",
       {
         className: "curator-overlay rag-preview-overlay",
-        initial: { opacity: 0 },
-        animate: { opacity: 1 },
-        exit: { opacity: 0 },
         onClick: handleBackdropClick,
         role: "dialog",
         "aria-modal": "true",
         "aria-labelledby": "preview-dialog-title",
         children: /* @__PURE__ */ jsxs(
-          motion.div,
+          "div",
           {
             className: "rag-preview-modal",
-            variants: skinMotion.modal,
-            initial: "hidden",
-            animate: "visible",
-            exit: "exit",
             onClick: (e2) => e2.stopPropagation(),
             children: [
               /* @__PURE__ */ jsxs("div", { className: "rag-preview-header", children: [
@@ -17044,9 +17024,8 @@ var RAGBundle = (() => {
             ]
           }
         )
-      },
-      "document-preview"
-    ) });
+      }
+    );
   }
 
   // src/react/components/shared/ConfirmDialog.tsx
@@ -18793,25 +18772,6 @@ var RAGBundle = (() => {
     emptyState,
     headers
   }) {
-    const { motion: motionConfig } = useSkinMotion();
-    const containerVariants = {
-      hidden: { opacity: 0 },
-      visible: {
-        opacity: 1,
-        transition: {
-          staggerChildren: motionConfig.stagger.children,
-          delayChildren: 0.1
-        }
-      }
-    };
-    const itemVariants = {
-      hidden: { opacity: 0, y: 20 },
-      visible: {
-        opacity: 1,
-        y: 0,
-        transition: motionConfig.transition.default
-      }
-    };
     const {
       documents,
       filteredDocuments,
@@ -18862,106 +18822,97 @@ var RAGBundle = (() => {
         className: "rag-library-empty"
       }
     );
-    return /* @__PURE__ */ jsxs(
-      motion.div,
-      {
-        className: `rag-document-library ${className}`,
-        variants: containerVariants,
-        initial: "hidden",
-        animate: "visible",
-        children: [
-          /* @__PURE__ */ jsxs(motion.header, { className: "rag-library-header", variants: itemVariants, children: [
-            /* @__PURE__ */ jsxs("div", { className: "rag-library-header-info", children: [
-              /* @__PURE__ */ jsx(
-                "div",
-                {
-                  className: "rag-library-header-icon",
-                  style: { backgroundColor: `${accentColor}15`, borderColor: `${accentColor}30` },
-                  children: /* @__PURE__ */ jsx(Library, { size: 20, style: { color: accentColor }, "aria-hidden": "true" })
-                }
-              ),
-              /* @__PURE__ */ jsxs("div", { className: "rag-library-header-text", children: [
-                /* @__PURE__ */ jsx("h2", { className: "rag-library-title", children: title }),
-                /* @__PURE__ */ jsx("span", { className: "rag-library-count", children: isLoading ? "Loading..." : /* @__PURE__ */ jsxs(Fragment2, { children: [
-                  /* @__PURE__ */ jsx("span", { className: "rag-library-count-number", children: documents.length }),
-                  " ",
-                  documents.length === 1 ? "document" : "documents"
-                ] }) })
-              ] })
-            ] }),
-            /* @__PURE__ */ jsxs(
-              "button",
-              {
-                type: "button",
-                onClick: () => setIsUploadOpen(true),
-                className: "rag-library-upload-btn",
-                style: { backgroundColor: accentColor },
-                children: [
-                  /* @__PURE__ */ jsx(Upload, { size: 16 }),
-                  "Upload"
-                ]
-              }
-            )
-          ] }),
-          displayError && /* @__PURE__ */ jsx(ErrorBanner, { error: displayError, onDismiss: dismissError }),
-          /* @__PURE__ */ jsx(motion.div, { variants: itemVariants, children: /* @__PURE__ */ jsx(
-            DocumentSearch,
-            {
-              value: searchQuery,
-              onChange: setSearchQuery,
-              sortBy,
-              onSortByChange: setSortBy,
-              sortOrder,
-              onSortOrderChange: setSortOrder,
-              placeholder: "Search documents..."
-            }
-          ) }),
-          /* @__PURE__ */ jsx(motion.div, { className: "rag-library-content", variants: itemVariants, children: /* @__PURE__ */ jsx(
-            DocumentList,
-            {
-              documents: filteredDocuments,
-              isLoading,
-              onDocumentSelect: onDocumentSelect ? handleDocumentSelect : void 0,
-              onDocumentDelete: handleDeleteRequest,
-              onDocumentPreview: handlePreview,
-              emptyState: emptyState || defaultEmptyState
-            }
-          ) }),
-          previewDoc && /* @__PURE__ */ jsx(
-            DocumentPreview,
-            {
-              document: previewDoc,
-              isLoading: previewLoading,
-              onClose: handleClosePreview,
-              onQueryDocument: onDocumentSelect ? handleQueryDocument : void 0,
-              accentColor
-            }
-          ),
-          deleteDoc && /* @__PURE__ */ jsx(
-            ConfirmDialog,
-            {
-              title: "Delete Document",
-              message: `Are you sure you want to delete "${deleteDoc.documentName}"? This action cannot be undone.`,
-              confirmLabel: isDeleting ? "Deleting..." : "Delete",
-              cancelLabel: "Cancel",
-              onConfirm: handleConfirmDelete,
-              onCancel: handleCancelDelete,
-              isDestructive: true
-            }
-          ),
+    return /* @__PURE__ */ jsxs("div", { className: `rag-document-library ${className}`, children: [
+      /* @__PURE__ */ jsxs("header", { className: "rag-library-header", children: [
+        /* @__PURE__ */ jsxs("div", { className: "rag-library-header-info", children: [
           /* @__PURE__ */ jsx(
-            UploadModal,
+            "div",
             {
-              isOpen: isUploadOpen,
-              onClose: () => setIsUploadOpen(false),
-              onUploadComplete: handleUploadComplete,
-              endpoint,
-              headers
+              className: "rag-library-header-icon",
+              style: { backgroundColor: `${accentColor}15`, borderColor: `${accentColor}30` },
+              children: /* @__PURE__ */ jsx(Library, { size: 20, style: { color: accentColor }, "aria-hidden": "true" })
             }
-          )
-        ]
-      }
-    );
+          ),
+          /* @__PURE__ */ jsxs("div", { className: "rag-library-header-text", children: [
+            /* @__PURE__ */ jsx("h2", { className: "rag-library-title", children: title }),
+            /* @__PURE__ */ jsx("span", { className: "rag-library-count", children: isLoading ? "Loading..." : /* @__PURE__ */ jsxs(Fragment2, { children: [
+              /* @__PURE__ */ jsx("span", { className: "rag-library-count-number", children: documents.length }),
+              " ",
+              documents.length === 1 ? "document" : "documents"
+            ] }) })
+          ] })
+        ] }),
+        /* @__PURE__ */ jsxs(
+          "button",
+          {
+            type: "button",
+            onClick: () => setIsUploadOpen(true),
+            className: "rag-library-upload-btn",
+            style: { backgroundColor: accentColor },
+            children: [
+              /* @__PURE__ */ jsx(Upload, { size: 16 }),
+              "Upload"
+            ]
+          }
+        )
+      ] }),
+      displayError && /* @__PURE__ */ jsx(ErrorBanner, { error: displayError, onDismiss: dismissError }),
+      /* @__PURE__ */ jsx("div", { children: /* @__PURE__ */ jsx(
+        DocumentSearch,
+        {
+          value: searchQuery,
+          onChange: setSearchQuery,
+          sortBy,
+          onSortByChange: setSortBy,
+          sortOrder,
+          onSortOrderChange: setSortOrder,
+          placeholder: "Search documents..."
+        }
+      ) }),
+      /* @__PURE__ */ jsx("div", { className: "rag-library-content", children: /* @__PURE__ */ jsx(
+        DocumentList,
+        {
+          documents: filteredDocuments,
+          isLoading,
+          onDocumentSelect: onDocumentSelect ? handleDocumentSelect : void 0,
+          onDocumentDelete: handleDeleteRequest,
+          onDocumentPreview: handlePreview,
+          emptyState: emptyState || defaultEmptyState
+        }
+      ) }),
+      previewDoc && /* @__PURE__ */ jsx(
+        DocumentPreview,
+        {
+          document: previewDoc,
+          isLoading: previewLoading,
+          onClose: handleClosePreview,
+          onQueryDocument: onDocumentSelect ? handleQueryDocument : void 0,
+          accentColor
+        }
+      ),
+      deleteDoc && /* @__PURE__ */ jsx(
+        ConfirmDialog,
+        {
+          title: "Delete Document",
+          message: `Are you sure you want to delete "${deleteDoc.documentName}"? This action cannot be undone.`,
+          confirmLabel: isDeleting ? "Deleting..." : "Delete",
+          cancelLabel: "Cancel",
+          onConfirm: handleConfirmDelete,
+          onCancel: handleCancelDelete,
+          isDestructive: true
+        }
+      ),
+      /* @__PURE__ */ jsx(
+        UploadModal,
+        {
+          isOpen: isUploadOpen,
+          onClose: () => setIsUploadOpen(false),
+          onUploadComplete: handleUploadComplete,
+          endpoint,
+          headers
+        }
+      )
+    ] });
   }
 
   // src/react/RAGInterface.tsx
@@ -18989,7 +18940,6 @@ var RAGBundle = (() => {
     const [activeView, setActiveView] = useState(defaultView);
     const [scopedDocument, setScopedDocument] = useState(null);
     const [preloaderComplete, setPreloaderComplete] = useState(false);
-    const { motion: skinMotion } = useSkinMotion();
     const skin = useSkinDetect();
     const handleDocumentSelect = useCallback((doc) => {
       setScopedDocument(doc);
@@ -19081,17 +19031,13 @@ var RAGBundle = (() => {
           }
         )
       ] }),
-      /* @__PURE__ */ jsx("div", { className: "rag-interface-content", children: /* @__PURE__ */ jsx(AnimatePresence, { mode: "wait", children: activeView === "chat" ? /* @__PURE__ */ jsx(
-        motion.div,
+      /* @__PURE__ */ jsx("div", { className: "rag-interface-content", children: activeView === "chat" ? /* @__PURE__ */ jsx(
+        "div",
         {
           role: "tabpanel",
           id: "rag-tabpanel-chat",
           "aria-labelledby": "rag-tab-chat",
-          style: { display: "contents" },
-          initial: skinMotion.card.hidden,
-          animate: skinMotion.card.visible,
-          exit: skinMotion.card.exit,
-          transition: skinMotion.transition.fast,
+          className: "rag-interface-tabpanel",
           children: /* @__PURE__ */ jsx(
             RAGChat,
             {
@@ -19108,19 +19054,14 @@ var RAGBundle = (() => {
               emptyState: chatEmptyState
             }
           )
-        },
-        "chat"
+        }
       ) : /* @__PURE__ */ jsx(
-        motion.div,
+        "div",
         {
           role: "tabpanel",
           id: "rag-tabpanel-documents",
           "aria-labelledby": "rag-tab-documents",
-          style: { display: "contents" },
-          initial: skinMotion.card.hidden,
-          animate: skinMotion.card.visible,
-          exit: skinMotion.card.exit,
-          transition: skinMotion.transition.fast,
+          className: "rag-interface-tabpanel",
           children: /* @__PURE__ */ jsx(
             DocumentLibrary,
             {
@@ -19132,9 +19073,8 @@ var RAGBundle = (() => {
               emptyState: documentsEmptyState
             }
           )
-        },
-        "documents"
-      ) }) })
+        }
+      ) })
     ] });
   }
 

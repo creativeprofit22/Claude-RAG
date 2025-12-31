@@ -1,9 +1,7 @@
 'use client';
 import { jsx as _jsx, jsxs as _jsxs, Fragment as _Fragment } from "react/jsx-runtime";
-import { AnimatePresence, motion } from 'framer-motion';
 import { DocumentCard } from './DocumentCard.js';
 import { EmptyState } from '../shared/EmptyState.js';
-import { useSkinMotion } from '../../motion/hooks/useSkinMotion.js';
 /** Number of skeleton cards to show while loading */
 const DEFAULT_SKELETON_COUNT = 6;
 /**
@@ -22,7 +20,6 @@ function DefaultEmptyState() {
  * DocumentList - Grid layout of document cards
  */
 export function DocumentList({ documents, isLoading = false, onDocumentSelect, onDocumentDelete, onDocumentPreview, selectedDocumentId, emptyState, skeletonCount = DEFAULT_SKELETON_COUNT, }) {
-    const { motion: skinMotion } = useSkinMotion();
     // Show loading skeletons
     // Using stable keys with prefix to avoid React reconciliation issues
     if (isLoading) {
@@ -32,6 +29,6 @@ export function DocumentList({ documents, isLoading = false, onDocumentSelect, o
     if (documents.length === 0) {
         return _jsx(_Fragment, { children: emptyState || _jsx(DefaultEmptyState, {}) });
     }
-    return (_jsx(motion.div, { className: "rag-doc-list", role: "list", "aria-label": "Document list", variants: skinMotion.list, initial: "hidden", animate: "visible", children: _jsx(AnimatePresence, { mode: "popLayout", children: documents.map((doc) => (_jsx(motion.div, { variants: skinMotion.card, children: _jsx(DocumentCard, { document: doc, isSelected: selectedDocumentId === doc.documentId, onSelect: onDocumentSelect, onDelete: onDocumentDelete, onPreview: onDocumentPreview }) }, doc.documentId))) }) }));
+    return (_jsx("div", { className: "rag-doc-list", role: "list", "aria-label": "Document list", children: documents.map((doc) => (_jsx("div", { children: _jsx(DocumentCard, { document: doc, isSelected: selectedDocumentId === doc.documentId, onSelect: onDocumentSelect, onDelete: onDocumentDelete, onPreview: onDocumentPreview }) }, doc.documentId))) }));
 }
 //# sourceMappingURL=DocumentList.js.map

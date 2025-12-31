@@ -1,11 +1,9 @@
 'use client';
 
 import { Eye, Trash2, Layers } from 'lucide-react';
-import { m } from 'framer-motion';
 import type { DocumentSummary } from '../../types.js';
 import { formatDate } from '../../utils/formatDate.js';
 import { getDocumentIcon } from '../../utils/documentIcons.js';
-import { useSkinMotion } from '../../motion/hooks/useSkinMotion.js';
 
 export interface DocumentCardProps {
   document: DocumentSummary;
@@ -26,7 +24,6 @@ export function DocumentCard({
   onPreview,
 }: DocumentCardProps) {
   const Icon = getDocumentIcon(document.type);
-  const { motion } = useSkinMotion();
 
   const handleCardClick = () => {
     onSelect?.(document);
@@ -43,7 +40,7 @@ export function DocumentCard({
   };
 
   return (
-    <m.div
+    <div
       className={`rag-doc-card ${isSelected ? 'rag-doc-card--selected' : ''}`}
       onClick={handleCardClick}
       role="button"
@@ -57,12 +54,6 @@ export function DocumentCard({
           (e.target as HTMLElement).blur();
         }
       }}
-      initial="hidden"
-      animate="visible"
-      exit="exit"
-      variants={motion.card}
-      whileHover={motion.card.hover}
-      whileTap={motion.card.tap}
     >
       {/* Document Icon */}
       <div className="rag-doc-card-icon">
@@ -116,6 +107,6 @@ export function DocumentCard({
           </button>
         )}
       </div>
-    </m.div>
+    </div>
   );
 }

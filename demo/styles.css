@@ -30,15 +30,6 @@
   --demo-color-error: #ef4444;
   --demo-color-warning: #f59e0b;
 
-  /* Legacy compatibility - map old names to skin variables */
-  --leather-dark: var(--skin-accent-dark);
-  --leather-medium: var(--skin-accent-muted);
-  --leather-light: var(--skin-border-color);
-  --parchment: var(--skin-accent);
-  --aged-paper: var(--skin-accent);
-  --brass: var(--skin-primary);
-  --brass-bright: var(--skin-primary-bright);
-
   /* Gradients - mapped to skin system */
   --demo-gradient-primary: var(--skin-gradient-btn);
   --demo-gradient-primary-full: var(--skin-gradient-btn);

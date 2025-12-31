@@ -10,5 +10,5 @@ export interface DocumentPreviewProps {
 /**
  * DocumentPreview - Modal overlay showing document details and chunk snippets
  */
-export declare function DocumentPreview({ document: docDetails, isOpen, isLoading, onClose, onQueryDocument, accentColor, }: DocumentPreviewProps): import("react/jsx-runtime").JSX.Element;
+export declare function DocumentPreview({ document: docDetails, isOpen, isLoading, onClose, onQueryDocument, accentColor, }: DocumentPreviewProps): import("react/jsx-runtime").JSX.Element | null;
 //# sourceMappingURL=DocumentPreview.d.ts.map

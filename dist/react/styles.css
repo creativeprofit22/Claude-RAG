@@ -221,9 +221,7 @@
    DESK LAYOUT - Side-by-side for Library Skin
    Typewriter on left, Messages/Paper on right
    =========================================== */
-.rag-chat--desk-layout {
-  /* Override default column layout */
-}
+/* .rag-chat--desk-layout class used for specificity targeting only */
 
 .rag-desk {
   display: flex;
@@ -1604,6 +1602,12 @@
 .rag-interface-content > * {
   flex: 1;
   min-height: 0;
+}
+
+/* Tab Panel - wrapper for animated view content */
+.rag-interface-tabpanel {
+  display: flex;
+  flex-direction: column;
 }
 
 /* =========================================

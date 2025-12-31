@@ -32,11 +32,6 @@ export function EmptyState({
   description,
   className = '',
 }: EmptyStateProps) {
-  const iconStyle = {
-    ...(iconColor && { color: iconColor }),
-    ...(iconShadow && { boxShadow: iconShadow }),
-  };
-
   return (
     <div className={`curator-empty-state ${className}`}>
       <div className="curator-empty-state-icon" style={iconShadow ? { boxShadow: iconShadow } : undefined}>

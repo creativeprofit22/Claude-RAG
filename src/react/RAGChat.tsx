@@ -1,7 +1,7 @@
 'use client';
 
 import { useRef, useEffect, useState, useCallback } from 'react';
-import { Database, type LucideIcon } from 'lucide-react';
+import { Database } from 'lucide-react';
 import { useSkinDetect } from './motion/hooks/useSkinDetect.js';
 import { ChatHeader } from './components/ChatHeader.js';
 import { ChatInput } from './components/ChatInput.js';
@@ -10,7 +10,6 @@ import { MessageBubble } from './components/MessageBubble.js';
 import { TypingIndicator } from './components/TypingIndicator.js';
 import { EmptyState } from './components/shared/EmptyState.js';
 import { ErrorBanner } from './components/shared/ErrorBanner.js';
-import { InkFilters } from './components/library/InkEffects/InkFilters.js';
 import { useRAGChat } from './hooks/useRAGChat.js';
 import { DEFAULT_ACCENT_COLOR, type RAGChatConfig } from './types.js';
 
