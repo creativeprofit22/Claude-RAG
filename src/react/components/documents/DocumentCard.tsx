@@ -1,5 +1,6 @@
 'use client';
 
+import { memo, useCallback } from 'react';
 import { Eye, Trash2, Layers } from 'lucide-react';
 import type { DocumentSummary } from '../../types.js';
 import { formatDate } from '../../utils/formatDate.js';
@@ -16,7 +17,7 @@ export interface DocumentCardProps {
 /**
  * DocumentCard - Displays a single document in the list
  */
-export function DocumentCard({
+export const DocumentCard = memo(function DocumentCard({
   document,
   isSelected = false,
   onSelect,
@@ -25,19 +26,28 @@ export function DocumentCard({
 }: DocumentCardProps) {
   const Icon = getDocumentIcon(document.type);
 
-  const handleCardClick = () => {
+  const handleCardClick = useCallback(() => {
     onSelect?.(document);
-  };
+  }, [onSelect, document]);
 
-  const handlePreviewClick = (e: React.MouseEvent) => {
+  const handlePreviewClick = useCallback((e: React.MouseEvent) => {
     e.stopPropagation();
     onPreview?.(document);
-  };
+  }, [onPreview, document]);
 
-  const handleDeleteClick = (e: React.MouseEvent) => {
+  const handleDeleteClick = useCallback((e: React.MouseEvent) => {
     e.stopPropagation();
     onDelete?.(document);
-  };
+  }, [onDelete, document]);
+
+  const handleKeyDown = useCallback((e: React.KeyboardEvent) => {
+    if (e.key === 'Enter' || e.key === ' ') {
+      e.preventDefault();
+      onSelect?.(document);
+    } else if (e.key === 'Escape') {
+      (e.target as HTMLElement).blur();
+    }
+  }, [onSelect, document]);
 
   return (
     <div
@@ -46,14 +56,7 @@ export function DocumentCard({
       role="button"
       tabIndex={0}
       aria-pressed={isSelected}
-      onKeyDown={(e) => {
-        if (e.key === 'Enter' || e.key === ' ') {
-          e.preventDefault();
-          handleCardClick();
-        } else if (e.key === 'Escape') {
-          (e.target as HTMLElement).blur();
-        }
-      }}
+      onKeyDown={handleKeyDown}
     >
       {/* Document Icon */}
       <div className="rag-doc-card-icon">
@@ -109,4 +112,4 @@ export function DocumentCard({
       </div>
     </div>
   );
-}
+});

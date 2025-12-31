@@ -1,5 +1,6 @@
 'use client';
 
+import { memo, useMemo } from 'react';
 import { DocumentCard } from './DocumentCard.js';
 import { EmptyState } from '../shared/EmptyState.js';
 import type { DocumentSummary } from '../../types.js';
@@ -51,7 +52,7 @@ function DefaultEmptyState() {
 /**
  * DocumentList - Grid layout of document cards
  */
-export function DocumentList({
+export const DocumentList = memo(function DocumentList({
   documents,
   isLoading = false,
   onDocumentSelect,
@@ -61,12 +62,18 @@ export function DocumentList({
   emptyState,
   skeletonCount = DEFAULT_SKELETON_COUNT,
 }: DocumentListProps) {
+  // Memoize skeleton array to avoid recreation on each render
+  const skeletons = useMemo(
+    () => Array.from({ length: skeletonCount }, (_, i) => i),
+    [skeletonCount]
+  );
+
   // Show loading skeletons
   // Using stable keys with prefix to avoid React reconciliation issues
   if (isLoading) {
     return (
       <div className="rag-doc-list" aria-busy="true" aria-label="Loading documents">
-        {Array.from({ length: skeletonCount }).map((_, index) => (
+        {skeletons.map((index) => (
           <DocumentCardSkeleton key={`doc-skeleton-${index}`} />
         ))}
       </div>
@@ -85,16 +92,15 @@ export function DocumentList({
       aria-label="Document list"
     >
       {documents.map((doc) => (
-        <div key={doc.documentId}>
-          <DocumentCard
-            document={doc}
-            isSelected={selectedDocumentId === doc.documentId}
-            onSelect={onDocumentSelect}
-            onDelete={onDocumentDelete}
-            onPreview={onDocumentPreview}
-          />
-        </div>
+        <DocumentCard
+          key={doc.documentId}
+          document={doc}
+          isSelected={selectedDocumentId === doc.documentId}
+          onSelect={onDocumentSelect}
+          onDelete={onDocumentDelete}
+          onPreview={onDocumentPreview}
+        />
       ))}
     </div>
   );
-}
+});

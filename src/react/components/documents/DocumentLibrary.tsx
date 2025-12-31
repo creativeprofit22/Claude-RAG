@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useMemo, useCallback } from 'react';
 import { Library, Upload } from 'lucide-react';
 import { DocumentSearch } from './DocumentSearch.js';
 import { DocumentList } from './DocumentList.js';
@@ -102,15 +102,23 @@ export function DocumentLibrary({
   // Upload modal state
   const [isUploadOpen, setIsUploadOpen] = useState(false);
 
-  const handleUploadComplete = () => {
+  const handleUploadComplete = useCallback(() => {
     refetch();
-  };
+  }, [refetch]);
+
+  const openUploadModal = useCallback(() => {
+    setIsUploadOpen(true);
+  }, []);
+
+  const closeUploadModal = useCallback(() => {
+    setIsUploadOpen(false);
+  }, []);
 
   // Combined error state
   const displayError = localError || error;
 
-  // Default empty state
-  const defaultEmptyState = (
+  // Default empty state - memoized to prevent recreation on each render
+  const defaultEmptyState = useMemo(() => (
     <EmptyState
       title="No documents yet"
       description="Upload documents to start building your knowledge base."
@@ -118,7 +126,7 @@ export function DocumentLibrary({
       iconShadow={`0 0 30px ${accentColor}15`}
       className="rag-library-empty"
     />
-  );
+  ), [accentColor]);
 
   return (
     <div className={`rag-document-library ${className}`}>
@@ -147,7 +155,7 @@ export function DocumentLibrary({
         </div>
         <button
           type="button"
-          onClick={() => setIsUploadOpen(true)}
+          onClick={openUploadModal}
           className="rag-library-upload-btn"
           style={{ backgroundColor: accentColor }}
         >
@@ -211,7 +219,7 @@ export function DocumentLibrary({
       {/* Upload Modal */}
       <UploadModal
         isOpen={isUploadOpen}
-        onClose={() => setIsUploadOpen(false)}
+        onClose={closeUploadModal}
         onUploadComplete={handleUploadComplete}
         endpoint={endpoint}
         headers={headers}
