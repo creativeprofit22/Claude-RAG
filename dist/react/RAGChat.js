@@ -99,7 +99,7 @@ export function RAGChat({ endpoint = '/api/rag/query', headers, placeholder = 'A
     if (skin === 'library') {
         return (_jsxs("div", { className: `rag-chat rag-chat--desk-layout ${className}`, children: [_jsx(InkFilters, {}), headerContent, error && (_jsx(InkBlot, { message: error, onDismiss: () => setError(null), showDismiss: true, className: "rag-ink-blot-error" })), _jsxs("div", { className: "rag-desk", children: [_jsx("div", { className: "rag-desk-typewriter", children: _jsx(TypewriterInput, { value: typewriterValue, onChange: setTypewriterValue, onSubmit: handleTypewriterSubmit, placeholder: placeholder, disabled: isTyping, soundEnabled: true, showKeyboard: !isMobile }) }), _jsx("div", { className: "rag-desk-paper", children: _jsx("div", { ref: messagesContainerRef, className: "rag-chat-messages", children: messagesContent }) })] })] }));
     }
-    // Default layout: Vertical stack (messages on top, input at bottom)
+    // Default layout (also used by cyberpunk - RAGInterface wraps in CyberpunkTerminal)
     return (_jsxs("div", { className: `rag-chat ${className}`, children: [headerContent, error && _jsx(ErrorBanner, { error: error, onDismiss: () => setError(null) }), _jsx("div", { ref: messagesContainerRef, className: "rag-chat-messages", children: messagesContent }), _jsx(ChatInput, { placeholder: placeholder, accentColor: accentColor, onSendMessage: sendMessage, disabled: isTyping })] }));
 }
 //# sourceMappingURL=RAGChat.js.map

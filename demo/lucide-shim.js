@@ -4,8 +4,9 @@
  * not React components. This shim wraps them into React components.
  */
 
+import React from 'react';
+
 const lucide = window.lucide;
-const React = window.React;
 
 /**
  * Create a React component from a vanilla lucide icon definition

@@ -1,9 +1,9 @@
 /**
  * JSX Runtime shim for browser bundle
- * Provides jsx/jsxs functions using global React.createElement
+ * Uses bundled React (no CDN needed)
  */
 
-const React = window.React;
+import React from 'react';
 
 export function jsx(type, props, key) {
   const { children, ...rest } = props || {};

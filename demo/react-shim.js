@@ -1,9 +1,9 @@
 /**
  * React shim for browser bundle
- * Maps to global window.React from CDN
+ * Re-exports from bundled React (no CDN needed)
  */
 
-const React = window.React;
+import React from 'react';
 
 // Re-export all commonly used React APIs
 export default React;

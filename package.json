@@ -22,8 +22,8 @@
   ],
   "scripts": {
     "build": "tsc && npm run copy-assets",
-    "build:demo": "esbuild demo/browser-entry.tsx --bundle --format=iife --global-name=RAGBundle --target=es2020 --outfile=demo/ragchat-bundle.js --alias:react=./demo/react-shim.js --alias:react-dom=./demo/react-shim.js --alias:lucide-react=./demo/lucide-shim.js --alias:react/jsx-runtime=./demo/jsx-runtime-shim.js --alias:react/jsx-dev-runtime=./demo/jsx-runtime-shim.js",
-    "copy-assets": "cp src/react/styles.css dist/react/styles.css && rm -rf dist/react/tokens dist/react/fonts && cp -r src/react/tokens dist/react/tokens && cp -r src/react/fonts dist/react/fonts",
+    "build:demo": "esbuild demo/browser-entry.tsx --bundle --format=iife --global-name=RAGBundle --target=es2020 --outfile=demo/ragchat-bundle.js --alias:lucide-react=./demo/lucide-shim.js --alias:react/jsx-runtime=./demo/jsx-runtime-shim.js --alias:react/jsx-dev-runtime=./demo/jsx-runtime-shim.js --define:process.env.NODE_ENV=\\\"production\\\"",
+    "copy-assets": "cp src/react/styles.css dist/react/styles.css && rm -rf dist/react/tokens dist/react/fonts && cp -r src/react/tokens dist/react/tokens && cp -r src/react/fonts dist/react/fonts && cp src/react/components/cyberpunk/cyberpunk-chat.css dist/react/components/cyberpunk/cyberpunk-chat.css",
     "dev": "bun run src/server.ts",
     "start": "bun run src/server.ts",
     "dev:tsc": "tsc --watch",
@@ -46,6 +46,9 @@
     "@google/genai": "^1.34.0",
     "@gsap/react": "^2.1.2",
     "@lancedb/lancedb": "^0.23.0",
+    "@react-three/drei": "^10.7.7",
+    "@react-three/fiber": "^9.5.0",
+    "@react-three/postprocessing": "^3.0.4",
     "echarts": "^6.0.0",
     "echarts-for-react": "^3.0.5",
     "framer-motion": "^12.23.26",
@@ -53,6 +56,7 @@
     "lucide-react": "^0.468.0",
     "mammoth": "^1.9.0",
     "pdf-parse": "^1.1.1",
+    "three": "^0.182.0",
     "xlsx": "^0.18.5"
   },
   "peerDependencies": {

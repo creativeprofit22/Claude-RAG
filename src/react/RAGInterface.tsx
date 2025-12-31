@@ -1,12 +1,34 @@
 'use client';
 
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useMemo, Component, type ReactNode, type ErrorInfo } from 'react';
 import { MessageSquare, Library, X, FileText } from 'lucide-react';
 import { useSkinDetect } from './motion/hooks/useSkinDetect.js';
 import { RAGChat, type RAGChatProps } from './RAGChat.js';
 import { DocumentLibrary, type DocumentLibraryProps } from './components/documents/DocumentLibrary.js';
 import { LibraryPreloader } from './components/library/Preloader/LibraryPreloader.js';
+import { CyberpunkTerminal } from './components/cyberpunk/index.js';
 import { DEFAULT_ACCENT_COLOR, type DocumentSummary } from './types.js';
+
+// Error boundary for 3D components
+interface ErrorBoundaryState { hasError: boolean; error: Error | null; }
+class ThreeJSErrorBoundary extends Component<{ children: ReactNode; fallback: ReactNode }, ErrorBoundaryState> {
+  state: ErrorBoundaryState = { hasError: false, error: null };
+  static getDerivedStateFromError(error: Error) { return { hasError: true, error }; }
+  componentDidCatch(error: Error, info: ErrorInfo) { console.error('[CyberpunkTerminal Error]', error, info); }
+  render() {
+    if (this.state.hasError) {
+      return (
+        <div style={{ padding: 20, background: '#1a0a1a', color: '#ff0080', fontFamily: 'monospace', border: '2px solid #ff0080' }}>
+          <h3>⚠️ 3D Terminal Error</h3>
+          <pre style={{ whiteSpace: 'pre-wrap', fontSize: 12 }}>{this.state.error?.message}</pre>
+          <pre style={{ whiteSpace: 'pre-wrap', fontSize: 10, opacity: 0.7 }}>{this.state.error?.stack}</pre>
+          {this.props.fallback}
+        </div>
+      );
+    }
+    return this.props.children;
+  }
+}
 
 export type RAGInterfaceView = 'chat' | 'documents';
 
@@ -130,6 +152,137 @@ export function RAGInterface({
     );
   }
 
+  // Cyberpunk skin: Full interface inside CyberpunkTerminal with cyberpunk-styled tabs
+  if (skin === 'cyberpunk') {
+    const cyberpunkContent = (
+      <div className="cyberpunk-tabs-container">
+        {/* Cyberpunk-styled tabs with ARIA */}
+        {showDocumentLibrary && (
+          <nav
+            className="cyberpunk-tabs-nav"
+            role="tablist"
+            aria-label="RAG Interface views"
+          >
+            <button
+              type="button"
+              role="tab"
+              aria-selected={activeView === 'chat'}
+              aria-controls="cyberpunk-chat-panel"
+              id="cyberpunk-chat-tab"
+              tabIndex={activeView === 'chat' ? 0 : -1}
+              onClick={() => setActiveView('chat')}
+              onKeyDown={(e) => {
+                if (e.key === 'ArrowRight' || e.key === 'ArrowLeft') {
+                  e.preventDefault();
+                  setActiveView(activeView === 'chat' ? 'documents' : 'chat');
+                }
+              }}
+              className="cyberpunk-tab-button"
+              data-active={activeView === 'chat'}
+            >
+              <MessageSquare size={14} aria-hidden="true" />
+              <span>CHAT</span>
+            </button>
+            <button
+              type="button"
+              role="tab"
+              aria-selected={activeView === 'documents'}
+              aria-controls="cyberpunk-documents-panel"
+              id="cyberpunk-documents-tab"
+              tabIndex={activeView === 'documents' ? 0 : -1}
+              onClick={() => setActiveView('documents')}
+              onKeyDown={(e) => {
+                if (e.key === 'ArrowRight' || e.key === 'ArrowLeft') {
+                  e.preventDefault();
+                  setActiveView(activeView === 'chat' ? 'documents' : 'chat');
+                }
+              }}
+              className="cyberpunk-tab-button cyberpunk-tab-button--documents"
+              data-active={activeView === 'documents'}
+            >
+              <Library size={14} aria-hidden="true" />
+              <span>DOCUMENTS</span>
+            </button>
+          </nav>
+        )}
+
+        {/* Document scope indicator - cyberpunk styled */}
+        {scopedDocument && activeView === 'chat' && (
+          <div className="cyberpunk-scope-indicator">
+            <span className="cyberpunk-scope-info">
+              <FileText size={12} aria-hidden="true" />
+              <span className="cyberpunk-scope-label">SCOPE:</span>
+              <span>{scopedDocument.documentName}</span>
+            </span>
+            <button
+              type="button"
+              onClick={handleClearScope}
+              className="cyberpunk-scope-clear"
+              aria-label={`Clear scope: ${scopedDocument.documentName}`}
+            >
+              <X size={10} aria-hidden="true" />
+              CLEAR
+            </button>
+          </div>
+        )}
+
+        {/* Content area */}
+        <div
+          className="cyberpunk-content-area"
+          role="tabpanel"
+          id={activeView === 'chat' ? 'cyberpunk-chat-panel' : 'cyberpunk-documents-panel'}
+          aria-labelledby={activeView === 'chat' ? 'cyberpunk-chat-tab' : 'cyberpunk-documents-tab'}
+        >
+          {activeView === 'chat' ? (
+            <RAGChat
+              endpoint={chatEndpoint}
+              headers={headers}
+              title={chatTitle}
+              accentColor="#00ffff"
+              placeholder={scopedDocument
+                ? `Ask about "${scopedDocument.documentName}"...`
+                : placeholder}
+              showSources={showSources}
+              systemPrompt={systemPrompt}
+              topK={topK}
+              documentId={scopedDocument?.documentId}
+              responder={responder}
+              emptyState={chatEmptyState}
+            />
+          ) : (
+            <DocumentLibrary
+              endpoint={endpoint}
+              headers={headers}
+              title={documentsTitle}
+              accentColor="#ff0080"
+              onDocumentSelect={handleDocumentSelect}
+              emptyState={documentsEmptyState}
+            />
+          )}
+        </div>
+      </div>
+    );
+
+    const cyberpunkFallback = (
+      <div className={`rag-interface cyberpunk-fallback ${className}`}>
+        {cyberpunkContent}
+      </div>
+    );
+
+    return (
+      <ThreeJSErrorBoundary key={`error-boundary-${skin}`} fallback={cyberpunkFallback}>
+        <CyberpunkTerminal
+          className={className}
+          damageLevel={0.5}
+          enableEffects={true}
+        >
+          {cyberpunkContent}
+        </CyberpunkTerminal>
+      </ThreeJSErrorBoundary>
+    );
+  }
+
+  // Default interface with tabs (for non-cyberpunk skins)
   return (
     <div className={`rag-interface ${className}`}>
       {/* Tab Navigation */}

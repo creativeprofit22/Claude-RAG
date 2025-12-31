@@ -220,7 +220,7 @@ export function RAGChat({
     );
   }
 
-  // Default layout: Vertical stack (messages on top, input at bottom)
+  // Default layout (also used by cyberpunk - RAGInterface wraps in CyberpunkTerminal)
   return (
     <div className={`rag-chat ${className}`}>
       {/* Header */}

@@ -81,3 +81,6 @@ export type {
 
 // Library Skin V2 Components
 export * from './components/library/index.js';
+
+// Cyberpunk Skin Components
+export * from './components/cyberpunk/index.js';

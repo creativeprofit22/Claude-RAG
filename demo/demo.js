@@ -211,25 +211,19 @@ async function uploadFiles() {
 }
 
 // Factory to create React renderer with lazy root initialization
-// Note: Using window.React/ReactDOM because this is an ES module and CDN globals need explicit window reference
+// Note: React/ReactDOM are bundled into RAGBundle (no CDN needed)
 function createReactRenderer(containerId) {
   let root = null;
   return (Component, props) => {
-    console.log('[DEBUG] createReactRenderer called for:', containerId);
-    console.log('[DEBUG] window.React:', typeof window.React);
-    console.log('[DEBUG] window.ReactDOM:', typeof window.ReactDOM);
-    console.log('[DEBUG] Component:', Component);
     const container = document.getElementById(containerId);
     if (!container || !Component) {
-      console.error('[DEBUG] Missing container or Component:', { container: !!container, Component: !!Component });
+      console.error('[createReactRenderer] Missing container or Component:', { container: !!container, Component: !!Component });
       return;
     }
     if (!root) {
-      console.log('[DEBUG] Creating React root for:', containerId);
-      root = window.ReactDOM.createRoot(container);
+      root = RAGBundle.ReactDOM.createRoot(container);
     }
-    console.log('[DEBUG] Rendering component to:', containerId);
-    root.render(window.React.createElement(Component, props));
+    root.render(RAGBundle.React.createElement(Component, props));
   };
 }
 

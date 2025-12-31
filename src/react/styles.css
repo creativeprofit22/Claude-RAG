@@ -6,6 +6,9 @@
 /* Import Curator Design Tokens */
 @import './tokens/index.css';
 
+/* Import Skin-Specific Styles */
+@import './components/cyberpunk/cyberpunk-chat.css';
+
 /* ============================================
    Shared Patterns (DRY extraction)
    ============================================ */

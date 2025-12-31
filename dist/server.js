@@ -1208,7 +1208,7 @@ async function handleRequest(req) {
             if (existsSync(filePath)) {
                 // Check file size to prevent DoS from large file reads
                 const stats = statSync(filePath);
-                const MAX_STATIC_FILE_SIZE = 5 * 1024 * 1024; // 5MB limit for static files
+                const MAX_STATIC_FILE_SIZE = 10 * 1024 * 1024; // 10MB limit for static files (bundle is ~6MB)
                 if (stats.size > MAX_STATIC_FILE_SIZE) {
                     return errorResponse('File too large', 413);
                 }

@@ -1128,10 +1128,6 @@
   background: var(--ink-highlight);
   color: var(--ink-primary);
 }
-.ink-selection::-moz-selection {
-  background: var(--ink-highlight);
-  color: var(--ink-primary);
-}
 .ink-empty {
   position: relative;
   display: flex;
@@ -4364,11 +4360,40 @@
   --lib-ink-soft: #A89040;
   --lib-ink-faded: #A08050;
   --lib-ink-notation: #B8A050;
+  --lib-ink-dark: #2A1F15;
+  --lib-ink-medium: #3A2A1A;
+  --lib-ink-darkest: #1A1512;
+  --lib-blotter-light: #F5ECD7;
+  --lib-blotter-mid: #EDE4CF;
+  --lib-blotter-dark: #E5DCC7;
+  --lib-danger-gradient:
+    linear-gradient(
+      180deg,
+      #C04040 0%,
+      #8B2020 100%);
+  --lib-danger-text: #FFF5F5;
   --lib-ease: cubic-bezier(0.23, 1, 0.32, 1);
   --lib-duration: 0.45s;
   --lib-duration-slow: 0.5s;
   --lib-shadow-gold-glow: 0 0 20px rgba(140, 112, 40, 0.12);
   --lib-shadow-gold-glow-strong: 0 0 30px rgba(140, 112, 40, 0.18);
+  --lib-gradient-wood-walnut:
+    linear-gradient(
+      
+      180deg,
+      var(--lib-wood-walnut-light) 0%,
+      var(--lib-wood-walnut) 50%,
+      var(--lib-wood-walnut-dark) 100% );
+  --lib-gradient-velvet-interior:
+    linear-gradient(
+      
+      180deg,
+      var(--lib-vellum-shadow) 0%,
+      var(--lib-vellum) 50%,
+      var(--lib-cream) 100% );
+  --lib-texture-paper-02: url("data:image/svg+xml,%3Csvg viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='paper'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23paper)' opacity='0.02'/%3E%3C/svg%3E");
+  --lib-texture-paper-03: url("data:image/svg+xml,%3Csvg viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='paper'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23paper)' opacity='0.03'/%3E%3C/svg%3E");
+  --lib-texture-paper-05: url("data:image/svg+xml,%3Csvg viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='paper'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23paper)' opacity='0.05'/%3E%3C/svg%3E");
   --lib-texture-wood:
     repeating-linear-gradient(
       
