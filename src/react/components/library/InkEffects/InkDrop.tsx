@@ -12,6 +12,9 @@ import React, { useRef, useEffect } from 'react';
 import { gsap } from 'gsap';
 import './InkEffects.css';
 
+/** Size in pixels for each variant */
+const SIZE_MAP = { sm: 24, md: 40, lg: 64 } as const;
+
 export interface InkDropProps {
   /** Whether the loading animation is active */
   active: boolean;
@@ -43,7 +46,6 @@ export function InkDrop({
   className = '',
   ariaLabel = 'Loading...',
 }: InkDropProps) {
-  const containerRef = useRef<HTMLDivElement>(null);
   const dropRef = useRef<HTMLDivElement>(null);
   const puddleRef = useRef<HTMLDivElement>(null);
   const timelineRef = useRef<gsap.core.Timeline | null>(null);
@@ -60,7 +62,7 @@ export function InkDrop({
     const tl = gsap.timeline({ repeat: -1 });
     timelineRef.current = tl;
 
-    const dropSize = size === 'sm' ? 24 : size === 'md' ? 40 : 64;
+    const dropSize = SIZE_MAP[size];
     const dropElement = dropRef.current;
     const puddleElement = puddleRef.current;
 
@@ -152,7 +154,6 @@ export function InkDrop({
 
   return (
     <div
-      ref={containerRef}
       className={`ink-drop ink-drop--${size} ${className}`}
       role="status"
       aria-label={ariaLabel}

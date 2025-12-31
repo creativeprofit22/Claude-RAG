@@ -2968,12 +2968,7 @@
     /* Subtle velvet texture */
     var(--lib-texture-velvet),
     /* Deep wood interior gradient */
-    linear-gradient(
-      180deg,
-      var(--lib-vellum-shadow) 0%,
-      var(--lib-vellum) 50%,
-      var(--lib-cream) 100%
-    );
+    var(--lib-gradient-velvet-interior);
   background-blend-mode: soft-light, normal;
 
   /* Inset panel effect - carved into wood */
@@ -2989,7 +2984,7 @@
   /* Paper texture base */
   background:
     /* Subtle paper fiber */
-    url("data:image/svg+xml,%3Csvg viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='paper'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23paper)' opacity='0.03'/%3E%3C/svg%3E"),
+    var(--lib-texture-paper-03),
     var(--lib-vellum);
   background-blend-mode: multiply, normal;
 
@@ -3008,7 +3003,7 @@
 /* User Message - Slightly warmer paper */
 [data-skin="library"] .rag-message-bubble-user {
   background:
-    url("data:image/svg+xml,%3Csvg viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='paper'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23paper)' opacity='0.03'/%3E%3C/svg%3E"),
+    var(--lib-texture-paper-03),
     linear-gradient(
       180deg,
       var(--lib-cream-warm) 0%,
@@ -3024,7 +3019,7 @@
 /* Assistant Message - Vellum paper */
 [data-skin="library"] .rag-message-bubble-assistant {
   background:
-    url("data:image/svg+xml,%3Csvg viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='paper'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23paper)' opacity='0.03'/%3E%3C/svg%3E"),
+    var(--lib-texture-paper-03),
     var(--lib-vellum);
   background-blend-mode: multiply, normal;
 
@@ -3060,13 +3055,13 @@
 [data-skin="library"] .rag-message-loading {
   background:
     /* Subtle paper fiber texture */
-    url("data:image/svg+xml,%3Csvg viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='paper'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23paper)' opacity='0.05'/%3E%3C/svg%3E"),
+    var(--lib-texture-paper-05),
     /* Cream blotter paper gradient */
     linear-gradient(
       180deg,
-      #F5ECD7 0%,
-      #EDE4CF 50%,
-      #E5DCC7 100%
+      var(--lib-blotter-light) 0%,
+      var(--lib-blotter-mid) 50%,
+      var(--lib-blotter-dark) 100%
     );
   background-blend-mode: multiply, normal;
   border-radius: 4px;
@@ -3078,10 +3073,7 @@
 }
 
 /* ─── Message Content - Allow CardCatalog overflow ─── */
-[data-skin="library"] .rag-message-content {
-  overflow: visible;
-}
-
+[data-skin="library"] .rag-message-content,
 [data-skin="library"] .rag-message {
   overflow: visible;
 }
@@ -3090,12 +3082,7 @@
 [data-skin="library"] .rag-desk {
   background:
     var(--lib-texture-wood),
-    linear-gradient(
-      180deg,
-      var(--lib-wood-walnut-light) 0%,
-      var(--lib-wood-walnut) 50%,
-      var(--lib-wood-walnut-dark) 100%
-    );
+    var(--lib-gradient-wood-walnut);
   background-blend-mode: overlay, normal;
   padding: 1.5rem;
   gap: 1.5rem;
@@ -3107,12 +3094,7 @@
   min-width: 280px;
   background:
     var(--lib-texture-velvet),
-    linear-gradient(
-      180deg,
-      var(--lib-vellum-shadow) 0%,
-      var(--lib-vellum) 50%,
-      var(--lib-cream) 100%
-    );
+    var(--lib-gradient-velvet-interior);
   background-blend-mode: soft-light, normal;
   border: 3px solid var(--lib-wood-walnut-dark);
   border-radius: 2px;
@@ -3167,7 +3149,7 @@
 [data-skin="library"] .rag-sources-toggle {
   background: var(--lib-gold-shimmer);
   border: 1px solid var(--lib-gold-shadow);
-  color: #2A1F15;
+  color: var(--lib-ink-dark);
   text-shadow: var(--lib-text-engraved);
   font-family: 'Cormorant Garamond', serif;
   font-weight: 600;
@@ -3195,7 +3177,7 @@
 /* ─── Source Items - Specimen cards ─── */
 [data-skin="library"] .rag-source-item {
   background:
-    url("data:image/svg+xml,%3Csvg viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='paper'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23paper)' opacity='0.02'/%3E%3C/svg%3E"),
+    var(--lib-texture-paper-02),
     var(--lib-vellum-shadow);
   background-blend-mode: multiply, normal;
 
@@ -3234,12 +3216,7 @@
   /* Wood frame with brass corners */
   background:
     var(--lib-texture-wood),
-    linear-gradient(
-      180deg,
-      var(--lib-wood-walnut-light) 0%,
-      var(--lib-wood-walnut) 50%,
-      var(--lib-wood-walnut-dark) 100%
-    );
+    var(--lib-gradient-wood-walnut);
   background-blend-mode: overlay, normal;
 
   border: 2px solid var(--lib-gold-shadow);
@@ -3296,11 +3273,7 @@
 [data-skin="library"] .rag-chat-header-icon {
   background:
     var(--lib-texture-wood),
-    linear-gradient(
-      180deg,
-      var(--lib-wood-walnut-light) 0%,
-      var(--lib-wood-walnut) 100%
-    );
+    var(--lib-gradient-wood-walnut);
   background-blend-mode: overlay, normal;
 
   border: 1px solid var(--lib-gold-shadow);
@@ -3314,7 +3287,7 @@
 [data-skin="library"] .rag-chat-header-title {
   font-family: 'Cormorant Garamond', 'EB Garamond', serif;
   font-weight: 700;
-  color: #2A1F15;
+  color: var(--lib-ink-dark);
   text-shadow: var(--lib-text-engraved);
   letter-spacing: 0.08em;
   text-transform: uppercase;
@@ -3323,7 +3296,7 @@
 [data-skin="library"] .rag-chat-header-status {
   font-family: 'Cormorant Garamond', serif;
   font-style: italic;
-  color: #3A2A1A;
+  color: var(--lib-ink-medium);
   text-shadow: 0 1px 0 rgba(200, 180, 120, 0.25);
 }
 
@@ -3337,15 +3310,15 @@
 }
 
 [data-skin="library"] .rag-chat-header-clear svg {
-  color: #3A2A1A;
+  color: var(--lib-ink-medium);
 }
 
 [data-skin="library"] .rag-chat-header-clear:hover:not(:disabled) {
-  background: linear-gradient(180deg, #C04040 0%, #8B2020 100%);
+  background: var(--lib-danger-gradient);
 }
 
 [data-skin="library"] .rag-chat-header-clear:hover:not(:disabled) svg {
-  color: #FFF5F5;
+  color: var(--lib-danger-text);
 }
 
 /* ─── Input Area - Wood frame ─── */
@@ -3353,12 +3326,7 @@
   /* Wood panel base */
   background:
     var(--lib-texture-wood),
-    linear-gradient(
-      180deg,
-      var(--lib-wood-walnut-light) 0%,
-      var(--lib-wood-walnut) 50%,
-      var(--lib-wood-walnut-dark) 100%
-    );
+    var(--lib-gradient-wood-walnut);
   background-blend-mode: overlay, normal;
 
   border-top: 2px solid var(--lib-gold-shadow);
@@ -3372,7 +3340,7 @@
 [data-skin="library"] .rag-chat-input {
   /* Paper/vellum input field */
   background:
-    url("data:image/svg+xml,%3Csvg viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='paper'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23paper)' opacity='0.03'/%3E%3C/svg%3E"),
+    var(--lib-texture-paper-03),
     var(--lib-vellum);
   background-blend-mode: multiply, normal;
 
@@ -3407,7 +3375,7 @@
 }
 
 [data-skin="library"] .rag-chat-send-button svg {
-  color: #2A1F15;
+  color: var(--lib-ink-dark);
   filter: drop-shadow(0 1px 0 rgba(200, 180, 120, 0.3));
 }
 
@@ -3421,5 +3389,5 @@
 }
 
 [data-skin="library"] .rag-chat-send-button:not(:disabled) svg {
-  color: #1A1512;
+  color: var(--lib-ink-darkest);
 }

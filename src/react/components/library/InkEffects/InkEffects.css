@@ -7,6 +7,15 @@
  * - Processing (ink swirl in inkwell)
  * - Error (ink blot spreading)
  * - Transitions (ink wash wipe)
+ *
+ * REQUIRED SVG FILTER DEPENDENCIES (from InkFilters component):
+ * - #ink-drop-filter - For ink drop elements
+ * - #ink-spread-filter - For puddle/blot spreading
+ * - #ink-swirl-filter - For swirl animation
+ * - #paper-bleed-filter - For text bleeding effect
+ * - #aged-ink-filter - For faded/disabled states
+ * - #blotting-filter - For blotting paper absorption
+ * - #ink-wash-filter - For page transitions
  */
 
 /* ============================================
@@ -602,11 +611,6 @@
    INK SELECTION - Bleed Through
    ============================================ */
 .ink-selection::selection {
-  background: var(--ink-highlight);
-  color: var(--ink-primary);
-}
-
-.ink-selection::-moz-selection {
   background: var(--ink-highlight);
   color: var(--ink-primary);
 }

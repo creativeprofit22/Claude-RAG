@@ -140,6 +140,17 @@ export function RAGChat({
     />
   );
 
+  // Header content - shared between layouts
+  const headerContent = (
+    <ChatHeader
+      title={title}
+      accentColor={accentColor}
+      isTyping={isTyping}
+      messageCount={messages.length}
+      onClearChat={clearChat}
+    />
+  );
+
   // Messages content - shared between layouts
   const messagesContent = (
     <>
@@ -171,13 +182,7 @@ export function RAGChat({
         <InkFilters />
 
         {/* Header */}
-        <ChatHeader
-          title={title}
-          accentColor={accentColor}
-          isTyping={isTyping}
-          messageCount={messages.length}
-          onClearChat={clearChat}
-        />
+        {headerContent}
 
         {/* Error - Library skin uses InkBlot, others use ErrorBanner */}
         {error && (
@@ -219,13 +224,7 @@ export function RAGChat({
   return (
     <div className={`rag-chat ${className}`}>
       {/* Header */}
-      <ChatHeader
-        title={title}
-        accentColor={accentColor}
-        isTyping={isTyping}
-        messageCount={messages.length}
-        onClearChat={clearChat}
-      />
+      {headerContent}
 
       {/* Error Banner */}
       {error && <ErrorBanner error={error} onDismiss={() => setError(null)} />}

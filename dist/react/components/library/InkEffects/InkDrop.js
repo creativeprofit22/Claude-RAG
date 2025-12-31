@@ -11,6 +11,8 @@ import { jsx as _jsx, jsxs as _jsxs } from "react/jsx-runtime";
 import { useRef, useEffect } from 'react';
 import { gsap } from 'gsap';
 import './InkEffects.css';
+/** Size in pixels for each variant */
+const SIZE_MAP = { sm: 24, md: 40, lg: 64 };
 /**
  * InkDrop - A loading indicator styled as ink dropping from an inkwell.
  *
@@ -26,7 +28,6 @@ import './InkEffects.css';
  * ```
  */
 export function InkDrop({ active, size = 'md', className = '', ariaLabel = 'Loading...', }) {
-    const containerRef = useRef(null);
     const dropRef = useRef(null);
     const puddleRef = useRef(null);
     const timelineRef = useRef(null);
@@ -40,7 +41,7 @@ export function InkDrop({ active, size = 'md', className = '', ariaLabel = 'Load
         // Create main timeline for enhanced GSAP control
         const tl = gsap.timeline({ repeat: -1 });
         timelineRef.current = tl;
-        const dropSize = size === 'sm' ? 24 : size === 'md' ? 40 : 64;
+        const dropSize = SIZE_MAP[size];
         const dropElement = dropRef.current;
         const puddleElement = puddleRef.current;
         // Phase 1: Drop forms at nib
@@ -110,7 +111,7 @@ export function InkDrop({ active, size = 'md', className = '', ariaLabel = 'Load
     if (!active) {
         return null;
     }
-    return (_jsxs("div", { ref: containerRef, className: `ink-drop ink-drop--${size} ${className}`, role: "status", "aria-label": ariaLabel, "aria-live": "polite", children: [_jsx("div", { className: "ink-drop__nib", "aria-hidden": "true" }), _jsx("div", { ref: dropRef, className: "ink-drop__drop", "aria-hidden": "true" }), _jsx("div", { className: "ink-drop__surface", "aria-hidden": "true", children: _jsx("div", { ref: puddleRef, className: "ink-drop__puddle" }) })] }));
+    return (_jsxs("div", { className: `ink-drop ink-drop--${size} ${className}`, role: "status", "aria-label": ariaLabel, "aria-live": "polite", children: [_jsx("div", { className: "ink-drop__nib", "aria-hidden": "true" }), _jsx("div", { ref: dropRef, className: "ink-drop__drop", "aria-hidden": "true" }), _jsx("div", { className: "ink-drop__surface", "aria-hidden": "true", children: _jsx("div", { ref: puddleRef, className: "ink-drop__puddle" }) })] }));
 }
 export default InkDrop;
 //# sourceMappingURL=InkDrop.js.map

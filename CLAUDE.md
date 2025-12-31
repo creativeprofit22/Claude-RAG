@@ -12,18 +12,19 @@ Reusable RAG component for embedding into projects. Uses Claude Code CLI (user's
 Query → Gemini Embeddings → LanceDB → Chunks → Claude Code CLI → Response
 ```
 
-## Last Session (2025-12-30)
-**Library Skin Desk Layout - Refactoring Complete:**
-- M1: Removed unused `type LucideIcon` import (RAGChat.tsx)
-- M2: Removed empty `.rag-chat--desk-layout` CSS rule (styles.css)
-- M3: Removed dead legacy variables (demo/styles.css)
-- L2: Removed unused `iconStyle` variable (EmptyState.tsx)
-- Validation: 21/21 tests, tsc clean, build passes
+## Last Session (2025-12-31)
+**Ink Effects Integration - Refactoring Complete:**
+- HIGH: 4/4 applied (dead code removal, CSS var extraction)
+- MEDIUM: 5/10 applied (DRY header, SIZE_MAP, filter docs)
+- LOW: 2/13 applied (moz-selection, overflow combine)
+- Skipped: Large M-effort refactors (SourcesAccordion, animation extraction)
+- Validation: Build PASS, Tests 21/21 PASS
 
 ## Pipeline State
 Phase: COMPLETE
-Feature: Library Desk Layout
-All-Tiers-Complete: MEDIUM (3/3), LOW (1/1), L1 skipped (low value)
+Feature: Ink Effects Integration
+Last-Completed: 2025-12-31
+All-Tiers-Complete: HIGH (4/4), MEDIUM (5/10), LOW (2/13)
 
 ## Library Skin V2 Progress
 | Phase | Status | Notes |
@@ -32,14 +33,14 @@ All-Tiers-Complete: MEDIUM (3/3), LOW (1/1), L1 skipped (low value)
 | 2. Typewriter Core | ✅ Done | Key press, typebar swing, carriage, sounds |
 | 3. Correction Tape | ✅ Done | Backspace animation, rapid deletion |
 | 4. Card Catalog | ✅ Done | Drawer physics, index cards, fan/select animations |
-| 5. Ink System | ⏳ Partial | InkFilters exists, full effects pending |
+| 5. Ink System | ✅ Done | InkDrop bottle animation, blotter paper, CSS vars |
 | 6. Pre-loader | ✅ Done | LibraryPreloader + skip logic |
 | 7. Polish | ✅ Done | Desk layout complete, responsive fixed |
 
 ## Next Steps
-1. Remove unused InkFilters import from RAGChat.tsx
-2. Consider MessageBubble memoization (performance)
-3. Validate card catalog drawers in desk layout
+1. Library Skin V2 complete - ready for production use
+2. Consider MessageBubble memoization if performance issues arise
+3. Optional: Extract SourcesAccordion component for better testability
 
 ## Key Files
 - `src/server.ts` - Bun HTTP server

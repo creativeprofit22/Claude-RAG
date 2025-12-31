@@ -1,7 +1,7 @@
 'use client';
 
 import { FileText, ChevronDown, ChevronUp } from 'lucide-react';
-import { useState, useRef, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { DEFAULT_ACCENT_COLOR, type ChatMessage } from '../types.js';
 import { LoadingDots } from './LoadingDots.js';
 import { useSkinDetect } from '../motion/hooks/useSkinDetect.js';
@@ -24,8 +24,7 @@ export function MessageBubble({
   const isLibrarySkin = skin === 'library';
 
   // Track if message is "fresh" (just appeared) for wet ink sheen effect
-  const isFreshRef = useRef(!isUser && !message.isLoading);
-  const [isFresh, setIsFresh] = useState(isFreshRef.current);
+  const [isFresh, setIsFresh] = useState(!isUser && !message.isLoading);
 
   // Clear fresh state after animation completes (2s as per CSS)
   useEffect(() => {
